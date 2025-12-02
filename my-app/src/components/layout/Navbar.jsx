@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Users, Map, Calendar, Award, User, Info, LogOut, MessageCircle, ChevronDown } from 'lucide-react';
+import { Home, Users, Map, Calendar, Award, User, Info, LogOut, MessageCircle, ChevronDown, LayoutDashboard, Briefcase, Globe, UserCheck, Utensils, Compass } from 'lucide-react';
 
 export default function Navbar({ currentPage, setCurrentPage }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -17,6 +17,12 @@ export default function Navbar({ currentPage, setCurrentPage }) {
     { id: 'friends', label: 'Friends', icon: Users },
     { id: 'rewards', label: 'Rewards', icon: Award },
     { id: 'group-events', label: 'Group Events', icon: Calendar },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'agency', label: 'Agency Portal', icon: Briefcase },
+    { id: 'map', label: 'Interactive Map', icon: Globe },
+    { id: 'local-guides', label: 'Local Guides', icon: UserCheck },
+    { id: 'culture', label: 'Culture & Food', icon: Utensils },
+    { id: 'trip-planner', label: 'Trip Planner', icon: Compass },
     { id: 'about', label: 'About', icon: Info }
   ];
 
