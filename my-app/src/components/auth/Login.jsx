@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 
-export default function Login() {
+export default function Login({ onLogin }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
-        console.log('Login attempt:', { email, password });
+        // Simulate login
+        if (onLogin) {
+            onLogin({
+                name: 'Demo User',
+                email: email || 'demo@example.com',
+                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
+            });
+        }
     };
 
     return (

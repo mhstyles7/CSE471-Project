@@ -24,9 +24,40 @@ import TripPlannerPage from './components/pages/TripPlannerPage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setCurrentPage('dashboard');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    setCurrentPage('home');
+  };
+
+  // List of routes that require authentication
+  const protectedRoutes = [
+    'my-trips',
+    'profile',
+    'dashboard',
+    'friends',
+    'rewards',
+    'group-events',
+    'agency',
+    'trip-planner'
+  ];
 
   // Render the appropriate page based on currentPage state
   const renderPage = () => {
+    // Check if route is protected and user is not logged in
+    if (protectedRoutes.includes(currentPage) && !isAuthenticated) {
+      return <Login onLogin={handleLogin} />;
+    }
+
     switch (currentPage) {
       case 'home':
         return <HomePage />;
@@ -45,14 +76,14 @@ export default function App() {
       case 'about':
         return <AboutPage />;
       case 'profile':
-        return <ProfilePage />;
+        return <ProfilePage user={user} />;
       // New Routes
       case 'login':
-        return <Login />;
+        return <Login onLogin={handleLogin} />;
       case 'register':
         return <Register />;
       case 'dashboard':
-        return <DashboardPage />;
+        return <DashboardPage user={user} />;
       case 'agency':
         return <AgencyDashboard />;
       case 'map':
@@ -95,7 +126,13 @@ export default function App() {
 
       {/* Navigation */}
       <div style={{ position: 'relative', zIndex: 10 }}>
-        <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        <Navbar
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onLogout={handleLogout}
+        />
       </div>
 
       {/* Main Content */}

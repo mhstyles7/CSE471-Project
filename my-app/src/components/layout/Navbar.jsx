@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { Home, Users, Map, Calendar, Award, User, Info, LogOut, MessageCircle, ChevronDown, LayoutDashboard, Briefcase, Globe, UserCheck, Utensils, Compass } from 'lucide-react';
+import { Home, Users, Map, Calendar, Award, User, Info, LogOut, MessageCircle, ChevronDown, LayoutDashboard, Briefcase, Globe, UserCheck, Utensils, Compass, LogIn, UserPlus } from 'lucide-react';
 
-export default function Navbar({ currentPage, setCurrentPage }) {
+export default function Navbar({ currentPage, setCurrentPage, isAuthenticated, user, onLogout }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  // Primary navigation items (most important)
+  // Primary navigation items (always visible)
   const primaryNavItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'destinations', label: 'Destinations', icon: Map },
-    { id: 'my-trips', label: 'My Trips', icon: Calendar },
     { id: 'community', label: 'Community', icon: MessageCircle }
   ];
 
-  // Secondary navigation items (in dropdown)
-  const secondaryNavItems = [
+  // Items only for logged in users
+  const privateNavItems = [
+    { id: 'my-trips', label: 'My Trips', icon: Calendar },
     { id: 'friends', label: 'Friends', icon: Users },
     { id: 'rewards', label: 'Rewards', icon: Award },
     { id: 'group-events', label: 'Group Events', icon: Calendar },
@@ -23,8 +23,18 @@ export default function Navbar({ currentPage, setCurrentPage }) {
     { id: 'local-guides', label: 'Local Guides', icon: UserCheck },
     { id: 'culture', label: 'Culture & Food', icon: Utensils },
     { id: 'trip-planner', label: 'Trip Planner', icon: Compass },
-    { id: 'about', label: 'About', icon: Info }
   ];
+
+  // Items only for logged out users
+  const publicNavItems = [
+    { id: 'login', label: 'Login', icon: LogIn },
+    { id: 'register', label: 'Register', icon: UserPlus },
+  ];
+
+  // Combine items based on auth state
+  const secondaryNavItems = isAuthenticated
+    ? [...privateNavItems, { id: 'about', label: 'About', icon: Info }]
+    : [...publicNavItems, { id: 'about', label: 'About', icon: Info }];
 
   const handleNavClick = (id) => {
     setCurrentPage(id);
@@ -257,67 +267,71 @@ export default function Navbar({ currentPage, setCurrentPage }) {
           minWidth: '200px',
           justifyContent: 'flex-end'
         }}>
-          {/* Profile Button */}
-          <button
-            onClick={() => handleNavClick('profile')}
-            style={{
-              padding: '10px 18px',
-              borderRadius: '12px',
-              fontSize: '15px',
-              fontWeight: '600',
-              border: currentPage === 'profile' ? '2px solid #059669' : '2px solid #e5e7eb',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: currentPage === 'profile' ? '#f0fdf4' : 'white',
-              color: currentPage === 'profile' ? '#059669' : '#374151',
-              transition: 'all 0.3s'
-            }}
-            onMouseEnter={(e) => {
-              if (currentPage !== 'profile') {
-                e.currentTarget.style.borderColor = '#059669';
-                e.currentTarget.style.color = '#059669';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentPage !== 'profile') {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.color = '#374151';
-              }
-            }}
-          >
-            <User size={18} strokeWidth={2.5} />
-            <span>Profile</span>
-          </button>
+          {isAuthenticated ? (
+            <>
+              {/* Profile Button */}
+              <button
+                onClick={() => handleNavClick('profile')}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  border: currentPage === 'profile' ? '2px solid #059669' : '2px solid #e5e7eb',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: currentPage === 'profile' ? '#f0fdf4' : 'white',
+                  color: currentPage === 'profile' ? '#059669' : '#374151',
+                  transition: 'all 0.3s'
+                }}
+              >
+                <User size={18} strokeWidth={2.5} />
+                <span>{user ? user.name.split(' ')[0] : 'Profile'}</span>
+              </button>
 
-          {/* Logout Button */}
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            fontSize: '15px',
-            fontWeight: '600',
-            color: '#dc2626',
-            border: '2px solid transparent',
-            background: 'transparent',
-            cursor: 'pointer',
-            borderRadius: '12px',
-            transition: 'all 0.3s'
-          }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#fef2f2';
-              e.currentTarget.style.borderColor = '#fecaca';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = 'transparent';
-            }}
-          >
-            <LogOut size={18} strokeWidth={2.5} />
-            <span>Logout</span>
-          </button>
+              {/* Logout Button */}
+              <button
+                onClick={onLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: '#dc2626',
+                  border: '2px solid transparent',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  borderRadius: '12px',
+                  transition: 'all 0.3s'
+                }}
+              >
+                <LogOut size={18} strokeWidth={2.5} />
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => handleNavClick('login')}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '12px',
+                fontSize: '15px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: '#059669',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)',
+                transition: 'all 0.3s'
+              }}
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </div>
 
