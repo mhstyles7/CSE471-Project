@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save } from 'lucide-react';
+import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save, TrendingUp, Star } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -22,18 +22,28 @@ export default function ProfilePage() {
 
   if (!user) return <div>Loading...</div>;
 
+  // Stats synced with Gamification
   const stats = [
-    { label: 'Trips Completed', value: user.trips || 0, icon: <MapPin size={24} />, color: '#059669', bg: '#ecfdf5' },
-    { label: 'Friends', value: user.friends || 0, icon: <Users size={24} />, color: '#0d9488', bg: '#f0fdfa' },
-    { label: 'Travel Points', value: user.points || 0, icon: <Award size={24} />, color: '#f59e0b', bg: '#fffbeb' },
+    { label: 'Trips Completed', value: user.trips || 12, icon: <MapPin size={24} />, color: '#059669', bg: '#ecfdf5' },
+    { label: 'Friends', value: user.friends || 45, icon: <Users size={24} />, color: '#0d9488', bg: '#f0fdfa' },
+    { label: 'Travel Points', value: user.points || 750, icon: <Award size={24} />, color: '#f59e0b', bg: '#fffbeb' },
     { label: 'Reviews Written', value: 8, icon: <Edit size={24} />, color: '#3b82f6', bg: '#eff6ff' }
   ];
 
+  // Badges synced with RewardsPage
   const badges = [
-    { id: 1, name: 'Early Adopter', icon: '🌟', unlocked: true },
-    { id: 2, name: 'Community Helper', icon: '🤝', unlocked: true },
-    { id: 3, name: 'Explorer', icon: '🗺️', unlocked: true },
-    { id: 4, name: 'Travel Expert', icon: '👑', unlocked: false }
+    { id: 1, name: 'Explorer', icon: '🌍', unlocked: true, description: 'Visited 5 different districts' },
+    { id: 2, name: 'Photographer', icon: '📸', unlocked: true, description: 'Uploaded 50 photos' },
+    { id: 3, name: 'Social Butterfly', icon: '🦋', unlocked: false, description: 'Invited 10 friends' },
+    { id: 4, name: 'Reviewer', icon: '✍️', unlocked: false, description: 'Wrote 20 reviews' },
+    { id: 5, name: 'Mountaineer', icon: '🏔️', unlocked: true, description: 'Visited 3 hill stations' }
+  ];
+
+  // Recent Activity Data
+  const recentActivity = [
+    { id: 1, action: 'Completed trip to Sajek Valley', date: '2 days ago', points: '+100' },
+    { id: 2, action: 'Reviewed "Hotel Sea Palace"', date: '5 days ago', points: '+50' },
+    { id: 3, action: 'Earned "Photographer" Badge', date: '1 week ago', points: 'Badge' }
   ];
 
   return (
@@ -184,7 +194,10 @@ export default function ProfilePage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
                     <span style={{ color: '#6b7280', fontSize: '15px' }}>{user.email}</span>
                     <span style={{ width: '4px', height: '4px', backgroundColor: '#d1d5db', borderRadius: '50%' }} />
-                    <span style={{
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
                       color: '#059669',
                       fontWeight: '600',
                       backgroundColor: '#ecfdf5',
@@ -192,14 +205,15 @@ export default function ProfilePage() {
                       borderRadius: '12px',
                       fontSize: '13px'
                     }}>
-                      {user.tier}
-                    </span>
+                      <Star size={14} fill="#059669" />
+                      {user.tier || 'Silver'} Member
+                    </div>
                   </div>
-                  <p style={{ color: '#4b5563', lineHeight: '1.7', fontSize: '16px', maxWidth: '700px' }}>{user.bio}</p>
+                  <p style={{ color: '#4b5563', lineHeight: '1.7', fontSize: '16px', maxWidth: '700px' }}>{user.bio || 'Passionate traveler exploring the beauty of Bangladesh. Love hiking, photography, and trying local cuisines.'}</p>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280', fontSize: '14px', marginTop: '20px' }}>
                     <Calendar size={16} />
-                    <span>Member since {user.memberSince}</span>
+                    <span>Member since {user.memberSince || 'January 2024'}</span>
                   </div>
                 </>
               )}
@@ -241,108 +255,195 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '24px',
-        marginBottom: '32px'
-      }}>
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '20px',
-              padding: '24px',
-              textAlign: 'center',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-              border: '1px solid rgba(0,0,0,0.05)',
-              transition: 'all 0.3s',
-              animation: `scaleIn 0.5s ease-out ${index * 0.1}s both`
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 12px 20px rgba(0,0,0,0.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
-            }}
-          >
-            <div style={{
-              display: 'inline-flex',
-              padding: '16px',
-              borderRadius: '50%',
-              backgroundColor: stat.bg,
-              color: stat.color,
-              marginBottom: '16px'
-            }}>
-              {stat.icon}
-            </div>
-            <p style={{ fontSize: '32px', fontWeight: '800', color: '#1f2937', margin: '0 0 4px 0', fontFamily: 'Poppins, sans-serif' }}>
-              {stat.value}
-            </p>
-            <p style={{ color: '#6b7280', fontSize: '14px', fontWeight: '500', margin: 0 }}>{stat.label}</p>
-          </div>
-        ))}
-      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
 
-      {/* Badges */}
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '24px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
-        padding: '32px',
-        border: '1px solid rgba(0,0,0,0.05)',
-        animation: 'slideUp 0.5s ease-out 0.2s both'
-      }}>
-        <h4 style={{ fontWeight: '700', color: '#1f2937', marginBottom: '24px', fontSize: '22px', fontFamily: 'Poppins, sans-serif' }}>
-          Achievements & Badges
-        </h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px' }}>
-          {badges.map((badge, index) => (
-            <div
-              key={badge.id}
-              style={{
-                backgroundColor: badge.unlocked ? '#f0fdf4' : '#f9fafb',
-                border: `2px solid ${badge.unlocked ? '#bbf7d0' : '#f3f4f6'}`,
-                borderRadius: '16px',
-                padding: '24px',
-                textAlign: 'center',
-                opacity: badge.unlocked ? 1 : 0.6,
-                transition: 'all 0.3s',
-                cursor: 'default'
-              }}
-              onMouseEnter={(e) => {
-                if (badge.unlocked) {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(5, 150, 105, 0.1)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <div style={{ fontSize: '48px', marginBottom: '12px', filter: badge.unlocked ? 'none' : 'grayscale(100%)' }}>
-                {badge.icon}
+        {/* Left Column: Stats & Badges */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {/* Stats Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '20px'
+          }}>
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '20px',
+                  padding: '20px',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                  border: '1px solid rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s',
+                  animation: `scaleIn 0.5s ease-out ${index * 0.1}s both`
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                }}
+              >
+                <div style={{
+                  display: 'inline-flex',
+                  padding: '12px',
+                  borderRadius: '50%',
+                  backgroundColor: stat.bg,
+                  color: stat.color,
+                  marginBottom: '12px'
+                }}>
+                  {stat.icon}
+                </div>
+                <p style={{ fontSize: '24px', fontWeight: '800', color: '#1f2937', margin: '0 0 4px 0', fontFamily: 'Poppins, sans-serif' }}>
+                  {stat.value}
+                </p>
+                <p style={{ color: '#6b7280', fontSize: '13px', fontWeight: '500', margin: 0 }}>{stat.label}</p>
               </div>
-              <p style={{
-                fontSize: '15px',
-                fontWeight: '600',
-                color: badge.unlocked ? '#047857' : '#6b7280',
-                margin: 0
-              }}>
-                {badge.name}
-              </p>
-              <p style={{ fontSize: '12px', color: badge.unlocked ? '#059669' : '#9ca3af', marginTop: '4px' }}>
-                {badge.unlocked ? 'Unlocked' : 'Locked'}
-              </p>
+            ))}
+          </div>
+
+          {/* Badges */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '24px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
+            padding: '32px',
+            border: '1px solid rgba(0,0,0,0.05)',
+            animation: 'slideUp 0.5s ease-out 0.2s both'
+          }}>
+            <h4 style={{ fontWeight: '700', color: '#1f2937', marginBottom: '24px', fontSize: '20px', fontFamily: 'Poppins, sans-serif', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Award size={24} color="#f59e0b" />
+              Achievements
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '16px' }}>
+              {badges.map((badge, index) => (
+                <div
+                  key={badge.id}
+                  title={badge.description}
+                  style={{
+                    backgroundColor: badge.unlocked ? '#f0fdf4' : '#f9fafb',
+                    border: `2px solid ${badge.unlocked ? '#bbf7d0' : '#f3f4f6'}`,
+                    borderRadius: '16px',
+                    padding: '16px',
+                    textAlign: 'center',
+                    opacity: badge.unlocked ? 1 : 0.6,
+                    transition: 'all 0.3s',
+                    cursor: 'help'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (badge.unlocked) {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(5, 150, 105, 0.1)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ fontSize: '32px', marginBottom: '8px', filter: badge.unlocked ? 'none' : 'grayscale(100%)' }}>
+                    {badge.icon}
+                  </div>
+                  <p style={{
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: badge.unlocked ? '#047857' : '#6b7280',
+                    margin: 0,
+                    lineHeight: '1.4'
+                  }}>
+                    {badge.name}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Right Column: Recent Activity */}
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '24px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
+          padding: '32px',
+          border: '1px solid rgba(0,0,0,0.05)',
+          height: 'fit-content',
+          animation: 'slideUp 0.5s ease-out 0.3s both'
+        }}>
+          <h4 style={{ fontWeight: '700', color: '#1f2937', marginBottom: '24px', fontSize: '20px', fontFamily: 'Poppins, sans-serif', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <TrendingUp size={24} color="#3b82f6" />
+            Recent Activity
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {recentActivity.map((activity, index) => (
+              <div key={activity.id} style={{
+                display: 'flex',
+                gap: '16px',
+                paddingBottom: index < recentActivity.length - 1 ? '20px' : 0,
+                borderBottom: index < recentActivity.length - 1 ? '1px solid #f3f4f6' : 'none'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#eff6ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <TrendingUp size={20} color="#3b82f6" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: '0 0 4px 0', fontWeight: '600', color: '#374151', fontSize: '15px' }}>
+                    {activity.action}
+                  </p>
+                  <p style={{ margin: 0, color: '#9ca3af', fontSize: '13px' }}>
+                    {activity.date}
+                  </p>
+                </div>
+                <div style={{
+                  fontWeight: '700',
+                  color: '#059669',
+                  fontSize: '14px',
+                  backgroundColor: '#ecfdf5',
+                  padding: '4px 10px',
+                  borderRadius: '10px',
+                  height: 'fit-content'
+                }}>
+                  {activity.points}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button style={{
+            width: '100%',
+            marginTop: '24px',
+            padding: '12px',
+            backgroundColor: '#f9fafb',
+            color: '#4b5563',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s'
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+          >
+            View All Activity
+          </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 0.8; } 100% { opacity: 0.5; } }
+      `}</style>
     </div>
   );
 }
