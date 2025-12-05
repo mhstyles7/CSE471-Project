@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/mockAuthService';
+import { API_URL } from '../config';
 
 const AuthContext = createContext(null);
 
@@ -10,16 +10,12 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            try {
-                const currentUser = await authService.getCurrentUser();
-                setUser(currentUser);
-            } catch (err) {
-                console.error('Failed to restore session:', err);
-            } finally {
-                setLoading(false);
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
             }
+            setLoading(false);
         };
-
         initAuth();
     }, []);
 
@@ -27,9 +23,18 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const loggedInUser = await authService.login(email, password);
-            setUser(loggedInUser);
-            return loggedInUser;
+            const response = await fetch(`${API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Login failed');
+
+            setUser(data);
+            localStorage.setItem('user', JSON.stringify(data));
+            return data;
         } catch (err) {
             setError(err.message);
             throw err;
@@ -38,13 +43,22 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (name, email, password) => {
+    const register = async (name, email, password, role) => {
         setLoading(true);
         setError(null);
         try {
-            const newUser = await authService.register(name, email, password);
-            setUser(newUser);
-            return newUser;
+            const response = await fetch(`${API_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Registration failed');
+
+            setUser(data);
+            localStorage.setItem('user', JSON.stringify(data));
+            return data;
         } catch (err) {
             setError(err.message);
             throw err;
@@ -54,56 +68,24 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        setLoading(true);
-        try {
-            await authService.logout();
-            setUser(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const updateProfile = async (updates) => {
-        setLoading(true);
-        try {
-            const updatedUser = await authService.updateProfile(user.id, updates);
-            setUser(updatedUser);
-            return updatedUser;
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        setUser(null);
+        localStorage.removeItem('user');
     };
 
     const socialLogin = async (provider) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const loggedInUser = await authService.socialLogin(provider);
-            setUser(loggedInUser);
-            return loggedInUser;
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        // Placeholder for social login logic
+        console.log(`Social login with ${provider} not implemented yet.`);
+    };
+
+    const updateProfile = async (updates) => {
+        // Placeholder for update profile logic
+        console.log('Update profile not implemented yet.');
     };
 
     const forgotPassword = async (email) => {
-        setLoading(true);
-        setError(null);
-        try {
-            await authService.forgotPassword(email);
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }
+        // Placeholder for forgot password logic
+        console.log('Forgot password not implemented yet.');
+    };
 
     const value = {
         user,
@@ -113,8 +95,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        updateProfile,
         socialLogin,
+        updateProfile,
         forgotPassword
     };
 

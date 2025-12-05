@@ -33,7 +33,7 @@ class MockAuthService {
         throw new Error('Invalid email or password');
     }
 
-    async register(name, email, password) {
+    async register(name, email, password, role = 'traveler') {
         await delay(1000);
 
         const users = this.getUsers();
@@ -52,7 +52,8 @@ class MockAuthService {
             bio: 'New traveler ready to explore the world!',
             trips: 0,
             friends: 0,
-            points: 0
+            points: 0,
+            role: role
         };
 
         users.push(newUser);

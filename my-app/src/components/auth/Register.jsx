@@ -6,12 +6,13 @@ export default function Register() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('traveler');
     const { register, socialLogin, loading, error } = useAuth();
 
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            await register(name, email, password);
+            await register(name, email, password, role);
         } catch (err) {
             // Error is handled by context state
         }
@@ -69,6 +70,16 @@ export default function Register() {
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
+                </div>
+                <div style={{ position: 'relative' }}>
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', backgroundColor: 'white' }}
+                    >
+                        <option value="traveler">Traveler</option>
+                        <option value="agency">Travel Agent</option>
+                    </select>
                 </div>
 
                 <button

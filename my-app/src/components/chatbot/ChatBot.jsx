@@ -1,18 +1,37 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader, Sparkles, Bot } from 'lucide-react';
-import { getAIResponse } from '../../services/chatbotService';
+import { X, Send, Sparkles, Bot, Navigation, MapPin } from 'lucide-react';
+import { getAIResponse, detectNavigationIntent, PLATFORM_PAGES } from '../../services/chatbotService';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate, useCurrentPage } from '../../context/NavigationContext';
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      text: "Hi there! I'm your AI travel assistant. How can I help you plan your trip in Bangladesh today? 🇧🇩",
-      isUser: false
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestedNavigation, setSuggestedNavigation] = useState(null);
   const messagesEndRef = useRef(null);
+
+  // Get user context for personalization (2.1)
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const currentPage = useCurrentPage();
+
+  // Mock travel history - in production, fetch from API/context
+  const [travelHistory] = useState([
+    { destination: "Cox's Bazar", date: "2024-03" },
+    { destination: "Sylhet", date: "2024-01" },
+    { destination: "Sundarbans", date: "2023-11" }
+  ]);
+
+  // Initial personalized greeting (2.1, 2.5)
+  useEffect(() => {
+    const greeting = isAuthenticated && user?.name
+      ? `Hi ${user.name.split(' ')[0]}! 👋 I'm your PothChola AI assistant. Based on your travel history, I can give you personalized recommendations! What would you like to explore today - new destinations, platform features, or tips for your next trip?`
+      : "Hi there! 👋 I'm your PothChola AI travel assistant. I can help you discover amazing destinations in Bangladesh, navigate the platform, or answer any questions. What would you like to explore today? 🇧🇩";
+
+    setMessages([{ text: greeting, isUser: false }]);
+  }, [isAuthenticated, user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,28 +41,66 @@ export default function ChatBot() {
     scrollToBottom();
   }, [messages, isOpen]);
 
+  // Handle navigation action (2.3)
+  const handleNavigate = (page) => {
+    navigate(page);
+    setSuggestedNavigation(null);
+    setMessages(prev => [...prev, {
+      text: `Taking you to ${PLATFORM_PAGES[page]?.name || page}... ✨`,
+      isUser: false,
+      isSystem: true
+    }]);
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
     const userMessage = inputText;
     setInputText("");
+    setSuggestedNavigation(null);
     setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
     setIsLoading(true);
 
     try {
-      const aiResponse = await getAIResponse(userMessage);
+      // Build user context for personalization (2.1)
+      const userContext = {
+        user: isAuthenticated ? user : null,
+        travelHistory: isAuthenticated ? travelHistory : [],
+        currentPage: currentPage
+      };
+
+      // Check for navigation intent (2.3)
+      const navIntent = detectNavigationIntent(userMessage);
+      if (navIntent) {
+        setSuggestedNavigation(navIntent);
+      }
+
+      // Get AI response with context and history (2.4, 2.5)
+      const aiResponse = await getAIResponse(userMessage, userContext, messages);
       setMessages(prev => [...prev, { text: aiResponse, isUser: false }]);
     } catch (error) {
       console.error("Error getting AI response:", error);
       setMessages(prev => [...prev, {
-        text: "I'm having trouble connecting right now. Please try again later.",
+        text: "I'm having trouble connecting right now. Please try again in a moment! 🔄",
         isUser: false,
         isError: true
       }]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Quick action buttons for common queries (2.5 - engagement)
+  const quickActions = [
+    { label: "🏖️ Beach destinations", query: "Suggest beach destinations" },
+    { label: "⛰️ Hill stations", query: "Tell me about hill stations" },
+    { label: "🧭 How to navigate", query: "How do I navigate this website?" },
+    { label: "🏆 Rewards info", query: "Tell me about rewards" }
+  ];
+
+  const handleQuickAction = (query) => {
+    setInputText(query);
   };
 
   return (
@@ -71,7 +128,8 @@ export default function ChatBot() {
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            animation: 'bounce 2s infinite'
+            animation: 'bounce 2s infinite',
+            position: 'relative'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'scale(1.1) rotate(-5deg)';
@@ -82,7 +140,8 @@ export default function ChatBot() {
             e.currentTarget.style.boxShadow = '0 8px 24px rgba(5, 150, 105, 0.4)';
           }}
         >
-          <MessageCircle size={32} strokeWidth={2.5} />
+          <Bot size={32} strokeWidth={2.5} />
+          <Sparkles size={14} style={{ position: 'absolute', top: '-2px', left: '-2px', color: '#fbbf24' }} />
           {/* Notification Dot */}
           <span style={{
             position: 'absolute',
@@ -100,8 +159,8 @@ export default function ChatBot() {
       {/* Chat Window */}
       {isOpen && (
         <div style={{
-          width: '380px',
-          height: '600px',
+          width: '400px',
+          height: '650px',
           backgroundColor: 'white',
           borderRadius: '24px',
           boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
@@ -123,8 +182,8 @@ export default function ChatBot() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
+                width: '44px',
+                height: '44px',
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 borderRadius: '50%',
                 display: 'flex',
@@ -132,20 +191,22 @@ export default function ChatBot() {
                 justifyContent: 'center',
                 backdropFilter: 'blur(4px)'
               }}>
-                <Bot size={24} />
+                <Bot size={26} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', fontFamily: 'Poppins, sans-serif' }}>PothChola AI</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', fontFamily: 'Poppins, sans-serif' }}>
+                  PothChola AI
+                </h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', opacity: 0.9 }}>
-                  <span style={{ width: '8px', height: '8px', backgroundColor: '#4ade80', borderRadius: '50%' }} />
-                  Online
+                  <span style={{ width: '8px', height: '8px', backgroundColor: '#4ade80', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
+                  {isAuthenticated ? `Helping ${user?.name?.split(' ')[0] || 'you'}` : 'Online & Ready'}
                 </div>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
               style={{
-                background: 'none',
+                background: 'rgba(255,255,255,0.1)',
                 border: 'none',
                 color: 'white',
                 cursor: 'pointer',
@@ -156,10 +217,10 @@ export default function ChatBot() {
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
             >
-              <X size={24} />
+              <X size={22} />
             </button>
           </div>
 
@@ -178,7 +239,7 @@ export default function ChatBot() {
                 key={index}
                 style={{
                   alignSelf: msg.isUser ? 'flex-end' : 'flex-start',
-                  maxWidth: '80%',
+                  maxWidth: '85%',
                   animation: 'slideUp 0.3s ease-out'
                 }}
               >
@@ -188,45 +249,124 @@ export default function ChatBot() {
                     color: '#6b7280',
                     marginLeft: '12px',
                     marginBottom: '4px',
-                    display: 'block'
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}>
+                    <Sparkles size={10} />
                     AI Assistant
                   </span>
                 )}
                 <div style={{
-                  padding: '12px 16px',
+                  padding: '14px 18px',
                   borderRadius: msg.isUser ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                  backgroundColor: msg.isUser ? '#059669' : 'white',
-                  color: msg.isUser ? 'white' : '#1f2937',
+                  backgroundColor: msg.isUser ? '#059669' : msg.isSystem ? '#e0f2fe' : 'white',
+                  color: msg.isUser ? 'white' : msg.isError ? '#dc2626' : '#1f2937',
                   boxShadow: msg.isUser ? '0 4px 12px rgba(5, 150, 105, 0.2)' : '0 2px 8px rgba(0,0,0,0.05)',
                   fontSize: '15px',
-                  lineHeight: '1.5',
-                  border: msg.isUser ? 'none' : '1px solid #e5e7eb'
+                  lineHeight: '1.6',
+                  border: msg.isUser ? 'none' : '1px solid #e5e7eb',
+                  whiteSpace: 'pre-wrap'
                 }}>
                   {msg.text}
                 </div>
               </div>
             ))}
+
+            {/* Navigation Suggestion Button (2.3) */}
+            {suggestedNavigation && PLATFORM_PAGES[suggestedNavigation] && (
+              <div style={{ animation: 'slideUp 0.3s ease-out' }}>
+                <button
+                  onClick={() => handleNavigate(suggestedNavigation)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '12px 18px',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <Navigation size={18} />
+                  Go to {PLATFORM_PAGES[suggestedNavigation].name}
+                  <MapPin size={16} />
+                </button>
+              </div>
+            )}
+
             {isLoading && (
               <div style={{ alignSelf: 'flex-start', animation: 'slideUp 0.3s ease-out' }}>
-                <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '12px', marginBottom: '4px', display: 'block' }}>AI Assistant</span>
+                <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '12px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Sparkles size={10} />
+                  AI is thinking...
+                </span>
                 <div style={{
-                  padding: '12px 20px',
+                  padding: '14px 20px',
                   borderRadius: '20px 20px 20px 4px',
                   backgroundColor: 'white',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                   border: '1px solid #e5e7eb',
                   display: 'flex',
-                  gap: '4px'
+                  gap: '6px'
                 }}>
-                  <span style={{ width: '6px', height: '6px', backgroundColor: '#059669', borderRadius: '50%', animation: 'bounce 1s infinite 0s' }} />
-                  <span style={{ width: '6px', height: '6px', backgroundColor: '#059669', borderRadius: '50%', animation: 'bounce 1s infinite 0.2s' }} />
-                  <span style={{ width: '6px', height: '6px', backgroundColor: '#059669', borderRadius: '50%', animation: 'bounce 1s infinite 0.4s' }} />
+                  <span style={{ width: '8px', height: '8px', backgroundColor: '#059669', borderRadius: '50%', animation: 'bounce 1s infinite 0s' }} />
+                  <span style={{ width: '8px', height: '8px', backgroundColor: '#059669', borderRadius: '50%', animation: 'bounce 1s infinite 0.2s' }} />
+                  <span style={{ width: '8px', height: '8px', backgroundColor: '#059669', borderRadius: '50%', animation: 'bounce 1s infinite 0.4s' }} />
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Quick Actions (2.5 - Engagement) */}
+          {messages.length <= 1 && (
+            <div style={{
+              padding: '12px 16px',
+              backgroundColor: '#f0fdf4',
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap'
+            }}>
+              {quickActions.map((action, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleQuickAction(action.query)}
+                  style={{
+                    padding: '8px 14px',
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#059669';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.borderColor = '#059669';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white';
+                    e.currentTarget.style.color = 'inherit';
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                  }}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Input Area */}
           <form
@@ -244,10 +384,10 @@ export default function ChatBot() {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask about travel..."
+              placeholder="Ask me anything about travel..."
               style={{
                 flex: 1,
-                padding: '12px 16px',
+                padding: '14px 18px',
                 borderRadius: '24px',
                 border: '2px solid #e5e7eb',
                 fontSize: '15px',
@@ -268,8 +408,8 @@ export default function ChatBot() {
               type="submit"
               disabled={!inputText.trim() || isLoading}
               style={{
-                width: '48px',
-                height: '48px',
+                width: '50px',
+                height: '50px',
                 borderRadius: '50%',
                 backgroundColor: inputText.trim() && !isLoading ? '#059669' : '#e5e7eb',
                 color: 'white',
@@ -297,6 +437,26 @@ export default function ChatBot() {
           </form>
         </div>
       )}
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.9) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }

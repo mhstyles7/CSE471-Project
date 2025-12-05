@@ -8,7 +8,9 @@ export default function HomePage() {
       {/* Hero Section */}
       <div style={{
         position: 'relative',
-        background: 'linear-gradient(135deg, #059669 0%, #0d9488 100%)',
+        backgroundImage: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(13, 148, 136, 0.85) 100%), url(https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         borderRadius: '28px',
         minHeight: '450px',
         display: 'flex',

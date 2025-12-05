@@ -8,11 +8,12 @@ export default function Navbar({ currentPage, setCurrentPage, isAuthenticated, u
   const primaryNavItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'destinations', label: 'Destinations', icon: Map },
-    { id: 'community', label: 'Community', icon: MessageCircle }
+    { id: 'about', label: 'About', icon: Info }
   ];
 
   // Items only for logged in users
   const privateNavItems = [
+    { id: 'community', label: 'Community', icon: MessageCircle },
     { id: 'my-trips', label: 'My Trips', icon: Calendar },
     { id: 'friends', label: 'Friends', icon: Users },
     { id: 'rewards', label: 'Rewards', icon: Award },
@@ -33,8 +34,8 @@ export default function Navbar({ currentPage, setCurrentPage, isAuthenticated, u
 
   // Combine items based on auth state
   const secondaryNavItems = isAuthenticated
-    ? [...privateNavItems, { id: 'about', label: 'About', icon: Info }]
-    : [...publicNavItems, { id: 'about', label: 'About', icon: Info }];
+    ? privateNavItems
+    : publicNavItems;
 
   const handleNavClick = (id) => {
     setCurrentPage(id);

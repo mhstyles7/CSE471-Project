@@ -1,0 +1,267 @@
+{
+    "users": [
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d0",
+            "name": "Ahanaf Rivan",
+            "email": "rivan@example.com",
+            "password": "$2b$10$fPTl.VMpakTbrmReiACBY.gJXD6U29vQUc6sVRwvrqMj/qZaLCfcy",
+            "role": "traveler",
+            "points": 1250,
+            "tier": "Silver",
+            "isPremium": true,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Rivan",
+            "trips_count": 5,
+            "joinedDate": "2024-01-15T10:00:00Z"
+        },
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d1",
+            "name": "System Admin",
+            "email": "admin@pothchola.com",
+            "password": "$2b$10$fPTl.VMpakTbrmReiACBY.gJXD6U29vQUc6sVRwvrqMj/qZaLCfcy",
+            "role": "admin",
+            "points": 0,
+            "tier": "Gold",
+            "isPremium": true,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+            "joinedDate": "2023-01-01T10:00:00Z"
+        },
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d2",
+            "name": "Alimool Razi",
+            "email": "razi@agency.com",
+            "password": "$2b$10$fPTl.VMpakTbrmReiACBY.gJXD6U29vQUc6sVRwvrqMj/qZaLCfcy",
+            "role": "agency",
+            "agencyName": "Razi Travels",
+            "points": 500,
+            "tier": "Bronze",
+            "isPremium": true,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Razi",
+            "verified": true,
+            "joinedDate": "2023-12-01T10:00:00Z"
+        },
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d3",
+            "name": "Zarin Tasnim",
+            "email": "zarin@example.com",
+            "password": "$2b$10$fPTl.VMpakTbrmReiACBY.gJXD6U29vQUc6sVRwvrqMj/qZaLCfcy",
+            "role": "traveler",
+            "points": 800,
+            "tier": "Bronze",
+            "isPremium": false,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Zarin",
+            "trips_count": 2,
+            "joinedDate": "2024-02-10T10:00:00Z"
+        }
+    ],
+    "destinations": [
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e1",
+            "name": "Cox's Bazar",
+            "district": "Cox's Bazar",
+            "description": "The world's longest natural sea beach.",
+            "risk_level": "Low",
+            "eco_score": 85,
+            "comfort_score": 90,
+            "weather": {
+                "temp": 28,
+                "condition": "Sunny"
+            },
+            "coordinates": {
+                "lat": 21.4272,
+                "lng": 91.9695
+            },
+            "images": [
+                "https://example.com/cox1.jpg"
+            ]
+        },
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e2",
+            "name": "Ratargul Swamp Forest",
+            "district": "Sylhet",
+            "description": "A freshwater swamp forest located in Gowain River.",
+            "risk_level": "Medium",
+            "eco_score": 95,
+            "comfort_score": 70,
+            "weather": {
+                "temp": 25,
+                "condition": "Cloudy"
+            },
+            "coordinates": {
+                "lat": 25.0000,
+                "lng": 91.9333
+            },
+            "images": [
+                "https://example.com/ratargul.jpg"
+            ]
+        },
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e3",
+            "name": "Sajek Valley",
+            "district": "Rangamati",
+            "description": "Known as the Queen of Hills & Roof of Rangamati.",
+            "risk_level": "Low",
+            "eco_score": 90,
+            "comfort_score": 80,
+            "weather": {
+                "temp": 20,
+                "condition": "Foggy"
+            },
+            "coordinates": {
+                "lat": 23.3833,
+                "lng": 92.2833
+            },
+            "images": [
+                "https://example.com/sajek.jpg"
+            ]
+        }
+    ],
+    "trips": [
+        {
+            "_id": "6570c3d4e5f6a7b8c9d0e1f1",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "destinationId": "6570b2c3d4e5f6a7b8c9d0e1",
+            "destinationName": "Cox's Bazar",
+            "startDate": "2024-03-10T00:00:00Z",
+            "endDate": "2024-03-15T00:00:00Z",
+            "status": "completed",
+            "transportMode": "Bus",
+            "cost": 5000,
+            "rating": 5
+        },
+        {
+            "_id": "6570c3d4e5f6a7b8c9d0e1f2",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "destinationId": "6570b2c3d4e5f6a7b8c9d0e3",
+            "destinationName": "Sajek Valley",
+            "startDate": "2024-12-20T00:00:00Z",
+            "endDate": "2024-12-25T00:00:00Z",
+            "status": "upcoming",
+            "transportMode": "Private Car",
+            "cost": 12000
+        }
+    ],
+    "reviews": [
+        {
+            "_id": "6570d4e5f6a7b8c9d0e1f2a1",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "userName": "Ahanaf Rivan",
+            "placeId": "6570b2c3d4e5f6a7b8c9d0e1",
+            "placeName": "Cox's Bazar",
+            "rating": 5,
+            "comment": "Amazing experience! The sunset was breathtaking.",
+            "date": "2024-03-16T10:00:00Z"
+        }
+    ],
+    "posts": [
+        {
+            "_id": "6570e5f6a7b8c9d0e1f2a3b2",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "userName": "Ahanaf Rivan",
+            "userRole": "traveler",
+            "content": "Anyone interested in a group tour to Sajek next month?",
+            "type": "community",
+            "likes": 8,
+            "comments": [],
+            "createdAt": "2024-06-02T09:30:00Z"
+        }
+    ],
+    "packages": [
+        {
+            "_id": "6570f6a7b8c9d0e1f2a3b4c1",
+            "agencyId": "6570a1b2c3d4e5f6a7b8c9d2",
+            "agencyName": "Razi Travels",
+            "agencyEmail": "razi@agency.com",
+            "title": "3 Days in Sylhet",
+            "description": "Explore Ratargul, Jaflong, and Tea Gardens.",
+            "price": 8500,
+            "duration": "3 Days",
+            "location": "Sylhet",
+            "availableSlots": 20,
+            "createdAt": "2024-05-01T10:00:00Z"
+        }
+    ],
+    "orders": [
+        {
+            "_id": "657107b8c9d0e1f2a3b4c5d1",
+            "packageId": "6570f6a7b8c9d0e1f2a3b4c1",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d3",
+            "customerName": "Zarin Tasnim",
+            "agencyEmail": "razi@agency.com",
+            "amount": 8500,
+            "status": "pending",
+            "date": "2024-06-05T14:00:00Z"
+        }
+    ],
+    "events": [
+        {
+            "_id": "657118c9d0e1f2a3b4c5d6e1",
+            "agencyId": "6570a1b2c3d4e5f6a7b8c9d2",
+            "title": "Beach Cleanup Drive",
+            "date": "2024-07-10",
+            "location": "Cox's Bazar",
+            "description": "Join us to keep the longest beach clean!",
+            "sponsor": "Razi Travels",
+            "attendees": [
+                "6570a1b2c3d4e5f6a7b8c9d0"
+            ]
+        }
+    ],
+    "cultural_foods": [
+        {
+            "_id": "657129d0e1f2a3b4c5d6e7f1",
+            "name": "Panta Ilish",
+            "region": "Dhaka/National",
+            "description": "Fermented rice served with fried Hilsa fish, a Pohela Boishakh staple.",
+            "ingredients": [
+                "Rice",
+                "Hilsa Fish",
+                "Green Chilies",
+                "Onion"
+            ],
+            "image": "https://example.com/panta_ilish.jpg"
+        },
+        {
+            "_id": "657129d0e1f2a3b4c5d6e7f2",
+            "name": "Seven Layer Tea",
+            "region": "Sylhet",
+            "description": "A unique tea with seven distinct layers of flavor and color.",
+            "ingredients": [
+                "Tea leaves",
+                "Sugar",
+                "Milk",
+                "Spices"
+            ],
+            "image": "https://example.com/seven_layer_tea.jpg"
+        }
+    ],
+    "itineraries": [
+        {
+            "_id": "65713ae1f2a3b4c5d6e7f8a1",
+            "destination": "Sylhet",
+            "style": "Nature",
+            "duration": "1 Day",
+            "plan": [
+                {
+                    "time": "08:00 AM",
+                    "activity": "Breakfast at Panshi Restaurant"
+                },
+                {
+                    "time": "10:00 AM",
+                    "activity": "Boat ride in Ratargul Swamp Forest"
+                },
+                {
+                    "time": "01:00 PM",
+                    "activity": "Lunch with local Bhorta"
+                },
+                {
+                    "time": "03:00 PM",
+                    "activity": "Visit Bisnakandi"
+                },
+                {
+                    "time": "07:00 PM",
+                    "activity": "Evening tea at a Tea Garden"
+                }
+            ]
+        }
+    ]
+}
