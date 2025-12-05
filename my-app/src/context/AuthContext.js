@@ -78,8 +78,26 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateProfile = async (updates) => {
-        // Placeholder for update profile logic
-        console.log('Update profile not implemented yet.');
+        setLoading(true);
+        try {
+            // In a real app, you would make a PUT request to the backend here
+            // const response = await fetch(`${API_URL}/api/users/profile`, { ... });
+
+            // For now, we simulate a successful update
+            const updatedUser = { ...user, ...updates };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            return updatedUser;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const forgotPassword = async (email) => {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save, TrendingUp, Star } from 'lucide-react';
+import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save, TrendingUp, Star, Upload } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -10,13 +10,43 @@ export default function ProfilePage() {
     bio: user?.bio || ''
   });
 
+  // State for image previews
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+  const [coverPreview, setCoverPreview] = useState(user?.coverImage || null);
+
+  // Refs for file inputs
+  const avatarInputRef = useRef(null);
+  const coverInputRef = useRef(null);
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await updateProfile(editForm);
+      // In a real app, you would upload the images to a server here
+      // and get back the URLs to save in the user profile.
+      // For now, we'll just pass the data URLs if they changed.
+      await updateProfile({
+        ...editForm,
+        avatar: avatarPreview,
+        coverImage: coverPreview
+      });
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
+    }
+  };
+
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === 'avatar') {
+          setAvatarPreview(reader.result);
+        } else {
+          setCoverPreview(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -75,36 +105,50 @@ export default function ProfilePage() {
       }}>
         {/* Cover Image Area */}
         <div style={{
-          height: '160px',
-          background: 'linear-gradient(135deg, #059669, #0d9488)',
+          height: '200px',
+          background: coverPreview ? `url(${coverPreview}) center/cover no-repeat` : 'linear-gradient(135deg, #059669, #0d9488)',
           position: 'relative'
         }}>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-            animation: 'pulse 4s infinite'
-          }} />
-          <button style={{
-            position: 'absolute',
-            bottom: '16px',
-            right: '16px',
-            backgroundColor: 'rgba(0,0,0,0.3)',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.3)',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '13px',
-            fontWeight: '600',
-            backdropFilter: 'blur(4px)',
-            transition: 'all 0.2s'
-          }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.3)'}
+          {!coverPreview && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              animation: 'pulse 4s infinite'
+            }} />
+          )}
+
+          {/* Hidden File Input for Cover */}
+          <input
+            type="file"
+            ref={coverInputRef}
+            onChange={(e) => handleImageChange(e, 'cover')}
+            style={{ display: 'none' }}
+            accept="image/*"
+          />
+
+          <button
+            onClick={() => coverInputRef.current.click()}
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              right: '16px',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.3)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              fontWeight: '600',
+              backdropFilter: 'blur(4px)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'}
           >
             <Camera size={16} />
             Change Cover
@@ -114,8 +158,8 @@ export default function ProfilePage() {
         <div style={{ padding: '0 40px 40px', position: 'relative' }}>
           {/* Avatar */}
           <div style={{
-            width: '128px',
-            height: '128px',
+            width: '140px',
+            height: '140px',
             background: 'linear-gradient(135deg, #ffffff, #f3f4f6)',
             borderRadius: '50%',
             display: 'flex',
@@ -126,26 +170,57 @@ export default function ProfilePage() {
             color: '#059669',
             border: '6px solid white',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            marginTop: '-64px',
+            marginTop: '-70px',
             marginBottom: '24px',
             position: 'relative',
             overflow: 'hidden'
           }}>
             <img
-              src={user.avatar}
+              src={avatarPreview || `https://ui-avatars.com/api/?name=${user.name}&background=059669&color=fff`}
               alt={user.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${user.name}&background=059669&color=fff`; }}
             />
+
+            {/* Hidden File Input for Avatar */}
+            <input
+              type="file"
+              ref={avatarInputRef}
+              onChange={(e) => handleImageChange(e, 'avatar')}
+              style={{ display: 'none' }}
+              accept="image/*"
+            />
+
+            {/* Avatar Overlay for Upload */}
+            <div
+              onClick={() => avatarInputRef.current.click()}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(0,0,0,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0,
+                transition: 'opacity 0.2s',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
+            >
+              <Camera size={32} color="white" />
+            </div>
+
             <div style={{
               position: 'absolute',
-              bottom: '4px',
-              right: '4px',
+              bottom: '8px',
+              right: '8px',
               backgroundColor: '#10b981',
               width: '24px',
               height: '24px',
               borderRadius: '50%',
-              border: '4px solid white'
+              border: '4px solid white',
+              pointerEvents: 'none'
             }} />
           </div>
 
@@ -171,9 +246,28 @@ export default function ProfilePage() {
                       style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', resize: 'vertical' }}
                     />
                   </div>
+
+                  {/* Image Upload Buttons for Mobile/Clarity */}
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current.click()}
+                      style={{ padding: '8px 12px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Upload size={14} /> Change Avatar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => coverInputRef.current.click()}
+                      style={{ padding: '8px 12px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Upload size={14} /> Change Cover
+                    </button>
+                  </div>
+
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <button type="submit" style={{ padding: '8px 16px', backgroundColor: '#059669', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Save size={16} /> Save
+                      <Save size={16} /> Save Changes
                     </button>
                     <button type="button" onClick={() => setIsEditing(false)} style={{ padding: '8px 16px', backgroundColor: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <X size={16} /> Cancel
