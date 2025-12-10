@@ -29,6 +29,28 @@ router.post('/', async (req, res) => {
         newPost.comments = [];
 
         const result = await db.collection('posts').insertOne(newPost);
+
+        // Award Points to User
+        if (newPost.userId) {
+            const pointsToAdd = 10;
+            const usersCollection = db.collection('users');
+            
+            // Fetch current user to determine new tier
+            const user = await usersCollection.findOne({ _id: new ObjectId(newPost.userId) });
+            
+            if (user) {
+                const newPoints = (user.points || 0) + pointsToAdd;
+                let newTier = 'Bronze';
+                if (newPoints >= 1000) newTier = 'Gold';
+                else if (newPoints >= 500) newTier = 'Silver';
+
+                await usersCollection.updateOne(
+                    { _id: new ObjectId(newPost.userId) },
+                    { $set: { points: newPoints, tier: newTier } }
+                );
+            }
+        }
+
         res.status(201).json({ ...newPost, _id: result.insertedId });
     } catch (err) {
         res.status(500).json({ message: err.message });
