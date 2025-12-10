@@ -9,135 +9,200 @@ export default function FriendsPage() {
   const [activeTab, setActiveTab] = useState('all');
   const [notification, setNotification] = useState(null);
 
-  // State for friend requests - can be accepted/rejected (2.1)
-  const [friendRequests, setFriendRequests] = useState([
-    { id: 1, name: 'Tasnim Rahman', mutualFriends: 5, image: 'TR', bio: 'Adventure seeker | Beach lover', recentTrip: "Cox's Bazar" },
-    { id: 2, name: 'Ahnaf Rivan', mutualFriends: 3, image: 'AR', bio: 'Mountain explorer', recentTrip: 'Bandarban' },
-    { id: 3, name: 'Sabrina Khan', mutualFriends: 8, image: 'SK', bio: 'Food & Culture enthusiast', recentTrip: 'Sylhet' }
-  ]);
+  // API State
+  const [friends, setFriends] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // State for accepted friends (2.1, 2.2)
-  const [friends, setFriends] = useState([
-    {
-      id: 1,
-      name: 'Alimool Razi',
-      trips: 8,
-      image: 'AR',
-      lastActive: 'Online',
-      isOnline: true,
-      recentActivity: { type: 'trip', destination: 'Sajek Valley', date: '2 days ago' },
-      upcomingTrip: { destination: "Cox's Bazar", date: 'Dec 15, 2024' }
-    },
-    {
-      id: 2,
-      name: 'Zarin Raisa',
-      trips: 12,
-      image: 'ZR',
-      lastActive: '2 hours ago',
-      isOnline: false,
-      recentActivity: { type: 'post', content: 'Shared tea garden photos', date: '5 hours ago' },
-      upcomingTrip: null
-    },
-    {
-      id: 3,
-      name: 'Rafiq Ahmed',
-      trips: 5,
-      image: 'RA',
-      lastActive: '1 day ago',
-      isOnline: false,
-      recentActivity: { type: 'review', destination: 'Sundarbans', date: '1 day ago' },
-      upcomingTrip: { destination: 'Rangamati', date: 'Dec 20, 2024' }
+
+  // Fetch Data
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchData();
     }
-  ]);
+  }, [isAuthenticated, user]);
 
-  // Friend suggestions (2.1)
-  const [suggestions, setSuggestions] = useState([
-    { id: 1, name: 'Fahim Ahmed', mutualFriends: 7, image: 'FA', commonInterests: ['Beach', 'Photography'] },
-    { id: 2, name: 'Nusrat Jahan', mutualFriends: 4, image: 'NJ', commonInterests: ['Mountains', 'Trekking'] },
-    { id: 3, name: 'Karim Uddin', mutualFriends: 6, image: 'KU', commonInterests: ['Culture', 'Food'] }
-  ]);
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      // 1. Fetch My Friends
+      const friendsRes = await fetch(`http://localhost:5000/api/users/${user._id}/friends`);
+      const friendsData = await friendsRes.json();
 
-  // Pending sent requests
+      // 2. Fetch Sent Requests (To disable buttons)
+      const sentRes = await fetch(`http://localhost:5000/api/users/${user._id}/sent-requests`);
+      const sentData = await sentRes.json();
+      setSentRequests(sentData); // Store IDs of users I sent requests to
+
+      // 3. Fetch Incoming Requests
+      const requestsRes = await fetch(`http://localhost:5000/api/users/${user._id}/requests`);
+      const requestsData = await requestsRes.json();
+
+      // Transform Request Data for UI
+      const mappedRequests = requestsData.map(req => ({
+        id: req.id, // Request ID
+        fromUserId: req.fromUser._id,
+        name: req.fromUser.name,
+        image: req.fromUser.avatar ? <img src={req.fromUser.avatar} alt={req.fromUser.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} /> : req.fromUser.name.substring(0, 2).toUpperCase(),
+        bio: req.fromUser.role, // Use role as bio for now
+        mutualFriends: Math.floor(Math.random() * 5), // Mock
+        recentTrip: null
+      }));
+      setFriendRequests(mappedRequests);
+
+      // 4. Fetch Suggestions (Filter out friends, me, AND already sent requests)
+      const allUsersRes = await fetch(`http://localhost:5000/api/users`);
+      const allUsersData = await allUsersRes.json();
+
+      const friendIds = new Set(friendsData.map(f => f._id));
+      const sentIds = new Set(sentData); // sentData is array of strings (user IDs)
+
+      const newSuggestions = allUsersData.filter(u =>
+        u._id !== user._id &&
+        !friendIds.has(u._id) &&
+        !sentIds.has(u._id) // Filter out pending sent requests
+      );
+
+      // Add random mutual friends count for UI demo
+      const suggestionsWithMeta = newSuggestions.map(s => ({
+        ...s,
+        mutualFriends: Math.floor(Math.random() * 10),
+        image: s.avatar ? <img src={s.avatar} alt={s.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} /> : s.name.substring(0, 2).toUpperCase()
+      }));
+
+      setSuggestions(suggestionsWithMeta);
+
+      // Map friends to UI format
+      const friendsWithMeta = friendsData.map(f => ({
+        ...f,
+        id: f._id, // Map _id to id for UI
+        image: f.avatar ? <img src={f.avatar} alt={f.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} /> : f.name.substring(0, 2).toUpperCase(),
+        trips: f.trips_count || 0,
+        lastActive: 'Online',
+        isOnline: true
+      }));
+      setFriends(friendsWithMeta);
+
+      // 5. Fetch Activity Feed (Posts)
+      const postsRes = await fetch(`http://localhost:5000/api/posts`);
+      const postsData = await postsRes.json();
+
+      // Filter posts: Show posts from my friends
+      const myFriendIds = new Set(friendsData.map(f => f._id));
+      const relevantPosts = postsData.filter(p => myFriendIds.has(p.userId));
+
+      // Map posts to UI format
+      const mappedFeed = relevantPosts.map(p => ({
+        id: p._id,
+        friendName: p.user.name,
+        friendImage: p.user.avatar ? <img src={p.user.avatar} alt={p.user.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} /> : p.user.name.substring(0, 2).toUpperCase(),
+        type: p.type,
+        content: p.type === 'trip' ? `completed a trip to ${p.destination}` :
+          p.type === 'review' ? `reviewed ${p.destination}` :
+            p.type === 'recommendation' ? `recommended ${p.destination}` :
+              p.content, // for normal posts
+        time: new Date(p.createdAt).toLocaleDateString(), // Simple format
+        destination: p.destination,
+        rating: p.rating,
+        fullContent: p.content // Store full text for display
+      }));
+
+      setActivityFeed(mappedFeed);
+
+    } catch (err) {
+      console.error("Error fetching friends:", err);
+      showNotification("Failed to load community data", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Send Request
+  const handleSendRequest = async (friendId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromUserId: user._id, toUserId: friendId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        const addedUser = suggestions.find(s => s._id === friendId);
+        showNotification(`Request sent to ${addedUser?.name}!`);
+
+        // Update UI: Remove from suggestions, Add to Sent Requests? Or just disable button?
+        // For now, remove from suggestions
+        setSuggestions(prev => prev.filter(s => s._id !== friendId));
+      } else {
+        showNotification(data.message || "Failed to send request", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to send request", "error");
+    }
+  };
+
+  // Accept Request
+  const handleAcceptRequest = async (requestId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'accepted' })
+      });
+
+      if (res.ok) {
+        const request = friendRequests.find(r => r.id === requestId);
+        showNotification(`You are now friends with ${request?.name}!`);
+
+        setFriendRequests(prev => prev.filter(r => r.id !== requestId));
+        // Ideally refetch friends but we can just move it for now
+        if (request) {
+          // Quick UI update (reload will fix full data)
+          // We need the full user object but we partly have it
+          fetchData(); // Simplest way to resync
+        }
+      }
+    } catch (err) {
+      showNotification("Failed to accept request", "error");
+    }
+  };
+
+  // Reject Request
+  const handleRejectRequest = async (requestId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected' })
+      });
+
+      if (res.ok) {
+        setFriendRequests(prev => prev.filter(r => r.id !== requestId));
+        showNotification("Request declined");
+      }
+    } catch (err) {
+      showNotification("Failed to reject request", "error");
+    }
+  };
+
+  // Stub other existing functions to prevent errors if they are used elsewhere or just keep them as visual only for now
+  const [friendRequests, setFriendRequests] = useState([]); // Leave empty for now as we don't have request logic
   const [sentRequests, setSentRequests] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
 
-  // Friends' Activity Feed (2.2)
-  const [activityFeed, setActivityFeed] = useState([
-    { id: 1, friendName: 'Alimool Razi', friendImage: 'AR', type: 'trip', content: 'completed a trip to Sajek Valley', time: '2 hours ago', destination: 'Sajek Valley' },
-    { id: 2, friendName: 'Zarin Raisa', friendImage: 'ZR', type: 'post', content: 'shared photos from Sylhet tea gardens', time: '5 hours ago' },
-    { id: 3, friendName: 'Rafiq Ahmed', friendImage: 'RA', type: 'review', content: 'wrote a review for Sundarbans boat tour', time: '1 day ago', rating: 5 },
-    { id: 4, friendName: 'Alimool Razi', friendImage: 'AR', type: 'recommendation', content: 'recommended visiting Ratargul Swamp Forest', time: '2 days ago', destination: 'Ratargul' }
-  ]);
-
-  // Show notification helper
+  // Mock Notification logic
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Accept friend request (2.1)
-  const handleAcceptRequest = (requestId) => {
-    const request = friendRequests.find(r => r.id === requestId);
-    if (request) {
-      // Add to friends list
-      setFriends(prev => [...prev, {
-        ...request,
-        trips: 0,
-        lastActive: 'Just now',
-        isOnline: true,
-        recentActivity: { type: 'new_friend', content: 'Became friends with you', date: 'Just now' },
-        upcomingTrip: null
-      }]);
-      // Remove from requests
-      setFriendRequests(prev => prev.filter(r => r.id !== requestId));
-      // Add to activity feed
-      setActivityFeed(prev => [{
-        id: Date.now(),
-        friendName: request.name,
-        friendImage: request.image,
-        type: 'new_friend',
-        content: 'is now your friend!',
-        time: 'Just now'
-      }, ...prev]);
-      showNotification(`You are now friends with ${request.name}! 🎉`);
-    }
-  };
+  // Stub handlers
 
-  // Reject friend request (2.1)
-  const handleRejectRequest = (requestId) => {
-    const request = friendRequests.find(r => r.id === requestId);
-    setFriendRequests(prev => prev.filter(r => r.id !== requestId));
-    if (request) {
-      showNotification(`Request from ${request.name} declined`, 'info');
-    }
-  };
-
-  // Send friend request (2.1)
-  const handleSendRequest = (suggestionId) => {
-    const suggestion = suggestions.find(s => s.id === suggestionId);
-    if (suggestion) {
-      setSentRequests(prev => [...prev, suggestion]);
-      setSuggestions(prev => prev.filter(s => s.id !== suggestionId));
-      showNotification(`Friend request sent to ${suggestion.name}! 📤`);
-    }
-  };
-
-  // Cancel sent request
-  const handleCancelRequest = (requestId) => {
-    const request = sentRequests.find(r => r.id === requestId);
-    if (request) {
-      setSentRequests(prev => prev.filter(r => r.id !== requestId));
-      setSuggestions(prev => [...prev, { ...request, mutualFriends: request.mutualFriends || 0 }]);
-      showNotification(`Request to ${request.name} cancelled`, 'info');
-    }
-  };
-
-  // Send trip invitation (2.3)
-  const handleInviteToTrip = (friendId, destination) => {
-    const friend = friends.find(f => f.id === friendId);
-    if (friend) {
-      showNotification(`Trip invitation sent to ${friend.name} for ${destination}! ✈️`);
-    }
-  };
+  const handleCancelRequest = () => { };
+  const handleInviteToTrip = () => { };
 
   // Login required check
   if (!isAuthenticated) {
@@ -179,7 +244,7 @@ export default function FriendsPage() {
           padding: '16px 24px',
           borderRadius: '12px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          zIndex: 1001,
+          zIndex: 9999,
           animation: 'slideDown 0.3s ease-out',
           display: 'flex',
           alignItems: 'center',
@@ -310,6 +375,12 @@ export default function FriendsPage() {
                 <p style={{ margin: 0, fontSize: '15px', color: '#374151' }}>
                   <strong style={{ color: '#1f2937' }}>{activity.friendName}</strong> {activity.content}
                 </p>
+                {/* Show full content for posts that are just text */}
+                {activity.type === 'post' && (
+                  <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#4b5563', fontStyle: 'italic' }}>
+                    "{activity.fullContent}"
+                  </p>
+                )}
                 {activity.destination && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: '#059669', fontSize: '14px' }}>
                     <MapPin size={14} />
@@ -661,7 +732,7 @@ export default function FriendsPage() {
                 </div>
               )}
               <button
-                onClick={() => handleSendRequest(person.id)}
+                onClick={() => handleSendRequest(person._id)}
                 style={{
                   backgroundColor: '#059669',
                   color: 'white',
@@ -685,65 +756,68 @@ export default function FriendsPage() {
             </div>
           ))}
         </div>
-      )}
+      )
+      }
 
       {/* Sent Requests Tab */}
-      {activeTab === 'sent' && (
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {sentRequests.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-              <Send size={48} color="#d1d5db" style={{ marginBottom: '16px' }} />
-              <p>No pending sent requests</p>
-            </div>
-          ) : (
-            sentRequests.map((request, index) => (
-              <div key={request.id} style={{
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                border: '1px solid #e5e7eb'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #9ca3af, #6b7280)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}>
-                    {request.image}
-                  </div>
-                  <div>
-                    <h4 style={{ margin: 0, fontWeight: '600' }}>{request.name}</h4>
-                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#9ca3af' }}>Request pending...</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleCancelRequest(request.id)}
-                  style={{
-                    backgroundColor: '#f3f4f6',
-                    color: '#6b7280',
-                    padding: '10px 20px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '600'
-                  }}
-                >
-                  Cancel
-                </button>
+      {
+        activeTab === 'sent' && (
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {sentRequests.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                <Send size={48} color="#d1d5db" style={{ marginBottom: '16px' }} />
+                <p>No pending sent requests</p>
               </div>
-            ))
-          )}
-        </div>
-      )}
+            ) : (
+              sentRequests.map((request, index) => (
+                <div key={request.id} style={{
+                  backgroundColor: 'white',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #9ca3af, #6b7280)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontWeight: 'bold'
+                    }}>
+                      {request.image}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontWeight: '600' }}>{request.name}</h4>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#9ca3af' }}>Request pending...</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleCancelRequest(request.id)}
+                    style={{
+                      backgroundColor: '#f3f4f6',
+                      color: '#6b7280',
+                      padding: '10px 20px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )
+      }
 
       {/* CSS Animations */}
       <style>{`
@@ -751,6 +825,6 @@ export default function FriendsPage() {
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
-    </div>
+    </div >
   );
 }
