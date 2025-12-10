@@ -20,6 +20,8 @@ app.use('/api/destinations', require('./routes/destinations'));
 app.use('/api/packages', require('./routes/packages'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/posts', require('./routes/posts'));
+app.use('/api/routes', require('./routes/routes'));
+app.use('/api/rewards', require('./routes/rewards'));
 
 app.get('/', (req, res) => {
     res.send('Server is running');
