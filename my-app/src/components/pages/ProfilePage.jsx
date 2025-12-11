@@ -56,7 +56,7 @@ export default function ProfilePage() {
   const stats = [
     { label: 'Trips Completed', value: user.trips || 12, icon: <MapPin size={24} />, color: '#059669', bg: '#ecfdf5' },
     { label: 'Friends', value: user.friends || 45, icon: <Users size={24} />, color: '#0d9488', bg: '#f0fdfa' },
-    { label: 'Travel Points', value: user.points || 750, icon: <Award size={24} />, color: '#f59e0b', bg: '#fffbeb' },
+    { label: 'Travel Points', value: user.points ?? 0, icon: <Award size={24} />, color: '#f59e0b', bg: '#fffbeb' },
     { label: 'Reviews Written', value: 8, icon: <Edit size={24} />, color: '#3b82f6', bg: '#eff6ff' }
   ];
 
