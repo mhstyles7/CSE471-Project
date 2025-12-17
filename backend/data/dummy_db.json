@@ -1,0 +1,511 @@
+{
+    "users": [
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d0",
+            "name": "Ahanaf Rivan",
+            "email": "rivan@example.com",
+            "password": "$2b$10$zt0yuA3llfAk5.YwW2sC7a.mnHQ.BwRL80PX4ZzenswkfU8Y7QbC",
+            "role": "traveler",
+            "points": 1250,
+            "tier": "Silver",
+            "isPremium": true,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Rivan",
+            "trips_count": 5,
+            "joinedDate": "2024-01-15T10:00:00Z"
+        },
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d1",
+            "name": "System Admin",
+            "email": "admin@pothchola.com",
+            "password": "$2b$10$zt0yuA3llfAk5.YwW2sC7a.mnHQ.BwRL80PX4ZzenswkfU8Y7QbC",
+            "role": "admin",
+            "points": 0,
+            "tier": "Gold",
+            "isPremium": true,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+            "joinedDate": "2023-01-01T10:00:00Z"
+        },
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d2",
+            "name": "Alimool Razi",
+            "email": "razi@agency.com",
+            "password": "$2b$10$zt0yuA3llfAk5.YwW2sC7a.mnHQ.BwRL80PX4ZzenswkfU8Y7QbC",
+            "role": "agency",
+            "agencyName": "Razi Travels",
+            "points": 500,
+            "tier": "Bronze",
+            "isPremium": true,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Razi",
+            "verified": true,
+            "joinedDate": "2023-12-01T10:00:00Z"
+        },
+        {
+            "_id": "6570a1b2c3d4e5f6a7b8c9d3",
+            "name": "Zarin Tasnim",
+            "email": "zarin@example.com",
+            "password": "$2b$10$zt0yuA3llfAk5.YwW2sC7a.mnHQ.BwRL80PX4ZzenswkfU8Y7QbC",
+            "role": "traveler",
+            "points": 800,
+            "tier": "Bronze",
+            "isPremium": false,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Zarin",
+            "trips_count": 2,
+            "joinedDate": "2024-02-10T10:00:00Z"
+        }
+    ],
+    "destinations": [
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e1",
+            "slug": "coxsbazar",
+            "name": "Cox's Bazar",
+            "district": "Cox's Bazar",
+            "description": "The world's longest natural sea beach.",
+            "risk_level": "Low",
+            "eco_score": 85,
+            "comfort_score": 90,
+            "weather": {
+                "temp": "30°C",
+                "condition": "Clear"
+            },
+            "coordinates": {
+                "lat": 21.4272,
+                "lng": 92.0058
+            },
+            "news": [
+                "New hotels opening near marine drive.",
+                "Safety warnings for high tide."
+            ],
+            "landmarks": [
+                {
+                    "name": "Inani Beach",
+                    "coords": [
+                        21.1967,
+                        92.0642
+                    ]
+                },
+                {
+                    "name": "Himchari",
+                    "coords": [
+                        21.3500,
+                        92.0333
+                    ]
+                }
+            ],
+            "images": [
+                "https://example.com/cox1.jpg"
+            ]
+        },
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e2",
+            "slug": "sylhet",
+            "name": "Sylhet",
+            "district": "Sylhet",
+            "description": "Land of tea gardens and saints.",
+            "risk_level": "Low",
+            "eco_score": 95,
+            "comfort_score": 75,
+            "weather": {
+                "temp": "27°C",
+                "condition": "Rainy"
+            },
+            "coordinates": {
+                "lat": 24.8949,
+                "lng": 91.8687
+            },
+            "news": [
+                "Tea production hits record high.",
+                "Tourist influx expected for Eid."
+            ],
+            "landmarks": [
+                {
+                    "name": "Ratargul Swamp Forest",
+                    "coords": [
+                        25.0000,
+                        91.9333
+                    ]
+                },
+                {
+                    "name": "Jaflong",
+                    "coords": [
+                        25.1633,
+                        92.0172
+                    ]
+                }
+            ],
+            "images": [
+                "https://example.com/ratargul.jpg"
+            ]
+        },
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e4",
+            "slug": "dhaka",
+            "name": "Dhaka",
+            "district": "Dhaka",
+            "description": "The capital city, bustling with life and history.",
+            "risk_level": "Medium",
+            "eco_score": 40,
+            "comfort_score": 60,
+            "weather": {
+                "temp": "32°C",
+                "condition": "Haze"
+            },
+            "coordinates": {
+                "lat": 23.8103,
+                "lng": 90.4125
+            },
+            "news": [
+                "Traffic updates: Heavy congestion in Gulshan.",
+                "New metro rail schedule announced."
+            ],
+            "landmarks": [
+                {
+                    "name": "Lalbagh Fort",
+                    "coords": [
+                        23.7195,
+                        90.3881
+                    ]
+                },
+                {
+                    "name": "Ahsan Manzil",
+                    "coords": [
+                        23.7086,
+                        90.4060
+                    ]
+                }
+            ],
+            "images": [
+                "https://example.com/dhaka.jpg"
+            ]
+        },
+        {
+            "_id": "6570b2c3d4e5f6a7b8c9d0e5",
+            "slug": "chittagong",
+            "name": "Chittagong",
+            "district": "Chittagong",
+            "description": "The port city, known for its green hills and sea.",
+            "risk_level": "Low",
+            "eco_score": 88,
+            "comfort_score": 85,
+            "weather": {
+                "temp": "29°C",
+                "condition": "Sunny"
+            },
+            "coordinates": {
+                "lat": 22.3569,
+                "lng": 91.7832
+            },
+            "news": [
+                "Port activity increases by 15%.",
+                "Beach festival starting this weekend."
+            ],
+            "landmarks": [
+                {
+                    "name": "Patenga Beach",
+                    "coords": [
+                        22.2386,
+                        91.7963
+                    ]
+                },
+                {
+                    "name": "Foy's Lake",
+                    "coords": [
+                        22.3655,
+                        91.7950
+                    ]
+                }
+            ],
+            "images": [
+                "https://example.com/chittagong.jpg"
+            ]
+        }
+    ],
+    "trips": [
+        {
+            "_id": "6570c3d4e5f6a7b8c9d0e1f1",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "destinationId": "6570b2c3d4e5f6a7b8c9d0e1",
+            "destinationName": "Cox's Bazar",
+            "startDate": "2024-03-10T00:00:00Z",
+            "endDate": "2024-03-15T00:00:00Z",
+            "status": "completed",
+            "transportMode": "Bus",
+            "cost": 5000,
+            "rating": 5
+        },
+        {
+            "_id": "6570c3d4e5f6a7b8c9d0e1f2",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "destinationId": "6570b2c3d4e5f6a7b8c9d0e3",
+            "destinationName": "Sajek Valley",
+            "startDate": "2024-12-20T00:00:00Z",
+            "endDate": "2024-12-25T00:00:00Z",
+            "status": "upcoming",
+            "transportMode": "Private Car",
+            "cost": 12000
+        }
+    ],
+    "reviews": [
+        {
+            "_id": "6570d4e5f6a7b8c9d0e1f2a1",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "userName": "Ahanaf Rivan",
+            "placeId": "6570b2c3d4e5f6a7b8c9d0e1",
+            "placeName": "Cox's Bazar",
+            "rating": 5,
+            "comment": "Amazing experience! The sunset was breathtaking.",
+            "date": "2024-03-16T10:00:00Z"
+        }
+    ],
+    "posts": [
+        {
+            "_id": "6570e5f6a7b8c9d0e1f2a3b2",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d0",
+            "userName": "Ahanaf Rivan",
+            "userRole": "traveler",
+            "content": "Anyone interested in a group tour to Sajek next month?",
+            "type": "community",
+            "likes": 8,
+            "comments": [],
+            "createdAt": "2024-06-02T09:30:00Z"
+        }
+    ],
+    "packages": [
+        {
+            "_id": "6570f6a7b8c9d0e1f2a3b4c1",
+            "agencyId": "6570a1b2c3d4e5f6a7b8c9d2",
+            "agencyName": "Razi Travels",
+            "agencyEmail": "razi@agency.com",
+            "title": "3 Days in Sylhet",
+            "description": "Explore Ratargul, Jaflong, and Tea Gardens.",
+            "price": 8500,
+            "duration": "3 Days",
+            "location": "Sylhet",
+            "availableSlots": 20,
+            "createdAt": "2024-05-01T10:00:00Z"
+        }
+    ],
+    "orders": [
+        {
+            "_id": "657107b8c9d0e1f2a3b4c5d1",
+            "packageId": "6570f6a7b8c9d0e1f2a3b4c1",
+            "userId": "6570a1b2c3d4e5f6a7b8c9d3",
+            "customerName": "Zarin Tasnim",
+            "agencyEmail": "razi@agency.com",
+            "amount": 8500,
+            "status": "pending",
+            "date": "2024-06-05T14:00:00Z"
+        }
+    ],
+    "events": [
+        {
+            "_id": "657118c9d0e1f2a3b4c5d6e1",
+            "agencyId": "6570a1b2c3d4e5f6a7b8c9d2",
+            "title": "Beach Cleanup Drive",
+            "date": "2024-07-10",
+            "location": "Cox's Bazar",
+            "description": "Join us to keep the longest beach clean!",
+            "sponsor": "Razi Travels",
+            "attendees": [
+                "6570a1b2c3d4e5f6a7b8c9d0"
+            ]
+        }
+    ],
+    "cultural_foods": [
+        {
+            "_id": "657129d0e1f2a3b4c5d6e7f1",
+            "name": "Panta Ilish",
+            "region": "Dhaka/National",
+            "description": "Fermented rice served with fried Hilsa fish, a Pohela Boishakh staple.",
+            "ingredients": [
+                "Rice",
+                "Hilsa Fish",
+                "Green Chilies",
+                "Onion"
+            ],
+            "image": "https://example.com/panta_ilish.jpg"
+        },
+        {
+            "_id": "657129d0e1f2a3b4c5d6e7f2",
+            "name": "Seven Layer Tea",
+            "region": "Sylhet",
+            "description": "A unique tea with seven distinct layers of flavor and color.",
+            "ingredients": [
+                "Tea leaves",
+                "Sugar",
+                "Milk",
+                "Spices"
+            ],
+            "image": "https://example.com/seven_layer_tea.jpg"
+        }
+    ],
+    "itineraries": [
+        {
+            "_id": "65713ae1f2a3b4c5d6e7f8a1",
+            "destination": "Sylhet",
+            "style": "Nature",
+            "duration": "1 Day",
+            "plan": [
+                {
+                    "time": "08:00 AM",
+                    "activity": "Breakfast at Panshi Restaurant"
+                },
+                {
+                    "time": "10:00 AM",
+                    "activity": "Boat ride in Ratargul Swamp Forest"
+                },
+                {
+                    "time": "01:00 PM",
+                    "activity": "Lunch with local Bhorta"
+                },
+                {
+                    "time": "03:00 PM",
+                    "activity": "Visit Bisnakandi"
+                },
+                {
+                    "time": "07:00 PM",
+                    "activity": "Evening tea at a Tea Garden"
+                }
+            ]
+        }
+    ],
+    "routes": [
+        {
+            "id": 1,
+            "from": "dhaka",
+            "to": "chittagong",
+            "date": "2023-10-15",
+            "risk": 2,
+            "eco": 7,
+            "comfort": 8,
+            "path": [
+                [
+                    23.8103,
+                    90.4125
+                ],
+                [
+                    23.0,
+                    91.0
+                ],
+                [
+                    22.3569,
+                    91.7832
+                ]
+            ]
+        },
+        {
+            "id": 2,
+            "from": "chittagong",
+            "to": "coxsbazar",
+            "date": "2023-10-18",
+            "risk": 1,
+            "eco": 8,
+            "comfort": 9,
+            "path": [
+                [
+                    22.3569,
+                    91.7832
+                ],
+                [
+                    21.8,
+                    92.0
+                ],
+                [
+                    21.4272,
+                    92.0058
+                ]
+            ]
+        },
+        {
+            "id": 3,
+            "from": "dhaka",
+            "to": "sylhet",
+            "date": "2023-11-05",
+            "risk": 3,
+            "eco": 9,
+            "comfort": 7,
+            "path": [
+                [
+                    23.8103,
+                    90.4125
+                ],
+                [
+                    24.3,
+                    91.2
+                ],
+                [
+                    24.8949,
+                    91.8687
+                ]
+            ]
+        },
+        {
+            "id": 4,
+            "from": "sylhet",
+            "to": "chittagong",
+            "date": "2023-12-10",
+            "risk": 2,
+            "eco": 8,
+            "comfort": 8,
+            "path": [
+                [
+                    24.8949,
+                    91.8687
+                ],
+                [
+                    23.5,
+                    91.5
+                ],
+                [
+                    22.3569,
+                    91.7832
+                ]
+            ]
+        },
+        {
+            "id": 5,
+            "from": "coxsbazar",
+            "to": "dhaka",
+            "date": "2024-01-15",
+            "risk": 4,
+            "eco": 6,
+            "comfort": 9,
+            "path": [
+                [
+                    21.4272,
+                    92.0058
+                ],
+                [
+                    22.5,
+                    91.0
+                ],
+                [
+                    23.8103,
+                    90.4125
+                ]
+            ]
+        },
+        {
+            "id": 6,
+            "from": "dhaka",
+            "to": "coxsbazar",
+            "date": "2024-02-20",
+            "risk": 1,
+            "eco": 7,
+            "comfort": 10,
+            "path": [
+                [
+                    23.8103,
+                    90.4125
+                ],
+                [
+                    22.0,
+                    91.5
+                ],
+                [
+                    21.4272,
+                    92.0058
+                ]
+            ]
+        }
+    ]
+}
