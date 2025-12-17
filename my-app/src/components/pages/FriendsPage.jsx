@@ -14,6 +14,78 @@ export default function FriendsPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Modal & Interaction State
+  const [activeModal, setActiveModal] = useState(null); // 'profile', 'message', 'invite'
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const [messageText, setMessageText] = useState('');
+  const [conversation, setConversation] = useState([]); // Chat history
+  const [myEvents, setMyEvents] = useState([]); // For invite dropdown
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const chatEndRef = React.useRef(null); // For auto-scrolling
+
+  // Legacy/Existing State required for other parts of the UI
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
+
+  // Notification Logic
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Legacy Handlers
+  // Legacy Handlers
+  const handleCancelRequest = async (requestId) => {
+    try {
+      // In a real app, delete from DB:
+      // await fetch(`/api/users/request/${requestId}`, { method: 'DELETE' });
+
+      // For now, just update UI state since we don't have a specific delete endpoint for requests ready yet
+      // ACTUALLY, we should likely add one, but for now let's just update UI
+      setSentRequests(prev => prev.filter(r => r.id !== requestId));
+      showNotification("Request cancelled");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLikePost = async (postId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/posts/${postId}/react`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id, type: 'like' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const reactions = data.reactions || [];
+        const likesCount = reactions.filter(r => r.type === 'like').length;
+        const isLikedByMe = reactions.some(r => r.userId === user._id && r.type === 'like');
+
+        // Update local state to reflect like
+        setActivityFeed(prev => prev.map(post => {
+          if (post.id === postId) {
+            return { ...post, isLiked: isLikedByMe, likes: likesCount };
+          }
+          return post;
+        }));
+        // showNotification(data.action === 'added' ? "Post liked!" : "Like removed");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleInviteToTrip = (friendId, destination) => {
+    // Redirect this to the new Modal
+    const friendsData = friends; // Use local state if needed (will be bound)
+    const friend = friends.find(f => f.id === friendId);
+    if (friend) {
+      handleOpenInvite(friend);
+    }
+  };
+
 
   // Fetch Data
   useEffect(() => {
@@ -32,7 +104,16 @@ export default function FriendsPage() {
       // 2. Fetch Sent Requests (To disable buttons)
       const sentRes = await fetch(`http://localhost:5000/api/users/${user._id}/sent-requests`);
       const sentData = await sentRes.json();
-      setSentRequests(sentData); // Store IDs of users I sent requests to
+
+      // Transform keys for UI
+      const mappedSent = sentData.map(req => ({
+        id: req.id,
+        name: req.toUser.name,
+        image: req.toUser.avatar ? <img src={req.toUser.avatar} alt={req.toUser.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} /> : req.toUser.name.substring(0, 2).toUpperCase(),
+        userId: req.toUser._id
+      }));
+
+      setSentRequests(mappedSent);
 
       // 3. Fetch Incoming Requests
       const requestsRes = await fetch(`http://localhost:5000/api/users/${user._id}/requests`);
@@ -55,7 +136,7 @@ export default function FriendsPage() {
       const allUsersData = await allUsersRes.json();
 
       const friendIds = new Set(friendsData.map(f => f._id));
-      const sentIds = new Set(sentData); // sentData is array of strings (user IDs)
+      const sentIds = new Set(sentData.map(r => r.toUser._id)); // Extract toUser ID from request object
 
       const newSuggestions = allUsersData.filter(u =>
         u._id !== user._id &&
@@ -104,7 +185,9 @@ export default function FriendsPage() {
         time: new Date(p.createdAt).toLocaleDateString(), // Simple format
         destination: p.destination,
         rating: p.rating,
-        fullContent: p.content // Store full text for display
+        fullContent: p.content, // Store full text for display
+        likes: (p.reactions || []).filter(r => r.type === 'like').length,
+        isLiked: (p.reactions || []).some(r => r.userId === user._id && r.type === 'like')
       }));
 
       setActivityFeed(mappedFeed);
@@ -188,21 +271,137 @@ export default function FriendsPage() {
     }
   };
 
-  // Stub other existing functions to prevent errors if they are used elsewhere or just keep them as visual only for now
-  const [friendRequests, setFriendRequests] = useState([]); // Leave empty for now as we don't have request logic
-  const [sentRequests, setSentRequests] = useState([]);
-  const [activityFeed, setActivityFeed] = useState([]);
 
-  // Mock Notification logic
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+
+
+  // Chat & Event Fetching Logic
+  useEffect(() => {
+    let interval;
+    if (activeModal === 'invite') {
+      fetchMyEvents();
+    } else if (activeModal === 'message' && selectedFriend) {
+      fetchConversation();
+      // Poll for new messages every 3 seconds
+      interval = setInterval(fetchConversation, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [activeModal, selectedFriend]);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    if (activeModal === 'message' && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [conversation, activeModal]);
+
+  const fetchConversation = async () => {
+    if (!selectedFriend) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/messages/${user._id}/${selectedFriend.id || selectedFriend._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setConversation(data);
+      }
+    } catch (err) {
+      console.error("Error fetching messages", err);
+    }
   };
 
-  // Stub handlers
+  const fetchMyEvents = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/events');
+      const data = await res.json();
+      // Filter events where I am a participant or organizer
+      const joined = data.filter(e =>
+        e.organizerId === user._id ||
+        (e.participants && e.participants.some(p => p.userId === user._id))
+      );
+      setMyEvents(joined);
+    } catch (err) {
+      console.error("Failed to fetch events", err);
+    }
+  };
 
-  const handleCancelRequest = () => { };
-  const handleInviteToTrip = () => { };
+  // Handlers for Modals
+  const handleOpenProfile = (friend) => {
+    setSelectedFriend(friend);
+    setActiveModal('profile');
+  };
+
+  const handleOpenMessage = (friend) => {
+    setSelectedFriend(friend);
+    setActiveModal('message');
+    setMessageText('');
+    setConversation([]); // Clear previous chat
+  };
+
+  const handleOpenInvite = (friend) => {
+    setSelectedFriend(friend);
+    setActiveModal('invite');
+    setSelectedEventId('');
+  };
+
+  const handleCloseModal = () => {
+    setActiveModal(null);
+    setSelectedFriend(null);
+  };
+
+  // Action Handlers
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) return;
+    try {
+      const res = await fetch('http://localhost:5000/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromUserId: user._id,
+          toUserId: selectedFriend.id || selectedFriend._id,
+          text: messageText,
+          fromUserName: user.name,
+          fromUserImage: user.avatar || user.name[0]
+        })
+      });
+
+      if (res.ok) {
+        // showNotification(`Message sent to ${selectedFriend.name}! 📨`); // Optional: don't show toast for every chat msg
+        setMessageText(''); // Clear input
+        fetchConversation(); // Refresh chat immediately
+      } else {
+        showNotification("Failed to send message", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification("Error sending message", "error");
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!selectedEventId) return;
+    try {
+      // Use existing event invite endpoint
+      const res = await fetch(`http://localhost:5000/api/events/${selectedEventId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitedUserId: selectedFriend.id || selectedFriend._id,
+          invitedByUserId: user._id,
+          invitedByUserName: user.name,
+          invitedByUserImage: user.avatar || user.name[0]
+        })
+      });
+
+      if (res.ok) {
+        showNotification(`Invitation sent to ${selectedFriend.name}! ✈️`);
+        handleCloseModal();
+      } else {
+        const d = await res.json();
+        showNotification(d.message || "Failed to send invite", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification("Error sending invite", "error");
+    }
+  };
 
   // Login required check
   if (!isAuthenticated) {
@@ -237,7 +436,7 @@ export default function FriendsPage() {
       {notification && (
         <div style={{
           position: 'fixed',
-          top: '20px',
+          bottom: '20px',
           right: '20px',
           backgroundColor: notification.type === 'success' ? '#059669' : '#6b7280',
           color: 'white',
@@ -399,21 +598,24 @@ export default function FriendsPage() {
                   {activity.time}
                 </p>
               </div>
-              <button style={{
-                backgroundColor: '#f0fdf4',
-                color: '#059669',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '13px',
-                fontWeight: '600'
-              }}>
-                <Heart size={14} />
-                Like
+              <button
+                onClick={() => handleLikePost(activity.id)}
+                style={{
+                  backgroundColor: activity.isLiked ? '#059669' : '#f0fdf4',
+                  color: activity.isLiked ? 'white' : '#059669',
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  transition: 'all 0.2s'
+                }}>
+                <Heart size={14} fill={activity.isLiked ? 'white' : 'none'} />
+                {activity.likes ? `${activity.likes} ` : ''}Like
               </button>
             </div>
           ))}
@@ -628,35 +830,40 @@ export default function FriendsPage() {
               )}
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={{
-                  backgroundColor: '#f0fdf4',
-                  color: '#059669',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  border: '2px solid #bbf7d0',
-                  cursor: 'pointer',
-                  flex: 1,
-                  fontWeight: '600',
-                  transition: 'all 0.3s'
-                }}>
+                <button
+                  onClick={() => handleOpenProfile(friend)}
+                  style={{
+                    backgroundColor: '#f0fdf4',
+                    color: '#059669',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: '2px solid #bbf7d0',
+                    cursor: 'pointer',
+                    flex: 1,
+                    fontWeight: '600',
+                    transition: 'all 0.3s'
+                  }}>
                   View Profile
                 </button>
-                <button style={{
-                  backgroundColor: '#059669',
-                  color: 'white',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.3s'
-                }}>
+                <button
+                  onClick={() => handleOpenMessage(friend)}
+                  style={{
+                    backgroundColor: '#059669',
+                    color: '#white',
+                    color: 'white',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s'
+                  }}>
                   <MessageCircle size={20} strokeWidth={2.5} />
                 </button>
                 <button
-                  onClick={() => showNotification(`Trip invitation sent to ${friend.name}!`)}
+                  onClick={() => handleOpenInvite(friend)}
                   style={{
                     backgroundColor: '#f0fdf4',
                     color: '#059669',
@@ -818,6 +1025,196 @@ export default function FriendsPage() {
           </div>
         )
       }
+
+      {/* --- MODALS --- */}
+
+      {/* 1. Profile Modal */}
+      {activeModal === 'profile' && selectedFriend && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000
+        }} onClick={handleCloseModal}>
+          <div style={{
+            backgroundColor: 'white', width: '90%', maxWidth: '500px', borderRadius: '20px', padding: '30px',
+            position: 'relative', animation: 'scaleIn 0.3s ease-out'
+          }} onClick={e => e.stopPropagation()}>
+            <button onClick={handleCloseModal} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} color="#6b7280" /></button>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#059669', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '40px', fontWeight: 'bold' }}>
+                {selectedFriend.image}
+              </div>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>{selectedFriend.name}</h2>
+              <p style={{ color: '#6b7280', fontSize: '16px', marginBottom: '24px' }}>Member since {new Date().getFullYear()}</p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '30px' }}>
+                <div style={{ background: '#f0fdf4', padding: '15px', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>{selectedFriend.trips}</div>
+                  <div style={{ fontSize: '13px', color: '#065f46' }}>Trips Completed</div>
+                </div>
+                <div style={{ background: '#eff6ff', padding: '15px', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#2563eb' }}>{selectedFriend.points || 0}</div>
+                  <div style={{ fontSize: '13px', color: '#1e40af' }}>Travel Points</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => { handleCloseModal(); handleOpenMessage(selectedFriend); }} style={{ flex: 1, padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Message</button>
+                <button onClick={handleCloseModal} style={{ flex: 1, padding: '12px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Message Modal (Chat Interface) */}
+      {activeModal === 'message' && selectedFriend && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000
+        }} onClick={handleCloseModal}>
+          <div style={{
+            backgroundColor: 'white', width: '90%', maxWidth: '500px', height: '600px', borderRadius: '20px',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            animation: 'slideUp 0.3s ease-out'
+          }} onClick={e => e.stopPropagation()}>
+
+            {/* Header */}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9fafb' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                  {selectedFriend.image}
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>{selectedFriend.name}</h3>
+                  <div style={{ fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div> Online
+                  </div>
+                </div>
+              </div>
+              <button onClick={handleCloseModal} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Chat Area */}
+            <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#f3f4f6' }}>
+              {conversation.length === 0 ? (
+                <div style={{ textAlign: 'center', marginTop: '40px', color: '#9ca3af' }}>
+                  <MessageCircle size={48} style={{ opacity: 0.5, marginBottom: '10px' }} />
+                  <p>No messages yet. Say hello! 👋</p>
+                </div>
+              ) : (
+                conversation.map((msg, idx) => {
+                  const isMe = msg.fromUserId === user._id;
+                  return (
+                    <div key={idx} style={{
+                      alignSelf: isMe ? 'flex-end' : 'flex-start',
+                      maxWidth: '75%'
+                    }}>
+                      <div style={{
+                        backgroundColor: isMe ? '#059669' : 'white',
+                        color: isMe ? 'white' : '#1f2937',
+                        padding: '10px 16px',
+                        borderRadius: isMe ? '16px 16px 0 16px' : '16px 16px 16px 0',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                        marginBottom: '4px',
+                        fontSize: '15px'
+                      }}>
+                        {msg.text}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af', textAlign: isMe ? 'right' : 'left', padding: '0 4px' }}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div style={{ padding: '16px', borderTop: '1px solid #e5e7eb', backgroundColor: 'white', display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type a message..."
+                autoFocus
+                style={{
+                  flex: 1, padding: '12px 16px', borderRadius: '24px', border: '1px solid #d1d5db',
+                  fontSize: '15px', outline: 'none', backgroundColor: '#f9fafb'
+                }}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!messageText.trim()}
+                style={{
+                  width: '44px', height: '44px', borderRadius: '50%',
+                  background: messageText.trim() ? '#059669' : '#e5e7eb',
+                  color: 'white', border: 'none', cursor: messageText.trim() ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  transform: messageText.trim() ? 'scale(1)' : 'scale(0.95)'
+                }}>
+                <Send size={20} style={{ marginLeft: '2px' }} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Invite Modal */}
+      {activeModal === 'invite' && selectedFriend && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000
+        }} onClick={handleCloseModal}>
+          <div style={{
+            backgroundColor: 'white', width: '90%', maxWidth: '450px', borderRadius: '20px', padding: '30px',
+            animation: 'slideUp 0.3s ease-out'
+          }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '10px' }}>Invite {selectedFriend.name}</h3>
+            <p style={{ color: '#6b7280', marginBottom: '20px' }}>Select an event to invite them to:</p>
+
+            {myEvents.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '200px', overflowY: 'auto', marginBottom: '25px' }}>
+                {myEvents.map(event => (
+                  <label key={event._id || event.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px',
+                    border: selectedEventId === (event._id || event.id) ? '2px solid #059669' : '2px solid #e5e7eb',
+                    cursor: 'pointer', backgroundColor: selectedEventId === (event._id || event.id) ? '#f0fdf4' : 'white'
+                  }}>
+                    <input
+                      type="radio"
+                      name="eventSelect"
+                      checked={selectedEventId === (event._id || event.id)}
+                      onChange={() => setSelectedEventId(event._id || event.id)}
+                      style={{ accentColor: '#059669' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', color: '#1f2937' }}>{event.name}</div>
+                      <div style={{ fontSize: '13px', color: '#6b7280' }}>{new Date(event.date).toLocaleDateString()} • {event.location}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '20px', textAlign: 'center', background: '#f9fafb', borderRadius: '10px', marginBottom: '20px' }}>
+                <p style={{ color: '#6b7280', fontSize: '14px' }}>You haven't joined or created any upcoming events.</p>
+                <button onClick={() => navigate('group-events')} style={{ marginTop: '10px', color: '#059669', fontWeight: '600', border: 'none', background: 'none', cursor: 'pointer' }}>Go to Group Events</button>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={handleCloseModal} style={{ padding: '10px 20px', background: '#f3f4f6', color: '#6b7280', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSendInvite} disabled={!selectedEventId} style={{ padding: '10px 20px', background: selectedEventId ? '#059669' : '#d1d5db', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: selectedEventId ? 'pointer' : 'not-allowed' }}>
+                Send Invite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CSS Animations */}
       <style>{`

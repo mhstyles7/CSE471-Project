@@ -210,7 +210,25 @@ router.get('/:userId/sent-requests', async (req, res) => {
             fromUserId: new ObjectId(req.params.userId),
             status: 'pending'
         }).toArray();
-        res.json(requests.map(r => r.toUserId));
+
+        // Enrich with User Details
+        const enrichedRequests = await Promise.all(requests.map(async (req) => {
+            const toUser = await db.collection('users').findOne({ _id: req.toUserId });
+            if (!toUser) return null; // Skip if user not found
+
+            return {
+                id: req._id, // Request ID
+                toUser: {
+                    _id: toUser._id,
+                    name: toUser.name,
+                    avatar: toUser.avatar,
+                    role: toUser.role
+                },
+                createdAt: req.createdAt
+            };
+        }));
+
+        res.json(enrichedRequests.filter(req => req !== null));
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

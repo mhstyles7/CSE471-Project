@@ -34,10 +34,10 @@ router.post('/', async (req, res) => {
         if (newPost.userId) {
             const pointsToAdd = 10;
             const usersCollection = db.collection('users');
-            
+
             // Fetch current user to determine new tier
             const user = await usersCollection.findOne({ _id: new ObjectId(newPost.userId) });
-            
+
             if (user) {
                 const newPoints = (user.points || 0) + pointsToAdd;
                 let newTier = 'Bronze';
@@ -61,15 +61,89 @@ router.post('/', async (req, res) => {
 router.post('/:id/comments', async (req, res) => {
     try {
         const db = getDb();
-        const { user, text } = req.body;
-        const comment = { user, text, date: new Date().toISOString() };
+        const { user, text, userId, userImage } = req.body;
+        const comment = {
+            _id: new ObjectId(), // Generate distinct ID
+            userId,
+            author: user, // user name
+            authorImage: userImage || 'U',
+            text,
+            date: new Date().toISOString(),
+            likes: 0,
+            replies: []
+        };
 
         await db.collection('posts').updateOne(
             { _id: new ObjectId(req.params.id) },
             { $push: { comments: comment } }
         );
 
-        res.status(200).json({ message: 'Comment added' });
+        res.status(200).json(comment);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Reply to a comment
+router.post('/:id/comments/:commentId/replies', async (req, res) => {
+    try {
+        const db = getDb();
+        const { user, text, userId, userImage } = req.body;
+        const reply = {
+            id: new ObjectId(),
+            userId,
+            author: user,
+            authorImage: userImage || 'U',
+            text,
+            time: new Date().toISOString(),
+            likes: 0
+        };
+
+        await db.collection('posts').updateOne(
+            { _id: new ObjectId(req.params.id), "comments._id": new ObjectId(req.params.commentId) },
+            { $push: { "comments.$.replies": reply } }
+        );
+
+        res.status(200).json(reply);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// React to a post
+router.post('/:id/react', async (req, res) => {
+    try {
+        const db = getDb();
+        const { userId, type } = req.body;
+
+        const post = await db.collection('posts').findOne({ _id: new ObjectId(req.params.id) });
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        let reactions = post.reactions || [];
+        // Remove existing reaction from this user if any
+        const existingIndex = reactions.findIndex(r => r.userId === userId);
+        let action = 'added';
+
+        if (existingIndex > -1) {
+            if (reactions[existingIndex].type === type) {
+                // Toggle off
+                reactions.splice(existingIndex, 1);
+                action = 'removed';
+            } else {
+                // Change reaction
+                reactions[existingIndex].type = type;
+                action = 'updated';
+            }
+        } else {
+            reactions.push({ userId, type });
+        }
+
+        await db.collection('posts').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { reactions: reactions } }
+        );
+
+        res.status(200).json({ reactions, action });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

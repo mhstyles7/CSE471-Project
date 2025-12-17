@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, Clock, MessageSquare, ListTodo, BarChart2, Trash2, Edit2, ChevronLeft } from 'lucide-react';
+import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, MessageSquare, ListTodo, BarChart2, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -18,116 +18,53 @@ export default function GroupEventsPage() {
   const [detailTab, setDetailTab] = useState('itinerary'); // itinerary, discussion, tasks, polls
 
   // Events state (4.1)
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      name: "Cox's Bazar Beach Trip",
-      date: '2024-12-15',
-      location: "Cox's Bazar",
-      organizer: 'Alimool Razi',
-      organizerId: 1,
-      participants: [
-        { id: 1, name: 'Alimool Razi', image: 'AR' },
-        { id: 2, name: 'Zarin Raisa', image: 'ZR' },
-        { id: 3, name: 'Fahim Ahmed', image: 'FA' }
-      ],
-      maxParticipants: 15,
-      status: 'open',
-      description: "Join us for a 3-day beach adventure! We'll explore the longest sea beach in the world.",
-      hasJoined: false,
-      invitedFriends: [],
-      // Shared Itinerary (4.3)
-      itinerary: [
-        { id: 1, day: 1, time: '08:00 AM', activity: 'Departure from Dhaka', location: 'Sayedabad' },
-        { id: 2, day: 1, time: '02:00 PM', activity: 'Check-in at Hotel', location: 'Hotel Sea Palace' },
-        { id: 3, day: 1, time: '05:00 PM', activity: 'Sunset at Beach', location: 'Laboni Point' }
-      ],
-      // Discussion (4.4, 4.5)
-      discussion: [
-        { id: 1, user: 'Zarin Raisa', image: 'ZR', text: 'Should we book the bus tickets now?', time: '2 hours ago' },
-        { id: 2, user: 'Alimool Razi', image: 'AR', text: 'Yes, I will handle it tomorrow.', time: '1 hour ago' }
-      ],
-      // Tasks (4.1)
-      tasks: [
-        { id: 1, title: 'Book Bus Tickets', assignedTo: 'Alimool Razi', completed: false },
-        { id: 2, title: 'Hotel Reservation', assignedTo: 'Zarin Raisa', completed: true }
-      ],
-      // Polls (4.4)
-      polls: [
-        {
-          id: 1,
-          question: 'Which hotel do you prefer?',
-          options: [
-            { id: 'a', text: 'Sea Palace', votes: 2 },
-            { id: 'b', text: 'Long Beach', votes: 1 }
-          ],
-          userVoted: 'a'
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Sylhet Tea Garden Tour',
-      date: '2024-12-20',
-      location: 'Sylhet',
-      organizer: 'Zarin Raisa',
-      organizerId: 2,
-      participants: [
-        { id: 2, name: 'Zarin Raisa', image: 'ZR' },
-        { id: 4, name: 'Nusrat Jahan', image: 'NJ' }
-      ],
-      maxParticipants: 12,
-      status: 'open',
-      description: 'Experience the serene beauty of tea gardens. Includes local guide and transportation.',
-      hasJoined: false,
-      invitedFriends: [],
-      itinerary: [],
-      discussion: [],
-      tasks: [],
-      polls: []
-    },
-    {
-      id: 3,
-      name: 'Sundarbans Boat Safari',
-      date: '2024-12-25',
-      location: 'Sundarbans',
-      organizer: 'Rafiq Ahmed',
-      organizerId: 3,
-      participants: Array(8).fill({ id: 0, name: 'Participant', image: 'P' }),
-      maxParticipants: 8,
-      status: 'full',
-      description: 'Explore the mangrove forest and spot Royal Bengal Tigers! Professional guide included.',
-      hasJoined: false,
-      invitedFriends: [],
-      itinerary: [],
-      discussion: [],
-      tasks: [],
-      polls: []
-    }
-  ]);
+  const [events, setEvents] = useState([]);
+  const API_URL = 'http://localhost:5000';
 
   // My joined events
   const [myEvents, setMyEvents] = useState([]);
 
   // Received invitations (4.2)
-  const [invitations, setInvitations] = useState([
-    {
-      id: 1,
-      eventId: 1,
-      eventName: "Cox's Bazar Beach Trip",
-      invitedBy: 'Alimool Razi',
-      inviterImage: 'AR',
-      date: '2024-12-15',
-      location: "Cox's Bazar"
-    }
-  ]);
+  const [invitations, setInvitations] = useState([]);
 
   // Friends list for inviting
-  const friends = [
-    { id: 1, name: 'Tasnim Rahman', image: 'TR' },
-    { id: 2, name: 'Ahnaf Rivan', image: 'AR' },
-    { id: 3, name: 'Sabrina Khan', image: 'SK' }
-  ];
+  const [friends, setFriends] = useState([]);
+
+  // Fetch Data
+  const fetchData = React.useCallback(async () => {
+    try {
+      const [eventsRes, invitesRes, friendsRes] = await Promise.all([
+        fetch(`${API_URL}/api/events`),
+        isAuthenticated ? fetch(`${API_URL}/api/events/invitations/${user._id || user.id}`) : Promise.resolve({ json: () => [] }),
+        isAuthenticated ? fetch(`${API_URL}/api/users/${user._id || user.id}/friends`) : Promise.resolve({ json: () => [] })
+      ]);
+
+      const eventsData = await eventsRes.json();
+      const invitesData = await invitesRes.json();
+      const friendsData = await friendsRes.json();
+
+      // Process events to handle _id vs id
+      const processedEvents = Array.isArray(eventsData) ? eventsData.map(e => ({
+        ...e,
+        id: e._id,
+        participants: e.participants || [],
+        hasJoined: (e.participants || []).some(p => p.userId === (user?._id || user?.id))
+      })) : [];
+
+      setEvents(processedEvents);
+      if (isAuthenticated) {
+        setMyEvents(processedEvents.filter(e => e.hasJoined));
+        setInvitations(invitesData.map(i => ({ ...i, id: i._id })));
+        setFriends(friendsData.map(f => ({ ...f, id: f._id })));
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  }, [user, isAuthenticated]);
+
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]); // Refetch when user logs in
 
   const [showInviteModal, setShowInviteModal] = useState(null);
 
@@ -143,87 +80,119 @@ export default function GroupEventsPage() {
   };
 
   // Join event (4.1)
-  const handleJoinEvent = (eventId) => {
+  const handleJoinEvent = async (eventId) => {
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
 
-    setEvents(prev => prev.map(event => {
-      if (event.id === eventId && event.status === 'open') {
-        const newParticipants = [...event.participants, { id: Date.now(), name: user?.name || 'You', image: user?.name?.charAt(0) || 'U' }];
-        const isNowFull = newParticipants.length >= event.maxParticipants;
-        return {
-          ...event,
-          participants: newParticipants,
-          hasJoined: true,
-          status: isNowFull ? 'full' : 'open'
-        };
-      }
-      return event;
-    }));
+    try {
+      const res = await fetch(`${API_URL}/api/events/${eventId}/join`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user._id || user.id,
+          userName: user.name,
+          userImage: user.name?.charAt(0) || 'U'
+        })
+      });
 
-    const event = events.find(e => e.id === eventId);
-    if (event) {
-      setMyEvents(prev => [...prev, { ...event, hasJoined: true }]);
-      showNotificationMsg(`You've joined "${event.name}"! 🎉`);
+      if (res.ok) {
+        showNotificationMsg(`You've joined the event! 🎉`);
+        fetchData();
+      } else {
+        const data = await res.json();
+        showNotificationMsg(data.message, 'error');
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
   // Leave event
-  const handleLeaveEvent = (eventId) => {
-    setEvents(prev => prev.map(event => {
-      if (event.id === eventId) {
-        return {
-          ...event,
-          participants: event.participants.filter(p => p.name !== (user?.name || 'You')),
-          hasJoined: false,
-          status: 'open'
-        };
-      }
-      return event;
-    }));
-    setMyEvents(prev => prev.filter(e => e.id !== eventId));
-    showNotificationMsg('You left the event', 'info');
-    if (selectedEventId === eventId) setSelectedEventId(null);
+  const handleLeaveEvent = async (eventId) => {
+    try {
+      await fetch(`${API_URL}/api/events/${eventId}/leave`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id || user.id })
+      });
+      showNotificationMsg('You left the event', 'info');
+      if (selectedEventId === eventId) setSelectedEventId(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Accept invitation (4.2)
-  const handleAcceptInvitation = (invitationId) => {
+  const handleAcceptInvitation = async (invitationId) => {
     const invitation = invitations.find(i => i.id === invitationId);
     if (invitation) {
-      handleJoinEvent(invitation.eventId);
-      setInvitations(prev => prev.filter(i => i.id !== invitationId));
+      try {
+        // First update invitation status
+        await fetch(`${API_URL}/api/events/invitations/${invitationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'accepted' })
+        });
+
+        // Then join the event
+        await handleJoinEvent(invitation.eventId);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   // Decline invitation
-  const handleDeclineInvitation = (invitationId) => {
-    setInvitations(prev => prev.filter(i => i.id !== invitationId));
-    showNotificationMsg('Invitation declined', 'info');
+  const handleDeclineInvitation = async (invitationId) => {
+    try {
+      await fetch(`${API_URL}/api/events/invitations/${invitationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'declined' })
+      });
+      setInvitations(prev => prev.filter(i => i.id !== invitationId));
+      showNotificationMsg('Invitation declined', 'info');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Send invitation to friend (4.2)
-  const handleInviteFriend = (eventId, friendId) => {
+  const handleInviteFriend = async (eventId, friendId) => {
     const friend = friends.find(f => f.id === friendId);
     const event = events.find(e => e.id === eventId);
     if (friend && event) {
-      setEvents(prev => prev.map(e => {
-        if (e.id === eventId) {
-          return {
-            ...e,
-            invitedFriends: [...(e.invitedFriends || []), friendId]
-          };
+      try {
+        const res = await fetch(`${API_URL}/api/events/${eventId}/invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            invitedUserId: friendId,
+            invitedByUserId: user._id || user.id,
+            invitedByUserName: user.name,
+            invitedByUserImage: user.name?.charAt(0) || 'U'
+          })
+        });
+
+        if (res.ok) {
+          showNotificationMsg(`Invitation sent to ${friend.name} for "${event.name}"! 📤`);
+          setShowInviteModal(null);
+          fetchData(); // refresh invited lists
+        } else {
+          const d = await res.json();
+          showNotificationMsg(d.message, 'error');
         }
-        return e;
-      }));
-      showNotificationMsg(`Invitation sent to ${friend.name} for "${event.name}"! 📤`);
-      setShowInviteModal(null);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   // Create event (4.1)
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -231,154 +200,157 @@ export default function GroupEventsPage() {
 
     if (eventName && eventDate && eventLocation) {
       const newEvent = {
-        id: Date.now(),
         name: eventName,
         date: eventDate,
         location: eventLocation,
-        organizer: user?.name || 'You',
-        organizerId: Date.now(),
-        participants: [{ id: Date.now(), name: user?.name || 'You', image: user?.name?.charAt(0) || 'U' }],
-        maxParticipants: parseInt(maxParticipants),
-        status: 'open',
         description: eventDescription || 'Join this exciting trip!',
-        hasJoined: true,
-        invitedFriends: [],
-        itinerary: [],
-        discussion: [],
-        tasks: [],
-        polls: []
+        maxParticipants: parseInt(maxParticipants),
+        organizer: user?.name || 'You',
+        organizerId: user?._id || user?.id,
       };
 
-      setEvents(prev => [newEvent, ...prev]);
-      setMyEvents(prev => [newEvent, ...prev]);
-      setShowCreateForm(false);
-      setEventName('');
-      setEventDate('');
-      setEventLocation('');
-      setEventDescription('');
-      setMaxParticipants(10);
-      showNotificationMsg('Event created successfully! 🎊 Invite your friends to join.');
+      try {
+        const res = await fetch(`${API_URL}/api/events`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newEvent)
+        });
+
+        if (res.ok) {
+          await fetchData();
+          setShowCreateForm(false);
+          setEventName('');
+          setEventDate('');
+          setEventLocation('');
+          setEventDescription('');
+          setMaxParticipants(10);
+          showNotificationMsg('Event created successfully! 🎊 Invite your friends to join.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   // Add Itinerary Item (4.3)
-  const handleAddItinerary = () => {
+  const handleAddItinerary = async () => {
     if (!newItineraryItem.activity || !newItineraryItem.time) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          itinerary: [...e.itinerary, { ...newItineraryItem, id: Date.now() }].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
-        };
+    try {
+      const res = await fetch(`${API_URL}/api/events/${selectedEventId}/itinerary`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newItineraryItem)
+      });
+      if (res.ok) {
+        setNewItineraryItem({ day: 1, time: '', activity: '', location: '' });
+        showNotificationMsg('Itinerary updated! 📅');
+        fetchData();
       }
-      return e;
-    }));
-    setNewItineraryItem({ day: 1, time: '', activity: '', location: '' });
-    showNotificationMsg('Itinerary updated! 📅');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Add Chat Message (4.4, 4.5)
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newChatMessage.trim()) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          discussion: [...e.discussion, {
-            id: Date.now(),
-            user: user?.name || 'You',
-            image: user?.name?.charAt(0) || 'U',
-            text: newChatMessage,
-            time: 'Just now'
-          }]
-        };
+    try {
+      const res = await fetch(`${API_URL}/api/events/${selectedEventId}/discussion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: user?.name || 'You',
+          image: user?.name?.charAt(0) || 'U',
+          text: newChatMessage
+        })
+      });
+      if (res.ok) {
+        setNewChatMessage('');
+        fetchData();
       }
-      return e;
-    }));
-    setNewChatMessage('');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Add Task (4.1)
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!newTask.trim()) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          tasks: [...e.tasks, {
-            id: Date.now(),
-            title: newTask,
-            assignedTo: 'Unassigned',
-            completed: false
-          }]
-        };
+    try {
+      const res = await fetch(`${API_URL}/api/events/${selectedEventId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTask, assignedTo: 'Unassigned' })
+      });
+      if (res.ok) {
+        setNewTask('');
+        showNotificationMsg('Task added! ✅');
+        fetchData();
       }
-      return e;
-    }));
-    setNewTask('');
-    showNotificationMsg('Task added! ✅');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Toggle Task Completion
-  const toggleTask = (taskId) => {
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          tasks: e.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
-        };
-      }
-      return e;
-    }));
+  const toggleTask = async (taskId) => {
+    try {
+      await fetch(`${API_URL}/api/events/${selectedEventId}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      // Optimistic toggle
+      setEvents(prev => prev.map(e => {
+        if (e.id === selectedEventId) {
+          return {
+            ...e,
+            tasks: e.tasks.map(t => t.id === taskId || t.id.toString() === taskId ? { ...t, completed: !t.completed } : t)
+          };
+        }
+        return e;
+      }));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Create Poll (4.4)
-  const handleCreatePoll = () => {
+  const handleCreatePoll = async () => {
     if (!newPoll.question || !newPoll.option1 || !newPoll.option2) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          polls: [...e.polls, {
-            id: Date.now(),
-            question: newPoll.question,
-            options: [
-              { id: 'a', text: newPoll.option1, votes: 0 },
-              { id: 'b', text: newPoll.option2, votes: 0 }
-            ],
-            userVoted: null
-          }]
-        };
+    try {
+      const res = await fetch(`${API_URL}/api/events/${selectedEventId}/polls`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: newPoll.question,
+          options: [
+            { id: 'a', text: newPoll.option1, votes: 0 },
+            { id: 'b', text: newPoll.option2, votes: 0 }
+          ]
+        })
+      });
+      if (res.ok) {
+        setNewPoll({ question: '', option1: '', option2: '' });
+        showNotificationMsg('Poll created! 📊');
+        fetchData();
       }
-      return e;
-    }));
-    setNewPoll({ question: '', option1: '', option2: '' });
-    showNotificationMsg('Poll created! 📊');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Vote on Poll (4.4)
-  const handleVote = (pollId, optionId) => {
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          polls: e.polls.map(p => {
-            if (p.id === pollId) {
-              // Remove old vote if exists
-              const oldVote = p.userVoted;
-              const newOptions = p.options.map(o => {
-                if (o.id === oldVote) return { ...o, votes: o.votes - 1 };
-                if (o.id === optionId) return { ...o, votes: o.votes + 1 };
-                return o;
-              });
-              return { ...p, options: newOptions, userVoted: optionId };
-            }
-            return p;
-          })
-        };
-      }
-      return e;
-    }));
+  const handleVote = async (pollId, optionId) => {
+    try {
+      await fetch(`${API_URL}/api/events/${selectedEventId}/polls/${pollId}/vote`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id || user.id, optionId })
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Login required check
