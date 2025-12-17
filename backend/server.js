@@ -22,6 +22,8 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/routes', require('./routes/routes'));
 app.use('/api/rewards', require('./routes/rewards'));
+app.use('/api/route-estimator', require('./routes/routeEstimator'));
+app.use('/api/heatmap', require('./routes/heatmap'));
 
 app.get('/', (req, res) => {
     res.send('Server is running');

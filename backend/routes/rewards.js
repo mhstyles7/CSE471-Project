@@ -46,4 +46,62 @@ router.post('/redeem', async (req, res) => {
     }
 });
 
+// Add Points (Manual/System Action)
+router.post('/add-points', async (req, res) => {
+    try {
+        const db = getDb();
+        const { userId, points, reason } = req.body;
+        const { ObjectId } = require('mongodb');
+
+        if (!userId || !points) {
+            return res.status(400).json({ message: "userId and points are required" });
+        }
+
+        let user = null;
+        try {
+            user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        } catch (e) {
+            // Invalid ObjectId format, ignore
+        }
+
+        if (!user) {
+            // Try as string
+            user = await db.collection('users').findOne({ _id: userId });
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Calculate new points and tier
+        const currentPoints = user.points || 0;
+        const newPoints = currentPoints + parseInt(points);
+
+        let newTier = 'Bronze';
+        if (newPoints >= 1000) {
+            newTier = 'Gold';
+        } else if (newPoints >= 500) {
+            newTier = 'Silver';
+        }
+
+        // Update User
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    points: newPoints,
+                    tier: newTier
+                }
+            }
+        );
+
+        // Optionally log the activity (implied for future use)
+        console.log(`User ${userId} earned ${points} points for: ${reason}`);
+
+        res.json({ message: `Successfully added ${points} points`, newTotal: (user.points || 0) + parseInt(points) });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
