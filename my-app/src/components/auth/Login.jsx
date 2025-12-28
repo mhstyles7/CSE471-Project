@@ -1,27 +1,54 @@
 import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../../context/AuthContext';
-import { Mail, Lock, Facebook, Chrome } from 'lucide-react';
+import { useNavigate } from '../../context/NavigationContext';
+import { Mail, Lock } from 'lucide-react';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, socialLogin, loading, error } = useAuth();
+    const { login, googleLogin, loading, error, setError } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             await login(email, password);
+            navigate('home');
         } catch (err) {
             // Error is handled by context state
         }
     };
 
-    const handleSocialLogin = async (provider) => {
+    const handleGoogleSuccess = async (credentialResponse) => {
         try {
-            await socialLogin(provider);
+            // Decode the JWT token from Google
+            const decoded = jwtDecode(credentialResponse.credential);
+
+            // Call our backend with the Google user data
+            await googleLogin({
+                email: decoded.email,
+                name: decoded.name,
+                googleId: decoded.sub,
+                avatar: decoded.picture
+            });
+
+            navigate('home');
         } catch (err) {
-            console.error(err);
+            console.error('Google login failed:', err);
+            setError('Google login failed. Please try again.');
         }
+    };
+
+    const handleGoogleError = () => {
+        setError('Google login failed. Please try again.');
+    };
+
+    // Clear error when user starts typing
+    const handleInputChange = (setter) => (e) => {
+        if (error) setError(null);
+        setter(e.target.value);
     };
 
     return (
@@ -42,7 +69,7 @@ export default function Login() {
                         type="email"
                         placeholder="Email Address"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={handleInputChange(setEmail)}
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
@@ -53,16 +80,20 @@ export default function Login() {
                         type="password"
                         placeholder="Password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={handleInputChange(setPassword)}
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                    <a href="#" onClick={(e) => { e.preventDefault(); window.location.href = '/forgot-password'; }} style={{ color: '#059669', fontSize: '14px', textDecoration: 'none', fontWeight: '500' }}>
+                    <button
+                        type="button"
+                        onClick={() => navigate('forgot-password')}
+                        style={{ color: '#059669', fontSize: '14px', textDecoration: 'none', fontWeight: '500', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
                         Forgot Password?
-                    </a>
+                    </button>
                 </div>
 
                 <button
@@ -92,57 +123,29 @@ export default function Login() {
                 </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <button
-                    type="button"
-                    onClick={() => handleSocialLogin('Google')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Chrome size={20} />
-                    Google
-                </button>
-                <button
-                    type="button"
-                    onClick={() => handleSocialLogin('Facebook')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Facebook size={20} color="#1877F2" />
-                    Facebook
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="outline"
+                    size="large"
+                    text="continue_with"
+                    shape="rectangular"
+                    width="350"
+                />
             </div>
 
             <p style={{ marginTop: '32px', color: '#6b7280', fontSize: '14px' }}>
                 Don't have an account?{' '}
-                <a href="#" onClick={(e) => { e.preventDefault(); window.location.href = '/register'; }} style={{ color: '#059669', textDecoration: 'none', fontWeight: '600' }}>
+                <button
+                    onClick={() => navigate('register')}
+                    style={{ color: '#059669', textDecoration: 'none', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
                     Sign up
-                </a>
+                </button>
             </p>
         </div>
     );
 }
+
+

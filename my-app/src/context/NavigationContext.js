@@ -27,9 +27,17 @@ export const useCurrentPage = () => {
     return context.currentPage;
 };
 
-export const NavigationProvider = ({ children, navigate, currentPage }) => {
+export const usePageParams = () => {
+    const context = useContext(NavigationContext);
+    if (!context) {
+        throw new Error('usePageParams must be used within a NavigationProvider');
+    }
+    return context.pageParams || {};
+};
+
+export const NavigationProvider = ({ children, navigate, currentPage, pageParams }) => {
     return (
-        <NavigationContext.Provider value={{ navigate, currentPage }}>
+        <NavigationContext.Provider value={{ navigate, currentPage, pageParams }}>
             {children}
         </NavigationContext.Provider>
     );

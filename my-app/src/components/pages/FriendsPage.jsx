@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Check, X, MessageCircle, MapPin, Calendar, Heart, Send, Bell, Clock, Activity } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Users, Check, X, MapPin, Heart, Bell, Clock, Activity, Calendar, MessageCircle, Send, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -21,7 +21,7 @@ export default function FriendsPage() {
   const [conversation, setConversation] = useState([]); // Chat history
   const [myEvents, setMyEvents] = useState([]); // For invite dropdown
   const [selectedEventId, setSelectedEventId] = useState('');
-  const chatEndRef = React.useRef(null); // For auto-scrolling
+  const chatEndRef = useRef(null); // For auto-scrolling
 
   // Legacy/Existing State required for other parts of the UI
   const [friendRequests, setFriendRequests] = useState([]);

@@ -25,6 +25,9 @@ app.use('/api/routes', require('./routes/routes'));
 app.use('/api/rewards', require('./routes/rewards'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/messages', require('./routes/messages'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/trip-plans', require('./routes/tripPlans'));
+app.use('/api/reviews', require('./routes/reviews'));
 
 // Serve static files from 'uploads' directory
 app.use('/uploads', express.static('uploads'));
