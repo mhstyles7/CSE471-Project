@@ -24,21 +24,19 @@ router.get('/', async (req, res) => {
 
         // 1. Aggregating TRIPS
         if (type === 'all' || type === 'trips') {
-            const routes = await db.collection('routes').find({}).toArray(); // Filtering by date would be better efficiently with DB query
+            // Correct collection is 'trips', not 'routes'
+            const trips = await db.collection('trips').find({}).toArray();
 
-            // Note: Our mock 'routes' collection might not have strict dates on all items in this dev env, 
-            // but we will filter what we can or assume recent for demo if date is missing.
-
-            routes.forEach(route => {
-                // In a real app, check route.date >= startDate
-                // For demo, we count all to ensure visual data
-
-                // Weight: 1 trip = 5 points
-                if (route.from) heatScores[route.from] = (heatScores[route.from] || 0) + 5;
-                if (route.to) heatScores[route.to] = (heatScores[route.to] || 0) + 5;
-
-                // Track purely for counts
-                if (route.to) districtCounts[route.to] = (districtCounts[route.to] || 0) + 1;
+            trips.forEach(trip => {
+                // Trips schema typically has 'destinationName', or 'from'/'to' if detailed.
+                // We'll score the destination.
+                if (trip.destinationName) {
+                    const slug = trip.destinationName.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                    heatScores[slug] = (heatScores[slug] || 0) + 5; // 1 trip = 5 points
+                }
+                // Also check if it has explicit from/to (from Route Planner saves)
+                if (trip.from) heatScores[trip.from] = (heatScores[trip.from] || 0) + 2;
+                if (trip.to) heatScores[trip.to] = (heatScores[trip.to] || 0) + 5;
             });
         }
 
@@ -48,71 +46,44 @@ router.get('/', async (req, res) => {
                 createdAt: { $gte: startDate.toISOString() }
             }).toArray();
 
+            // Fetch destinations for text-mining content
+            const allDestinations = await db.collection('destinations').find().toArray();
+            // Sort by name length desc to match "Cox's Bazar" before "Cox"
+            const sortedDestNames = allDestinations
+                .map(d => ({ name: d.name.toLowerCase(), slug: d.slug || d.name.toLowerCase().replace(/ /g, '-').replace(/'/g, '') }))
+                .sort((a, b) => b.name.length - a.name.length);
+
             posts.forEach(post => {
-                // Posts usually have a 'location' or 'district' string. 
-                // If specific field missing, we might skip.
-                if (post.location) {
-                    // Try to match basic slug convention (lowercase)
-                    const slug = post.location.toLowerCase();
+                let slug = null;
+
+                // 1. Try explicit fields first
+                const explicitLoc = post.destination || post.location;
+                if (explicitLoc) {
+                    slug = explicitLoc.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                }
+
+                // 2. If no explicit location, scan CONTENT for mentions/hashtags
+                if (!slug && post.content) {
+                    const contentLower = post.content.toLowerCase();
+
+                    for (const dest of sortedDestNames) {
+                        // Check for hashtag (#dhaka) or plain word (dhaka)
+                        // Simple check: does content include the name? 
+                        // We use regex to ensure word boundary for short names, but loose check for others.
+                        if (contentLower.includes(dest.name)) {
+                            slug = dest.slug;
+                            break; // Stop at first strong match (longest due to sort)
+                        }
+                    }
+                }
+
+                if (slug) {
                     heatScores[slug] = (heatScores[slug] || 0) + 3; // 1 post = 3 points
                 }
             });
         }
 
-        // --- INJECT DYNAMIC DUMMY DATA FOR DEMO ---
-        // Ensure we have some hot zones for visualization if data is sparse, but make it REACT to filters
-        if (Object.keys(heatScores).length < 5) {
 
-            // 1. Define BASE Activity (represents a typical Week)
-            let baseScores = { ...heatScores };
-
-            // Differentiate by TYPE for Base Logic
-            if (type === 'trips') {
-                baseScores['coxs-bazar'] = (baseScores['coxs-bazar'] || 0) + 50;
-                baseScores['sylhet'] = (baseScores['sylhet'] || 0) + 40;
-                baseScores['bandarban'] = (baseScores['bandarban'] || 0) + 30;
-                baseScores['dhaka'] = (baseScores['dhaka'] || 0) + 15;
-            } else if (type === 'posts') {
-                baseScores['dhaka'] = (baseScores['dhaka'] || 0) + 60;
-                baseScores['chittagong'] = (baseScores['chittagong'] || 0) + 40;
-                baseScores['khulna'] = (baseScores['khulna'] || 0) + 30;
-                baseScores['coxs-bazar'] = (baseScores['coxs-bazar'] || 0) + 20;
-            } else {
-                // ALL
-                baseScores['dhaka'] = (baseScores['dhaka'] || 0) + 55;
-                baseScores['coxs-bazar'] = (baseScores['coxs-bazar'] || 0) + 50;
-                baseScores['sylhet'] = (baseScores['sylhet'] || 0) + 35;
-                baseScores['chittagong'] = (baseScores['chittagong'] || 0) + 30;
-            }
-
-            // Inject Trending Events (applies to ALL timeframes that cover this week)
-            // e.g. "Barisal" has a sudden spike this week
-            baseScores['barisal'] = (baseScores['barisal'] || 0) + 25;
-
-            // 2. Scale by TIME PERIOD (Accumulate)
-            let multiplier = 1.0;
-            let randomNoise = 0.1;
-
-            if (period === 'week') {
-                multiplier = 1.0;
-                randomNoise = 0.2; // High variance in short term
-            } else if (period === 'month') {
-                multiplier = 4.0; // Month = ~4 Weeks
-                randomNoise = 0.1;
-            } else if (period === 'year') {
-                multiplier = 48.0; // Year = ~48-52 Weeks
-                randomNoise = 0.05; // Smooths out over year
-            }
-
-            // Apply Multiplier to create Final HeatScores
-            // We overwrite heatScores with the scaled values
-            heatScores = {}; // Reset to build from base
-            Object.keys(baseScores).forEach(key => {
-                const flux = 1.0 + (Math.random() * randomNoise * 2 - randomNoise); // +/- noise
-                heatScores[key] = Math.round(baseScores[key] * multiplier * flux);
-            });
-        }
-        // ----------------------------------
 
         // Normalize Scores (0-100) for Heatmap intensity
         // Find max

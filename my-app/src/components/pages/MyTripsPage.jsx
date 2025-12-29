@@ -60,9 +60,18 @@ export default function MyTripsPage() {
         }
       );
 
+      const data = await response.json();
+
       if (response.ok) {
         setTrips([...trips, newTrip]);
-        alert("Trip Added! You earned 150 Travel Points! ✈️");
+
+        if (data.tierUpgraded) {
+          alert(
+            `🎉 AMAZING! You've reached the ${data.newTier} Tier! \n\nTrip Added! You earned 150 Travel Points!`
+          );
+        } else {
+          alert("Trip Added! You earned 150 Travel Points! ✈️");
+        }
       } else {
         console.error("Failed to add points");
       }

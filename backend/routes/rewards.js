@@ -84,6 +84,12 @@ router.post('/add-points', async (req, res) => {
             newTier = 'Silver';
         }
 
+        // Check for Tier Upgrade
+        let tierUpgraded = false;
+        if (newTier !== (user.tier || 'Bronze')) {
+            tierUpgraded = true;
+        }
+
         // Update User
         await db.collection('users').updateOne(
             { _id: user._id },
@@ -98,7 +104,12 @@ router.post('/add-points', async (req, res) => {
         // Optionally log the activity (implied for future use)
         console.log(`User ${userId} earned ${points} points for: ${reason}`);
 
-        res.json({ message: `Successfully added ${points} points`, newTotal: (user.points || 0) + parseInt(points) });
+        res.json({
+            message: `Successfully added ${points} points`,
+            newTotal: newPoints,
+            tierUpgraded: tierUpgraded,
+            newTier: newTier
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

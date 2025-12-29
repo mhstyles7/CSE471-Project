@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import RouteMap from "./RouteMap";
 import { searchLocation, getRouteEstimates } from "../../services/mapService";
+import { getRouteRecommendation } from "../../services/travelAIService";
 
 export default function RoutePlanner() {
   const [startQuery, setStartQuery] = useState("");
@@ -67,13 +68,23 @@ export default function RoutePlanner() {
     }
   };
 
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+
   const fetchEstimates = async () => {
     if (!source || !destination) return;
     setLoading(true);
     setError(null);
+    setAiRecommendation(null); // Reset prev AI
     try {
       const data = await getRouteEstimates(source, destination);
       setEstimates(data);
+
+      // Async fetch AI recommendation (doesn't block initial render)
+      getRouteRecommendation(source, destination, data.estimates).then(
+        (aiRes) => {
+          if (aiRes) setAiRecommendation(aiRes);
+        }
+      );
     } catch (err) {
       setError("Failed to fetch route estimates. Please try again.");
     } finally {
@@ -416,7 +427,11 @@ export default function RoutePlanner() {
                       : "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
                   }}
                 >
-                  {est.isRecommended && (
+                  {/* Determine Recommendation: Prioritize AI, else Backend */}
+                  {(aiRecommendation &&
+                    est.mode ===
+                      aiRecommendation.recommendedMode.toLowerCase()) ||
+                  (!aiRecommendation && est.isRecommended) ? (
                     <div
                       style={{
                         position: "absolute",
@@ -431,12 +446,36 @@ export default function RoutePlanner() {
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        zIndex: 10,
                       }}
                     >
                       <Trophy size={12} />
                       AI Recommended
                     </div>
-                  )}
+                  ) : null}
+
+                  {/* Show AI Reason if THIS is the recommended one */}
+                  {aiRecommendation &&
+                    est.mode ===
+                      aiRecommendation.recommendedMode.toLowerCase() && (
+                      <div
+                        style={{
+                          marginBottom: "12px",
+                          fontSize: "13px",
+                          color: "#15803d",
+                          backgroundColor: "#dcfce7",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "start",
+                          gap: "6px",
+                        }}
+                      >
+                        <span style={{ flexShrink: 0 }}>✨</span>
+                        <span>{aiRecommendation.reason}</span>
+                      </div>
+                    )}
 
                   <div
                     style={{

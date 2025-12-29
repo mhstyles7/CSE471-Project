@@ -33,6 +33,37 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Update user profile
+router.put('/:id/profile', async (req, res) => {
+    try {
+        const db = getDb();
+        const userId = req.params.id;
+        const { name, bio, avatar, coverImage } = req.body;
+
+        // Build update object with only provided fields
+        const updateFields = { updatedAt: new Date() };
+        if (name !== undefined) updateFields.name = name;
+        if (bio !== undefined) updateFields.bio = bio;
+        if (avatar !== undefined) updateFields.avatar = avatar;
+        if (coverImage !== undefined) updateFields.coverImage = coverImage;
+
+        const result = await db.collection('users').findOneAndUpdate(
+            { _id: new ObjectId(userId) },
+            { $set: updateFields },
+            { returnDocument: 'after' }
+        );
+
+        if (!result) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const { password, ...safeUser } = result;
+        res.json(safeUser);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Send Friend Request
 router.post('/request', async (req, res) => {
     try {
@@ -210,7 +241,25 @@ router.get('/:userId/sent-requests', async (req, res) => {
             fromUserId: new ObjectId(req.params.userId),
             status: 'pending'
         }).toArray();
-        res.json(requests.map(r => r.toUserId));
+
+        // Enrich with User Details
+        const enrichedRequests = await Promise.all(requests.map(async (req) => {
+            const toUser = await db.collection('users').findOne({ _id: req.toUserId });
+            if (!toUser) return null; // Skip if user not found
+
+            return {
+                id: req._id, // Request ID
+                toUser: {
+                    _id: toUser._id,
+                    name: toUser.name,
+                    avatar: toUser.avatar,
+                    role: toUser.role
+                },
+                createdAt: req.createdAt
+            };
+        }));
+
+        res.json(enrichedRequests.filter(req => req !== null));
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

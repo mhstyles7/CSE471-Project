@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NavigationProvider } from './context/NavigationContext';
 import Navbar from './components/layout/Navbar';
@@ -16,6 +17,7 @@ import ProfilePage from './components/pages/ProfilePage';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
 import DashboardPage from './components/pages/DashboardPage';
 import AgencyDashboard from './components/pages/AgencyDashboard';
 import InteractiveMap from './components/maps/InteractiveMap';
@@ -24,10 +26,18 @@ import RoutePlanner from './components/maps/RoutePlanner';
 import LocalGuidePage from './components/pages/LocalGuidePage';
 import CulturePage from './components/pages/CulturePage';
 import TripPlannerPage from './components/pages/TripPlannerPage';
+import DestinationDetailsPage from './components/pages/DestinationDetailsPage';
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [pageParams, setPageParams] = useState({});
   const { user, isAuthenticated, logout } = useAuth();
+
+  const navigate = (page, params = {}) => {
+    setCurrentPage(page);
+    setPageParams(params);
+    window.scrollTo(0, 0);
+  };
 
   // List of routes that require authentication
   const protectedRoutes = [
@@ -53,6 +63,8 @@ function AppContent() {
         return <HomePage />;
       case 'destinations':
         return <DestinationsPage />;
+      case 'destination-details':
+        return <DestinationDetailsPage id={pageParams.id} />;
       case 'friends':
         return <FriendsPage />;
       case 'community':
@@ -74,6 +86,8 @@ function AppContent() {
         return <Register />;
       case 'forgot-password':
         return <ForgotPassword />;
+      case 'reset-password':
+        return <ResetPassword />;
       case 'dashboard':
         return <DashboardPage user={user} />;
       case 'agency':
@@ -96,7 +110,7 @@ function AppContent() {
   };
 
   return (
-    <NavigationProvider navigate={setCurrentPage} currentPage={currentPage}>
+    <NavigationProvider navigate={navigate} currentPage={currentPage} pageParams={pageParams}>
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 25%, #f0fdfa 50%, #e0f2fe 75%, #f0fdf4 100%)',
@@ -121,7 +135,7 @@ function AppContent() {
         <div style={{ position: 'relative', zIndex: 10 }}>
           <Navbar
             currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
+            setCurrentPage={navigate}
             isAuthenticated={isAuthenticated}
             user={user}
             onLogout={logout}
@@ -160,10 +174,15 @@ function AppContent() {
   );
 }
 
+// Google OAuth Client ID - Replace with your actual client ID from Google Cloud Console
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '918686590286-4j8vk2dbv8bvre27at01aqv5p6h6vaqq.apps.googleusercontent.com';
+
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }

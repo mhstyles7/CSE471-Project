@@ -30,6 +30,7 @@ import {
 import {
   getAIInsights,
   getAIRecommendations,
+  getCoordinates,
 } from "../../services/travelAIService";
 
 // Fix Leaflet marker icons
@@ -38,6 +39,46 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+});
+
+// Custom Icons
+const customIcon = L.divIcon({
+  className: "custom-marker",
+  html: `<div style="
+    background-color: #3b82f6; 
+    width: 24px; 
+    height: 24px; 
+    border-radius: 50%; 
+    border: 3px solid white; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  ">
+    <div style="background-color: white; width: 8px; height: 8px; border-radius: 50%;"></div>
+  </div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
+const discoveryIcon = L.divIcon({
+  className: "custom-marker-discovery",
+  html: `<div style="
+    background-color: #10b981; 
+    width: 20px; 
+    height: 20px; 
+    border-radius: 50%; 
+    border: 2px solid white; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+  ">
+    <div style="background-color: white; width: 6px; height: 6px; border-radius: 50%;"></div>
+  </div>`,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
 });
 
 function MapController({ center, zoom }) {
@@ -169,48 +210,50 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    // Fetch live AI data
-    getAIInsights(district).then((data) => {
-      if (mounted) {
-        setAiData(data);
-        setLoading(false);
-      }
-    });
+    console.log("[DistrictPanel] Fetching AI insights for", district.name);
+
+    getAIInsights(district)
+      .then((data) => {
+        if (mounted) {
+          console.log("[DistrictPanel] Received data:", data);
+          setAiData(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn("[DistrictPanel] AI fetch failed:", err);
+        if (mounted) setLoading(false);
+      });
 
     return () => {
       mounted = false;
     };
   }, [district]);
 
-  // Use AI data if available, otherwise fall back to district props or "Loading..."
-  const displayRisk = loading ? "..." : aiData?.riskLevel || district.risk;
-  const displayEco = loading ? "..." : aiData?.ecoScore || district.eco;
-  const displayComfort = loading
-    ? "..."
-    : aiData?.comfortLevel || district.comfort;
-  const displayWeatherTemp = loading
-    ? "..."
-    : aiData?.weather?.temp || district.weather?.temp;
-  const displayWeatherCond = loading
-    ? "..."
-    : aiData?.weather?.condition || district.weather?.condition;
-  const displayNews = loading
-    ? ["Checking updates..."]
-    : aiData?.news || district.news;
-  const displayLandmarks = loading
-    ? []
-    : aiData?.landmarks || district.landmarks || [];
+  // Fail-safe data merging
+  const safeData = {
+    riskLevel: aiData?.riskLevel || district.risk || "Unknown",
+    ecoScore: aiData?.ecoScore || district.eco || "N/A",
+    comfortLevel: aiData?.comfortLevel || district.comfort || "N/A",
+    weather: {
+      temp: aiData?.weather?.temp || district.weather?.temp || "--",
+      condition:
+        aiData?.weather?.condition || district.weather?.condition || "",
+    },
+    news: aiData?.news || district.news || [],
+    landmarks: aiData?.landmarks || district.landmarks || [],
+  };
 
   const riskColor =
-    displayRisk === "High"
+    safeData.riskLevel === "High"
       ? "#fee2e2"
-      : displayRisk === "Medium"
+      : safeData.riskLevel === "Medium"
       ? "#fef3c7"
       : "#f0fdf4";
   const riskTextColor =
-    displayRisk === "High"
+    safeData.riskLevel === "High"
       ? "#991b1b"
-      : displayRisk === "Medium"
+      : safeData.riskLevel === "Medium"
       ? "#92400e"
       : "#166534";
 
@@ -354,7 +397,7 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
               fontSize: "13px",
             }}
           >
-            {displayRisk}
+            {safeData.riskLevel}
           </div>
         </div>
         <div
@@ -388,7 +431,7 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
             className="stat-value"
             style={{ fontWeight: "bold", color: "#14532d", fontSize: "13px" }}
           >
-            {displayEco}
+            {safeData.ecoScore}
           </div>
         </div>
         <div
@@ -422,7 +465,7 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
             className="stat-value"
             style={{ fontWeight: "bold", color: "#7c2d12", fontSize: "13px" }}
           >
-            {displayComfort}
+            {safeData.comfortLevel}
           </div>
         </div>
       </div>
@@ -459,10 +502,10 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
             <span
               style={{ fontSize: "24px", fontWeight: "bold", color: "#0ea5e9" }}
             >
-              {displayWeatherTemp}
+              {safeData.weather.temp}
             </span>
             <span style={{ fontSize: "14px", color: "#64748b" }}>
-              {displayWeatherCond}
+              {safeData.weather.condition}
             </span>
           </div>
           <div style={{ fontSize: "11px", color: "#94a3b8" }}>Updated now</div>
@@ -486,8 +529,8 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
           <Newspaper size={18} /> Situation Updates
         </h3>
         <ul className="news-list" style={{ listStyle: "none", padding: 0 }}>
-          {displayNews && displayNews.length > 0 ? (
-            displayNews.map((item, i) => (
+          {safeData.news && safeData.news.length > 0 ? (
+            safeData.news.map((item, i) => (
               <li
                 key={i}
                 className="news-item"
@@ -542,7 +585,7 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
               Finding places...
             </span>
           ) : (
-            displayLandmarks.map((l, i) => (
+            safeData.landmarks.map((l, i) => (
               <span
                 key={i}
                 className="landmark-tag"
@@ -1053,6 +1096,7 @@ export default function InteractiveMap() {
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [mapCenter, setMapCenter] = useState([23.685, 90.3563]); // Bangladesh center
   const [mapZoom, setMapZoom] = useState(7);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   // 4.7 Comparison State
   const [compareList, setCompareList] = useState([]);
@@ -1069,6 +1113,7 @@ export default function InteractiveMap() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("[Map] Fetching initial data...");
         setLoading(true);
         // 1. Fetch Destinations (Districts)
         const distRes = await fetch("http://localhost:5000/api/destinations");
@@ -1082,75 +1127,228 @@ export default function InteractiveMap() {
         // 3. Fetch Routes (Trips)
         const routeRes = await fetch("http://localhost:5000/api/routes");
         const routeData = await routeRes.json();
+        console.log(`[Map] Found ${routeData.length} trips.`);
 
-        // Process Routes to get OSRM Paths
-        const updatedTrips = await Promise.all(
-          routeData.map(async (trip) => {
+        // 3a. Check for Missing Coordinates & Fetch Dynamically
+        const missingSlugs = new Set();
+        routeData.forEach((trip) => {
+          if (!distMap[trip.from]) missingSlugs.add(trip.from);
+          if (!distMap[trip.to]) missingSlugs.add(trip.to);
+        });
+
+        if (missingSlugs.size > 0) {
+          console.log("[Map] Missing coordinates for:", [...missingSlugs]);
+          // Import helper dynamically or assume it's imported at top.
+          // Better to iterate and fetch.
+          // Note: getCoordinates uses "Place Name" prompt. Slug might be "sajek-valley".
+          // Convert slug to name for better AI prompt.
+          const slugToName = (slug) =>
+            slug
+              .split("-")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+
+          await Promise.all(
+            [...missingSlugs].map(async (slug) => {
+              try {
+                const name = slugToName(slug);
+                const coords = await getCoordinates(name); // From travelAIService
+                if (coords) {
+                  distMap[slug] = {
+                    _id: `dynamic-${slug}`,
+                    name: name,
+                    slug: slug,
+                    coordinates: coords,
+                    risk: "Low", // Default fallback
+                    eco: "Good",
+                    comfort: "Medium",
+                  };
+                  console.log(
+                    `[Map] Dynamically fetched coords for ${name}:`,
+                    coords
+                  );
+                }
+              } catch (e) {
+                console.warn(`[Map] Failed to fetch coords for ${slug}`, e);
+              }
+            })
+          );
+
+          // Re-update districts state
+          setDistricts({ ...distMap });
+        }
+
+        // 3b. Initial "Fast" Render - Straight Lines
+        const initialTrips = routeData.map((trip) => {
+          const fromDist = distMap[trip.from];
+          const toDist = distMap[trip.to];
+          let fallbackPath = [];
+          if (fromDist?.coordinates && toDist?.coordinates) {
+            fallbackPath = [
+              [fromDist.coordinates.lat, fromDist.coordinates.lng],
+              [toDist.coordinates.lat, toDist.coordinates.lng],
+            ];
+          }
+          return { ...trip, path: fallbackPath };
+        });
+
+        console.log(
+          "[Map] Setting initial trips (straight lines)",
+          initialTrips
+        );
+        setTrips(initialTrips);
+        setLoading(false); // <--- UNBLOCK UI HERE
+
+        // 3b. Background "Slow" Update - OSRM Paths (Sequential to avoid 429 Rate Limit)
+        const backgroundUpdate = async () => {
+          console.log(
+            "[Map] Starting background OSRM path updates (Sequential)..."
+          );
+
+          // We'll update state incrementally or in chunks if needed,
+          // but for now, let's just mutate a local copy and update state periodically or at the end.
+          // To see progress live, we can update state per successful fetch, but that causes re-renders.
+          // Better: Fetch all sequentially, then update? Or batches.
+
+          // Let's do strict sequential for stability
+          const newTrips = [...initialTrips];
+
+          for (let i = 0; i < newTrips.length; i++) {
+            const trip = newTrips[i];
             const fromDist = distMap[trip.from];
             const toDist = distMap[trip.to];
 
-            if (
-              fromDist &&
-              toDist &&
-              fromDist.coordinates &&
-              toDist.coordinates
-            ) {
+            if (fromDist?.coordinates && toDist?.coordinates) {
               try {
+                // 1. Check if we already have a complex path (more than 2 points)
+                if (trip.path && trip.path.length > 2) continue;
+
                 const startCoords = `${fromDist.coordinates.lng},${fromDist.coordinates.lat}`;
                 const endCoords = `${toDist.coordinates.lng},${toDist.coordinates.lat}`;
                 const url = `https://router.project-osrm.org/route/v1/driving/${startCoords};${endCoords}?overview=full&geometries=geojson`;
 
+                // Request
                 const osrmRes = await fetch(url);
-                const osrmData = await osrmRes.json();
-
-                if (osrmData.routes && osrmData.routes.length > 0) {
-                  const path = osrmData.routes[0].geometry.coordinates.map(
-                    (c) => [c[1], c[0]]
-                  );
-                  console.log(
-                    `Route found for ${trip.from}->${trip.to}:`,
-                    path.length,
-                    "points"
-                  );
-                  return { ...trip, path }; // Override existing straight-line path
+                if (osrmRes.ok) {
+                  const osrmData = await osrmRes.json();
+                  if (osrmData.routes?.[0]?.geometry?.coordinates) {
+                    const path = osrmData.routes[0].geometry.coordinates.map(
+                      (c) => [c[1], c[0]]
+                    );
+                    newTrips[i] = { ...trip, path };
+                    // Optional: Update state every X items to show progress?
+                    // For now, let's update every 1 item to make it feel "active" even if slow
+                    setTrips((prev) => {
+                      const next = [...prev];
+                      next[i] = { ...trip, path };
+                      return next;
+                    });
+                  }
                 }
+                // Small delay to be nice to the API
+                await new Promise((r) => setTimeout(r, 800));
               } catch (err) {
-                console.error("OSRM fetch failed for trip", trip.id, err);
+                console.warn(`[Map] OSRM fail for ${trip.id}`, err);
               }
-            } else {
-              console.warn(
-                `Missing coordinates for trip ${trip.id}: ${trip.from}->${trip.to}`
-              );
             }
+          }
+          console.log("[Map] All background updates finished.");
+        };
 
-            // Fallback: Straight line if coords exist, else empty
-            let fallbackPath = [];
-            if (
-              fromDist &&
-              toDist &&
-              fromDist.coordinates &&
-              toDist.coordinates
-            ) {
-              fallbackPath = [
-                [fromDist.coordinates.lat, fromDist.coordinates.lng],
-                [toDist.coordinates.lat, toDist.coordinates.lng],
-              ];
-              console.log(`Fallback path used for ${trip.from}->${trip.to}`);
-            }
-            return { ...trip, path: trip.path || fallbackPath };
-          })
-        );
-        console.log("All trips processed:", updatedTrips);
-        setTrips(updatedTrips);
-        setLoading(false);
+        backgroundUpdate();
       } catch (error) {
-        console.error("Error fetching map data:", error);
+        console.error("[Map] Error fetching map data:", error);
         setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  // Effect: Prioritize Selected Trip
+  // Effect: Prioritize Selected Trip
+  useEffect(() => {
+    // If user selects a trip that is still a straight line, FORCE fetch it now.
+    if (!selectedTrip) return;
+
+    // Check if current trip in state has a real path
+    const currentTripState = trips.find((t) => t.id === selectedTrip.id);
+    if (
+      currentTripState &&
+      currentTripState.path &&
+      currentTripState.path.length > 2
+    ) {
+      console.log(
+        `[Map] Trip ${selectedTrip.id} already has detailed path. No fetch needed.`
+      );
+      return; // Already has detailed path
+    }
+
+    const controller = new AbortController();
+    const loadSelectedPath = async () => {
+      const fromDist = districts[selectedTrip.from];
+      const toDist = districts[selectedTrip.to];
+      if (!fromDist || !toDist) return;
+
+      console.log(
+        `[Map] Priority fetching for selected trip: ${selectedTrip.id}`
+      );
+      setIsOptimizing(true);
+      console.log("[Map] isOptimizing set to TRUE");
+      const startTime = Date.now();
+
+      try {
+        const startCoords = `${fromDist.coordinates.lng},${fromDist.coordinates.lat}`;
+        const endCoords = `${toDist.coordinates.lng},${toDist.coordinates.lat}`;
+        const url = `https://router.project-osrm.org/route/v1/driving/${startCoords};${endCoords}?overview=full&geometries=geojson`;
+
+        // 120s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        // Enforce minimum visibility time (e.g., 800ms)
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 800) {
+          await new Promise((resolve) => setTimeout(resolve, 800 - elapsed));
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.routes?.[0]?.geometry?.coordinates) {
+            const path = data.routes[0].geometry.coordinates.map((c) => [
+              c[1],
+              c[0],
+            ]);
+            // Update global state immediately
+            setTrips((prev) =>
+              prev.map((t) => (t.id === selectedTrip.id ? { ...t, path } : t))
+            );
+          }
+        }
+      } catch (err) {
+        if (err.name === "AbortError") {
+          console.log("[Map] Priority fetch aborted.");
+        } else {
+          console.error("[Map] Priority fetch failed", err);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsOptimizing(false);
+          console.log("[Map] isOptimizing set to FALSE");
+        }
+      }
+    };
+
+    loadSelectedPath();
+
+    return () => {
+      console.log("[Map] Cleaning up selected trip effect");
+      controller.abort();
+      setIsOptimizing(false);
+    };
+  }, [selectedTrip, districts, trips]); // Re-run if selection changes or districts load, or trips array itself changes
 
   const handleDistrictClick = (key) => {
     const district = districts[key];
@@ -1407,64 +1605,81 @@ export default function InteractiveMap() {
 
           <MapController center={mapCenter} zoom={mapZoom} />
 
-          {/* 4.2 Markers for Discovery */}
-          {Object.entries(districts).map(
-            ([key, district]) =>
-              district.coordinates && (
-                <Marker
-                  key={key}
-                  position={[
-                    district.coordinates.lat,
-                    district.coordinates.lng,
-                  ]}
-                  eventHandlers={{
-                    click: () => handleDistrictClick(key),
-                  }}
-                  opacity={1}
-                >
-                  <Popup>
-                    <div style={{ textAlign: "center", minWidth: "150px" }}>
-                      <h3
-                        style={{
-                          fontWeight: "bold",
-                          margin: "0",
-                          color: "#0f172a",
-                          fontSize: "16px",
-                        }}
-                      >
-                        {district.name}
-                      </h3>
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          color: "#64748b",
-                          margin: "4px 0",
-                        }}
-                      >
-                        {district.description}
-                      </p>
-                      <button
-                        onClick={() => handleDistrictClick(key)}
-                        style={{
-                          marginTop: "8px",
-                          padding: "6px 12px",
-                          backgroundColor: "#0ea5e9",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </Popup>
-                </Marker>
-              )
-          )}
+          {/* District Markers - DYNAMICALLY STYLED */}
+          {Object.values(districts).map((dist) => {
+            const isTripPoint = trips.some(
+              (t) => t.from === dist.slug || t.to === dist.slug
+            );
 
-          {/* Selected Trip Explicit Markers */}
+            return (
+              <Marker
+                key={dist._id}
+                position={[dist.coordinates.lat, dist.coordinates.lng]}
+                icon={isTripPoint ? customIcon : discoveryIcon}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedDistrict(dist);
+                    setMapZoom(10);
+                  },
+                }}
+              >
+                <Popup className="custom-popup">
+                  <div style={{ textAlign: "center" }}>
+                    <h3
+                      style={{
+                        margin: "0 0 4px 0",
+                        color: isTripPoint ? "#0f172a" : "#059669",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {dist.name}
+                    </h3>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: isTripPoint ? "#3b82f6" : "#10b981",
+                        marginBottom: "6px",
+                        fontWeight: "600",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {isTripPoint ? "Journey Point" : "Discovery Location"}
+                    </div>
+                    {/* Minified details */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          padding: "2px 6px",
+                          backgroundColor: "#f1f5f9",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Risk: {dist.risk || "Low"}
+                      </span>
+                      <span
+                        style={{
+                          padding: "2px 6px",
+                          backgroundColor: "#f0fdf4",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Eco: {dist.eco || "Good"}
+                      </span>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
+
           {selectedTrip && districts[selectedTrip.from] && (
             <Marker
               position={[
@@ -1472,6 +1687,7 @@ export default function InteractiveMap() {
                 districts[selectedTrip.from].coordinates.lng,
               ]}
               zIndexOffset={1000}
+              icon={customIcon}
             >
               <Popup>
                 <strong>Start: {districts[selectedTrip.from].name}</strong>
@@ -1485,6 +1701,7 @@ export default function InteractiveMap() {
                 districts[selectedTrip.to].coordinates.lng,
               ]}
               zIndexOffset={1000}
+              icon={customIcon}
             >
               <Popup>
                 <strong>End: {districts[selectedTrip.to].name}</strong>
@@ -1507,35 +1724,83 @@ export default function InteractiveMap() {
           ))}
 
           {/* Selected Trip - DEDICATED OVERLAY */}
-          {selectedTrip && selectedTrip.path && (
-            <Polyline
-              key={`selected-${selectedTrip.id}`}
-              positions={selectedTrip.path}
-              pathOptions={{
-                color: "#2563eb",
-                weight: 8,
-                opacity: 1,
-                lineCap: "round",
-                lineJoin: "round",
-              }}
-            />
-          )}
+          {selectedTrip &&
+            (() => {
+              // Find current version of trip to get updated path
+              const activeTrip =
+                trips.find((t) => t.id === selectedTrip.id) || selectedTrip;
+              return (
+                activeTrip.path && (
+                  <Polyline
+                    key={`selected-${activeTrip.id}`}
+                    positions={activeTrip.path}
+                    pathOptions={{
+                      color: isOptimizing ? "#94a3b8" : "#2563eb",
+                      weight: 8,
+                      opacity: 1,
+                      lineCap: "round",
+                      lineJoin: "round",
+                      dashArray: isOptimizing ? "15, 15" : null,
+                    }}
+                  />
+                )
+              );
+            })()}
         </MapContainer>
 
-        <AnimatePresence>
-          {selectedDistrict && (
-            <DistrictPanel
-              district={selectedDistrict}
-              onClose={() => {
-                setSelectedDistrict(null);
-                setMapZoom(7);
+        {/* Route Loading Popup */}
+        {isOptimizing && (
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              backgroundColor: "white",
+              padding: "12px 16px",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              zIndex: 1000,
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              animation: "fadeIn 0.3s ease-in-out",
+            }}
+          >
+            <div
+              style={{
+                width: "20px",
+                height: "20px",
+                border: "3px solid #3b82f6",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
               }}
-              onAddToCompare={handleAddToCompare}
-            />
-          )}
-        </AnimatePresence>
+            ></div>
+            <span
+              style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                color: "#1e293b",
+              }}
+            >
+              Finding best route...
+            </span>
+          </div>
+        )}
+      </div>
 
-        {/* 4.7 Comparison UI */}
+      {/* Feature Panels */}
+      <AnimatePresence>
+        {selectedDistrict && (
+          <DistrictPanel
+            district={selectedDistrict}
+            onClose={() => setSelectedDistrict(null)}
+            onAddToCompare={handleAddToCompare}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showComparison && (
           <ComparisonModal
             items={compareList}
@@ -1543,16 +1808,20 @@ export default function InteractiveMap() {
             onRemove={removeFromCompare}
           />
         )}
+      </AnimatePresence>
 
-        {/* 4.8 Recommendation Panel */}
+      <AnimatePresence>
         {showRecommendations && (
           <RecommendationPanel
             districts={districts}
-            onSelect={handleDistrictClick}
+            onSelect={(slug) => {
+              handleDistrictClick(slug);
+              setShowRecommendations(false);
+            }}
             onClose={() => setShowRecommendations(false)}
           />
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

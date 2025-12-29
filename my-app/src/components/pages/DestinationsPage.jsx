@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from '../../context/NavigationContext';
 import { MapPin, ArrowRight, Clock, Star } from 'lucide-react';
 import PaymentModal from '../common/PaymentModal';
 import { apiService } from '../../services/apiService';
 
 export default function DestinationsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -123,6 +125,7 @@ export default function DestinationsPage() {
         {destinations.map((dest, index) => (
           <div
             key={dest.name}
+            onClick={() => navigate('destination-details', { id: dest.name })}
             style={{
               backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
               overflow: 'hidden', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.05)',

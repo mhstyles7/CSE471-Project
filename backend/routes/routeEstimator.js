@@ -35,9 +35,32 @@ router.post('/estimate', (req, res) => {
 
         const distance = calculateDistance(start.lat, start.lng, end.lat, end.lng);
 
-        // Dynamic factors for real-time simulation
-        const trafficFactor = getDynamicFactor();
-        const demandFactor = getDynamicFactor();
+        // Dynamic factors based on REAL TIME (Server Time)
+        // This replaces "dummy random" with "time-based dynamic" logic
+        const now = new Date();
+        const hour = now.getHours(); // 0-23
+        const day = now.getDay(); // 0 (Sun) - 6 (Sat)
+
+        let trafficFactor = 1.0;
+        let demandFactor = 1.0;
+
+        // Peak Hours (8-11 AM and 5-8 PM)
+        const isRushHour = (hour >= 8 && hour <= 11) || (hour >= 17 && hour <= 20);
+        // Weekend (Friday/Saturday in BD context typically)
+        const isWeekend = (day === 5 || day === 6);
+
+        if (isRushHour) {
+            trafficFactor = 1.5; // 50% slower
+            demandFactor = 1.3; // 30% surge price
+        } else if (hour >= 23 || hour <= 5) {
+            trafficFactor = 0.8; // Fast roads
+            demandFactor = 0.9; // Night discount (rare, but let's say less traffic waste)
+        }
+
+        if (isWeekend) {
+            // Leisure travel spike
+            demandFactor *= 1.1;
+        }
 
         // Bangladesh Context Base Rates (Approximate BDT)
         // Bus: 2.5 BDT/km

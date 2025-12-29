@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Bell, Bookmark, MoreHorizontal, Award, Camera, TrendingUp, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -17,8 +17,10 @@ export default function CommunityPage() {
   const [replyText, setReplyText] = useState({});
   const [showReplies, setShowReplies] = useState({});
   const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [showLocationInput, setShowLocationInput] = useState(false);
   const [showReactions, setShowReactions] = useState(null);
   const [activeTab, setActiveTab] = useState('feed');
+  const fileInputRef = React.useRef(null);
 
   // Reaction types (3.2)
   const reactionTypes = [
@@ -30,126 +32,97 @@ export default function CommunityPage() {
   ];
 
   // Posts state with full functionality (3.1 - 3.4)
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: 'Alimool Razi',
-      authorImage: 'AR',
-      authorBadge: 'Explorer',
-      time: '2 hours ago',
-      type: 'recommendation',
-      destination: 'Sajek Valley',
-      rating: 5,
-      content: 'Just completed an amazing trek to Sajek Valley! The sunrise view was absolutely breathtaking. Highly recommend visiting during winter season. The weather is perfect and the clouds literally touch your feet! 🏔️✨',
-      photos: [
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
-        'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400'
-      ],
-      reactions: { like: 15, love: 8, wow: 3, haha: 0, inspire: 5 },
-      userReaction: null,
-      comments: [
-        {
-          id: 1,
-          author: 'Zarin Raisa',
-          authorImage: 'ZR',
-          text: 'This looks incredible! Adding to my list!',
-          time: '1 hour ago',
-          likes: 3,
-          isLiked: false,
-          replies: [
-            { id: 11, author: 'Alimool Razi', authorImage: 'AR', text: 'You should definitely go! Let me know if you need tips.', time: '45 mins ago', likes: 1, isLiked: false }
-          ]
-        },
-        {
-          id: 2,
-          author: 'Fahim Ahmed',
-          authorImage: 'FA',
-          text: 'How was the road condition? Planning to go next month.',
-          time: '30 mins ago',
-          likes: 1,
-          isLiked: false,
-          replies: []
+  const [posts, setPosts] = useState([]);
+  const API_URL = 'http://localhost:5000'; // Or import from config if available
+
+  // Fetch posts from backend
+  // Fetch posts from backend
+  const fetchPosts = React.useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/posts`);
+      const data = await res.json();
+
+      const processedPosts = data.map(post => {
+        // Calculate reactions count
+        const reactionCounts = { like: 0, love: 0, wow: 0, haha: 0, inspire: 0 };
+        let userReaction = null;
+        if (post.reactions && Array.isArray(post.reactions)) {
+          post.reactions.forEach(r => {
+            if (reactionCounts[r.type] !== undefined) reactionCounts[r.type]++;
+            if (r.userId === user?._id) userReaction = r.type;
+          });
         }
-      ],
-      shares: 3,
-      isSaved: false,
-      tags: ['trekking', 'hills', 'winter', 'photography']
-    },
-    {
-      id: 2,
-      author: 'Zarin Raisa',
-      authorImage: 'ZR',
-      authorBadge: 'Foodie',
-      time: '5 hours ago',
-      type: 'story',
-      content: 'Explored the tea gardens of Sylhet yesterday. The fresh air and green hills were so refreshing! If anyone needs local guide recommendations, feel free to ask. ☕🌿\n\nPro tip: Visit early morning for the best photos and fewer crowds!',
-      photos: [
-        'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400'
-      ],
-      reactions: { like: 10, love: 5, wow: 2, haha: 1, inspire: 3 },
-      userReaction: 'love',
-      comments: [
-        {
-          id: 1,
-          author: 'Tasnim Rahman',
-          authorImage: 'TR',
-          text: 'Beautiful! Which tea estate did you visit?',
-          time: '4 hours ago',
-          likes: 2,
-          isLiked: true,
-          replies: [
-            { id: 11, author: 'Zarin Raisa', authorImage: 'ZR', text: 'I went to Malnicherra - it\'s the oldest tea estate!', time: '3 hours ago', likes: 4, isLiked: false },
-            { id: 12, author: 'Karim Uddin', authorImage: 'KU', text: 'Malnicherra is amazing! Try Lakkatura next time.', time: '2 hours ago', likes: 1, isLiked: false }
-          ]
-        }
-      ],
-      shares: 2,
-      isSaved: true,
-      tags: ['tea', 'nature', 'sylhet', 'tips']
-    },
-    {
-      id: 3,
-      author: 'Rafiq Ahmed',
-      authorImage: 'RA',
-      authorBadge: 'Adventurer',
-      time: '1 day ago',
-      type: 'question',
-      content: 'Planning a 5-day trip to explore the Chittagong Hill Tracts. Any suggestions for must-visit places and local experiences? Looking for off-the-beaten-path recommendations! 🗺️',
-      photos: [],
-      reactions: { like: 8, love: 2, wow: 0, haha: 0, inspire: 1 },
-      userReaction: null,
-      comments: [
-        {
-          id: 1,
-          author: 'Sabrina Khan',
-          authorImage: 'SK',
-          text: 'Visit Nilgiri! The sunrise from there is magical. Also try the local Marma cuisine.',
-          time: '20 hours ago',
-          likes: 7,
-          isLiked: false,
-          replies: []
-        }
-      ],
-      shares: 5,
-      isSaved: false,
-      tags: ['question', 'hills', 'advice']
+
+        return {
+          ...post,
+          id: post._id, // Map _id to id
+          author: post.author || post.user?.name || 'Anonymous Member', // Fallback for legacy data
+          authorImage: (post.authorImage || post.user?.avatar) ?
+            <img src={post.authorImage || post.user?.avatar} alt={post.author || 'User'} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            : (post.author ? post.author.substring(0, 1).toUpperCase() : 'U'),
+          time: post.time || new Date(post.createdAt).toLocaleDateString(),
+          reactions: reactionCounts,
+          userReaction,
+          comments: post.comments ? post.comments.map(c => ({
+            ...c,
+            id: c._id || c.id,
+            replies: c.replies ? c.replies.map(r => ({ ...r, id: r.id || r._id })) : []
+          })) : []
+        };
+      });
+      // Sort by newest
+      setPosts(processedPosts.sort((a, b) => new Date(b.createdAt || b.time) - new Date(a.createdAt || a.time)));
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     }
-  ]);
+  }, [user]);
 
-  // Trending topics for engagement (3.3)
-  const trendingTopics = [
-    { tag: 'wintertravel', posts: 128 },
-    { tag: 'coxsbazar', posts: 95 },
-    { tag: 'foodtour', posts: 76 },
-    { tag: 'trekking', posts: 64 }
-  ];
+  React.useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]); // Re-fetch when user changes (for userReaction)
 
-  // Top contributors (3.3)
-  const topContributors = [
-    { name: 'Alimool Razi', image: 'AR', posts: 24, badge: 'Explorer' },
-    { name: 'Zarin Raisa', image: 'ZR', posts: 18, badge: 'Foodie' },
-    { name: 'Rafiq Ahmed', image: 'RA', posts: 15, badge: 'Adventurer' }
-  ];
+  // Trending topics for engagement (3.3) - Dynamic
+  const trendingTopics = React.useMemo(() => {
+    const tagCounts = {};
+    posts.forEach(post => {
+      // Extract hashtags from content if any (simple regex)
+      const tags = post.content.match(/#[\w]+/g) || [];
+      tags.forEach(tag => {
+        const cleanTag = tag.substring(1).toLowerCase();
+        tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
+      });
+      // Also use destination as a tag if valid
+      if (post.destination) {
+        const destTag = post.destination.replace(/\s+/g, '').toLowerCase();
+        tagCounts[destTag] = (tagCounts[destTag] || 0) + 1;
+      }
+    });
+
+    return Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([tag, count]) => ({ tag, posts: count }));
+  }, [posts]);
+
+  // Top contributors (3.3) - Dynamic
+  const topContributors = React.useMemo(() => {
+    const contributorMap = {};
+    posts.forEach(post => {
+      if (!contributorMap[post.author]) {
+        contributorMap[post.author] = {
+          name: post.author,
+          image: post.authorImage || 'U',
+          posts: 0,
+          badge: post.authorBadge || 'Member'
+        };
+      }
+      contributorMap[post.author].posts += 1;
+    });
+
+    return Object.values(contributorMap)
+      .sort((a, b) => b.posts - a.posts)
+      .slice(0, 5);
+  }, [posts]);
 
   // Destinations for recommendations
   const destinations = [
@@ -163,7 +136,7 @@ export default function CommunityPage() {
   };
 
   // Create post with photos (3.1)
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -175,81 +148,125 @@ export default function CommunityPage() {
     }
 
     const newPost = {
-      id: Date.now(),
+      user: {
+        name: user?.name,
+        avatar: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
+        role: 'Member' // You might want to get this from user context
+      },
+      userId: user?._id || user?.id,
       author: user?.name || 'You',
       authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
       authorBadge: 'Member',
-      time: 'Just now',
       type: postType,
       content: postText,
       destination: postType === 'recommendation' ? selectedDestination : null,
       rating: postType === 'recommendation' ? rating : null,
       photos: selectedPhotos,
-      reactions: { like: 0, love: 0, wow: 0, haha: 0, inspire: 0 },
-      userReaction: null,
-      comments: [],
-      shares: 0,
-      isSaved: false,
       tags: []
     };
 
-    setPosts(prev => [newPost, ...prev]);
-    setPostText('');
-    setPostType('story');
-    setSelectedDestination('');
-    setRating(0);
-    setSelectedPhotos([]);
-    showNotificationMsg(
-      postType === 'recommendation'
-        ? `Your recommendation for ${selectedDestination} has been shared! 🌟`
-        : postType === 'question'
-          ? 'Your question has been posted! The community will help you out. 💬'
-          : 'Your story has been shared! 📤'
-    );
-  };
+    try {
+      const res = await fetch(`${API_URL}/api/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPost)
+      });
+      await res.json();
 
-  // Add photo (simulated) (3.1)
-  const handleAddPhoto = () => {
-    const samplePhotos = [
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400',
-      'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400'
-    ];
-    if (selectedPhotos.length < 4) {
-      const randomPhoto = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
-      setSelectedPhotos(prev => [...prev, randomPhoto]);
-      showNotificationMsg('Photo added! 📷', 'info');
+      // Optimistic update - or just fetchPosts()
+      fetchPosts();
+
+      setPostText('');
+      setPostType('story');
+      setSelectedDestination('');
+      setRating(0);
+      setSelectedPhotos([]);
+      showNotificationMsg(
+        postType === 'recommendation'
+          ? `Your recommendation for ${selectedDestination} has been shared! 🌟`
+          : postType === 'question'
+            ? 'Your question has been posted! The community will help you out. 💬'
+            : 'Your story has been shared! 📤'
+      );
+    } catch (err) {
+      showNotificationMsg('Failed to post. Please try again.', 'error');
+      console.error(err);
     }
   };
 
+  // Add photo (simulated) (3.1)
+  // Handle file select
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      showNotificationMsg('Uploading photo...', 'info');
+      const res = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setSelectedPhotos(prev => [...prev, data.url]);
+        showNotificationMsg('Photo uploaded! 📷', 'success');
+      } else {
+        showNotificationMsg('Upload failed: ' + data.message, 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showNotificationMsg('Upload failed', 'error');
+    }
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Add photo click
+  const handleAddPhoto = () => {
+    fileInputRef.current.click();
+  };
+
   // React to post (3.2)
-  const handleReaction = (postId, reactionType) => {
+  const handleReaction = async (postId, reactionType) => {
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
+
+    // Optimistic update can be tricky with complex logic, let's try purely api-based first or simple optimistic
+    // Simple optimistic:
     setPosts(prev => prev.map(post => {
       if (post.id === postId) {
         const oldReaction = post.userReaction;
         const newReactions = { ...post.reactions };
-
-        // Remove old reaction if exists
-        if (oldReaction) {
-          newReactions[oldReaction] = Math.max(0, newReactions[oldReaction] - 1);
-        }
-
-        // Add new reaction if different from old
+        if (oldReaction) newReactions[oldReaction] = Math.max(0, newReactions[oldReaction] - 1);
         if (oldReaction !== reactionType) {
           newReactions[reactionType] = (newReactions[reactionType] || 0) + 1;
           return { ...post, reactions: newReactions, userReaction: reactionType };
         } else {
-          // Remove reaction if same (toggle off)
           return { ...post, reactions: newReactions, userReaction: null };
         }
       }
       return post;
     }));
     setShowReactions(null);
+
+    try {
+      await fetch(`${API_URL}/api/posts/${postId}/react`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?._id || user?.id, type: reactionType })
+      });
+      // Optionally fetchPosts() to sync exact count
+      // fetchPosts();
+    } catch (err) {
+      console.error(err);
+      showNotificationMsg('Failed to update reaction', 'error');
+    }
   };
 
   // Save post
@@ -280,33 +297,36 @@ export default function CommunityPage() {
   };
 
   // Add comment (3.2)
-  const handleAddComment = (postId) => {
+  const handleAddComment = async (postId) => {
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
     if (!commentText[postId]?.trim()) return;
 
-    setPosts(prev => prev.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          comments: [...post.comments, {
-            id: Date.now(),
-            author: user?.name || 'You',
-            authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
-            text: commentText[postId],
-            time: 'Just now',
-            likes: 0,
-            isLiked: false,
-            replies: []
-          }]
-        };
+    const text = commentText[postId];
+    setCommentText(prev => ({ ...prev, [postId]: '' })); // Clear input immediately
+
+    try {
+      const res = await fetch(`${API_URL}/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: user?.name || 'You',
+          userId: user?._id || user?.id,
+          userImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
+          text
+        })
+      });
+
+      if (res.ok) {
+        showNotificationMsg('Comment added! 💬');
+        fetchPosts(); // Reload to see new comment
       }
-      return post;
-    }));
-    setCommentText(prev => ({ ...prev, [postId]: '' }));
-    showNotificationMsg('Comment added! 💬');
+    } catch (err) {
+      console.error(err);
+      showNotificationMsg('Failed to add comment', 'error');
+    }
   };
 
   // Like comment (3.2)
@@ -336,7 +356,7 @@ export default function CommunityPage() {
   };
 
   // Add reply to comment (3.2)
-  const handleAddReply = (postId, commentId) => {
+  const handleAddReply = async (postId, commentId) => {
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -344,34 +364,30 @@ export default function CommunityPage() {
     const replyKey = `${postId}-${commentId}`;
     if (!replyText[replyKey]?.trim()) return;
 
-    setPosts(prev => prev.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          comments: post.comments.map(comment => {
-            if (comment.id === commentId) {
-              return {
-                ...comment,
-                replies: [...comment.replies, {
-                  id: Date.now(),
-                  author: user?.name || 'You',
-                  authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
-                  text: replyText[replyKey],
-                  time: 'Just now',
-                  likes: 0,
-                  isLiked: false
-                }]
-              };
-            }
-            return comment;
-          })
-        };
-      }
-      return post;
-    }));
+    const text = replyText[replyKey];
     setReplyText(prev => ({ ...prev, [replyKey]: '' }));
     setReplyingTo(prev => ({ ...prev, [replyKey]: false }));
-    showNotificationMsg('Reply added! 💬');
+
+    try {
+      const res = await fetch(`${API_URL}/api/posts/${postId}/comments/${commentId}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: user?.name || 'You',
+          userId: user?._id || user?.id,
+          userImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
+          text
+        })
+      });
+
+      if (res.ok) {
+        showNotificationMsg('Reply added! 💬');
+        fetchPosts();
+      }
+    } catch (err) {
+      console.error(err);
+      showNotificationMsg('Failed to add reply', 'error');
+    }
   };
 
   // Get total reactions count
@@ -401,7 +417,7 @@ export default function CommunityPage() {
           padding: '16px 24px',
           borderRadius: '12px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          zIndex: 1001,
+          zIndex: 9999,
           animation: 'slideDown 0.3s ease-out',
           display: 'flex',
           alignItems: 'center',
@@ -412,9 +428,9 @@ export default function CommunityPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '32px' }}>
+      <div style={{ display: 'flex', gap: '32px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         {/* Main Feed */}
-        <div style={{ flex: 1, maxWidth: '700px' }}>
+        <div style={{ flex: 2 }}>
           <div style={{ marginBottom: '32px' }}>
             <h2 style={{
               fontSize: '42px',
@@ -630,6 +646,34 @@ export default function CommunityPage() {
                 </div>
               )}
 
+              {/* Location Input (UI Improvement) */}
+              {showLocationInput && (
+                <div style={{ marginBottom: '16px', animation: 'slideDown 0.3s ease-out' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#f9fafb', padding: '8px 12px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                    <MapPin size={18} color="#059669" />
+                    <input
+                      type="text"
+                      placeholder="Where are you? (e.g. Cox's Bazar)"
+                      value={selectedDestination}
+                      onChange={(e) => setSelectedDestination(e.target.value)}
+                      list="destination-list"
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        outline: 'none',
+                        flex: 1,
+                        fontSize: '14px',
+                        color: '#374151'
+                      }}
+                    />
+                    <button onClick={() => { setShowLocationInput(false); setSelectedDestination(''); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#9ca3af' }}><X size={16} /></button>
+                    <datalist id="destination-list">
+                      {destinations.map(d => <option key={d} value={d} />)}
+                    </datalist>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
@@ -649,18 +693,27 @@ export default function CommunityPage() {
                   >
                     <Camera size={18} /> Photo
                   </button>
-                  <button style={{
-                    background: 'none',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    color: '#6b7280',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '13px'
-                  }}>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <button
+                    onClick={() => setShowLocationInput(!showLocationInput)}
+                    style={{
+                      background: showLocationInput ? '#ecfdf5' : 'none',
+                      border: showLocationInput ? '1px solid #059669' : '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      color: showLocationInput ? '#059669' : '#6b7280',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '13px'
+                    }}>
                     <MapPin size={18} /> Location
                   </button>
                 </div>
@@ -682,7 +735,7 @@ export default function CommunityPage() {
                   }}
                 >
                   <Send size={16} />
-                  Post
+                  Share
                 </button>
               </div>
             </div>
@@ -1314,6 +1367,6 @@ export default function CommunityPage() {
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
       `}</style>
-    </div>
+    </div >
   );
 }

@@ -137,3 +137,52 @@ export const getTrendAnalysis = async (trendingDistricts) => {
         }));
     }
 };
+
+export const getCoordinates = async (placeName) => {
+    // Hardcoded Fallback for Capital to ensure default always works
+    if (placeName.toLowerCase().includes('dhaka')) {
+        return { lat: 23.8103, lng: 90.4125 };
+    }
+
+    const prompt = `What are the latitude and longitude of "${placeName}, Bangladesh"? Return ONLY a JSON object: { "lat": 23.8103, "lng": 90.4125 }.`;
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) return JSON.parse(jsonMatch[0]);
+        return null;
+    } catch (e) {
+        console.warn("AI Coordinate Fetch Error:", e);
+        return null; // InteractiveMap will handle null
+    }
+};
+
+export const getRouteRecommendation = async (origin, destination, estimates) => {
+    const prompt = `
+    I am planning a trip from ${origin.label} to ${destination.label}.
+    Here are the available transport options:
+    ${JSON.stringify(estimates.map(e => ({ mode: e.name, cost: e.cost, time: e.duration, co2: e.emissions })))}
+
+    Acting as a Travel Expert AI, verify which option is the "Best Value" considering Cost, Time, and Eco-friendliness.
+    Return a JSON object:
+    {
+        "recommendedMode": "Bus" (or "Train", "Flight", etc. matching the input names),
+        "reason": "Short 1-sentence explanation why."
+    }
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        throw new Error("Failed to parse JSON");
+    } catch (error) {
+        console.warn("AI Route Rec Error:", error);
+        return null;
+    }
+};
