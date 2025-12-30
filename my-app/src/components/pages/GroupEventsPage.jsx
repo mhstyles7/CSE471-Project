@@ -400,14 +400,14 @@ export default function GroupEventsPage() {
       {notification && (
         <div style={{
           position: 'fixed',
-          top: '20px',
+          top: '80px',
           right: '20px',
           backgroundColor: notification.type === 'success' ? '#059669' : '#6b7280',
           color: 'white',
           padding: '16px 24px',
           borderRadius: '12px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          zIndex: 1001,
+          zIndex: 99999,
           animation: 'slideDown 0.3s ease-out',
           display: 'flex',
           alignItems: 'center',
