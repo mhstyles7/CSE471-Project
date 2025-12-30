@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../../context/AuthContext';
@@ -7,39 +6,23 @@ import { useNavigate } from '../../context/NavigationContext';
 import { User, Mail, Lock } from 'lucide-react';
 
 export default function Register() {
-=======
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from '../../context/NavigationContext';
-import { User, Mail, Lock, Facebook, Chrome } from 'lucide-react';
-
-export default function Register() {
-    const navigate = useNavigate();
->>>>>>> origin/Tashu
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('traveler');
-<<<<<<< HEAD
     const { register, googleLogin, loading, error, setError } = useAuth();
     const navigate = useNavigate();
-=======
-    const { register, socialLogin, loading, error } = useAuth();
->>>>>>> origin/Tashu
 
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
             await register(name, email, password, role);
-<<<<<<< HEAD
             navigate('home');
-=======
->>>>>>> origin/Tashu
         } catch (err) {
             // Error is handled by context state
         }
     };
 
-<<<<<<< HEAD
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             // Decode the JWT token from Google
@@ -70,16 +53,6 @@ export default function Register() {
         setter(e.target.value);
     };
 
-=======
-    const handleSocialLogin = async (provider) => {
-        try {
-            await socialLogin(provider);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
->>>>>>> origin/Tashu
     return (
         <div style={{ maxWidth: '400px', margin: '40px auto', padding: '32px', textAlign: 'center', backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Create Account</h2>
@@ -98,11 +71,7 @@ export default function Register() {
                         type="text"
                         placeholder="Full Name"
                         value={name}
-<<<<<<< HEAD
                         onChange={handleInputChange(setName)}
-=======
-                        onChange={(e) => setName(e.target.value)}
->>>>>>> origin/Tashu
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
@@ -113,11 +82,7 @@ export default function Register() {
                         type="email"
                         placeholder="Email Address"
                         value={email}
-<<<<<<< HEAD
                         onChange={handleInputChange(setEmail)}
-=======
-                        onChange={(e) => setEmail(e.target.value)}
->>>>>>> origin/Tashu
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
@@ -126,16 +91,10 @@ export default function Register() {
                     <Lock size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
                     <input
                         type="password"
-<<<<<<< HEAD
                         placeholder="Password (min 6 characters)"
                         value={password}
                         onChange={handleInputChange(setPassword)}
                         minLength={6}
-=======
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
->>>>>>> origin/Tashu
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
@@ -178,7 +137,6 @@ export default function Register() {
                 </span>
             </div>
 
-<<<<<<< HEAD
             <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <GoogleLogin
                     onSuccess={handleGoogleSuccess}
@@ -189,73 +147,17 @@ export default function Register() {
                     shape="rectangular"
                     width="350"
                 />
-=======
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <button
-                    type="button"
-                    onClick={() => handleSocialLogin('Google')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Chrome size={20} />
-                    Google
-                </button>
-                <button
-                    type="button"
-                    onClick={() => handleSocialLogin('Facebook')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Facebook size={20} color="#1877F2" />
-                    Facebook
-                </button>
->>>>>>> origin/Tashu
             </div>
 
             <p style={{ marginTop: '32px', color: '#6b7280', fontSize: '14px' }}>
                 Already have an account?{' '}
-<<<<<<< HEAD
                 <button
                     onClick={() => navigate('login')}
                     style={{ color: '#059669', textDecoration: 'none', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                     Sign in
                 </button>
-=======
-                <a href="#" onClick={(e) => { e.preventDefault(); navigate('login'); }} style={{ color: '#059669', textDecoration: 'none', fontWeight: '600' }}>
-                    Sign in
-                </a>
->>>>>>> origin/Tashu
             </p>
         </div>
     );
 }
-<<<<<<< HEAD
-
-
-=======
->>>>>>> origin/Tashu

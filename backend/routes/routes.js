@@ -6,7 +6,6 @@ const { getDb } = require('../config/db');
 router.get('/', async (req, res) => {
     try {
         const db = getDb();
-<<<<<<< HEAD
 
         // 1. Fetch Trips (Sorted by Date)
         const trips = await db.collection('trips')
@@ -85,10 +84,6 @@ router.get('/', async (req, res) => {
         });
 
         res.json(chainedTrips);
-=======
-        const routes = await db.collection('routes').find().toArray();
-        res.json(routes);
->>>>>>> origin/Tashu
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

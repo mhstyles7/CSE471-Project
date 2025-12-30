@@ -1,15 +1,10 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, MessageSquare, ListTodo, BarChart2, ChevronLeft } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from '../../context/NavigationContext';
-=======
+
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, Clock, MessageSquare, ListTodo, BarChart2, Trash2, Edit2, ChevronLeft, Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 import { API_URL } from '../../config';
->>>>>>> origin/Tashu
+
 
 export default function GroupEventsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -26,148 +21,14 @@ export default function GroupEventsPage() {
   const [detailTab, setDetailTab] = useState('itinerary'); // itinerary, discussion, tasks, polls
 
   // Events state (4.1)
-<<<<<<< HEAD
   const [events, setEvents] = useState([]);
   const API_URL = 'http://localhost:5000';
-=======
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      name: "Cox's Bazar Beach Trip",
-      date: '2024-12-15',
-      location: "Cox's Bazar",
-      organizer: 'Alimool Razi',
-      organizerId: 1,
-      participants: [
-        { id: 1, name: 'Alimool Razi', image: 'AR' },
-        { id: 2, name: 'Zarin Raisa', image: 'ZR' },
-        { id: 3, name: 'Fahim Ahmed', image: 'FA' }
-      ],
-      maxParticipants: 15,
-      status: 'open',
-      description: "Join us for a 3-day beach adventure! We'll explore the longest sea beach in the world.",
-      hasJoined: false,
-      invitedFriends: [],
-      // Shared Itinerary (4.3)
-      itinerary: [
-        { id: 1, day: 1, time: '08:00 AM', activity: 'Departure from Dhaka', location: 'Sayedabad' },
-        { id: 2, day: 1, time: '02:00 PM', activity: 'Check-in at Hotel', location: 'Hotel Sea Palace' },
-        { id: 3, day: 1, time: '05:00 PM', activity: 'Sunset at Beach', location: 'Laboni Point' }
-      ],
-      // Discussion (4.4, 4.5)
-      discussion: [
-        { id: 1, user: 'Zarin Raisa', image: 'ZR', text: 'Should we book the bus tickets now?', time: '2 hours ago' },
-        { id: 2, user: 'Alimool Razi', image: 'AR', text: 'Yes, I will handle it tomorrow.', time: '1 hour ago' }
-      ],
-      // Tasks (4.1)
-      tasks: [
-        { id: 1, title: 'Book Bus Tickets', assignedTo: 'Alimool Razi', completed: false },
-        { id: 2, title: 'Hotel Reservation', assignedTo: 'Zarin Raisa', completed: true }
-      ],
-      // Polls (4.4)
-      polls: [
-        {
-          id: 1,
-          question: 'Which hotel do you prefer?',
-          options: [
-            { id: 'a', text: 'Sea Palace', votes: 2 },
-            { id: 'b', text: 'Long Beach', votes: 1 }
-          ],
-          userVoted: 'a'
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Sylhet Tea Garden Tour',
-      date: '2024-12-20',
-      location: 'Sylhet',
-      organizer: 'Zarin Raisa',
-      organizerId: 2,
-      participants: [
-        { id: 2, name: 'Zarin Raisa', image: 'ZR' },
-        { id: 4, name: 'Nusrat Jahan', image: 'NJ' }
-      ],
-      maxParticipants: 12,
-      status: 'open',
-      description: 'Experience the serene beauty of tea gardens. Includes local guide and transportation.',
-      hasJoined: false,
-      invitedFriends: [],
-      itinerary: [],
-      discussion: [],
-      tasks: [],
-      polls: []
-    },
-    {
-      id: 3,
-      name: 'Sundarbans Boat Safari',
-      date: '2024-12-25',
-      location: 'Sundarbans',
-      organizer: 'Rafiq Ahmed',
-      organizerId: 3,
-      participants: Array(8).fill({ id: 0, name: 'Participant', image: 'P' }),
-      maxParticipants: 8,
-      status: 'full',
-      description: 'Explore the mangrove forest and spot Royal Bengal Tigers! Professional guide included.',
-      hasJoined: false,
-      invitedFriends: [],
-      itinerary: [],
-      discussion: [],
-      tasks: [],
-      polls: []
-    }
-  ]);
 
-  // Fetch sponsored events from API
-  useEffect(() => {
-    const fetchSponsoredEvents = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/events`);
-        if (res.ok) {
-          const apiEvents = await res.json();
-          // Map API events to local event structure and add to events
-          const sponsoredEvents = apiEvents
-            .filter(e => e.isSponsored)
-            .map(e => ({
-              id: e._id,
-              name: e.title,
-              date: e.date,
-              location: e.location,
-              organizer: e.sponsor || 'Agency',
-              organizerId: e._id,
-              participants: e.attendees?.map((a, i) => ({ id: i, name: a.userName, image: a.userName?.charAt(0) || 'U' })) || [],
-              maxParticipants: 50,
-              status: 'open',
-              description: e.description || 'Sponsored event by travel agency',
-              hasJoined: false,
-              invitedFriends: [],
-              itinerary: [],
-              discussion: [],
-              tasks: [],
-              polls: [],
-              isSponsored: true
-            }));
-
-          setEvents(prev => {
-            // Avoid duplicates by checking if event ID already exists
-            const existingIds = prev.map(e => String(e.id));
-            const newEvents = sponsoredEvents.filter(e => !existingIds.includes(String(e.id)));
-            return [...newEvents, ...prev];
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching sponsored events:', err);
-      }
-    };
-    fetchSponsoredEvents();
-  }, []);
->>>>>>> origin/Tashu
 
   // My joined events
   const [myEvents, setMyEvents] = useState([]);
 
   // Received invitations (4.2)
-<<<<<<< HEAD
   const [invitations, setInvitations] = useState([]);
 
   // Friends list for inviting
@@ -208,26 +69,7 @@ export default function GroupEventsPage() {
   React.useEffect(() => {
     fetchData();
   }, [fetchData]); // Refetch when user logs in
-=======
-  const [invitations, setInvitations] = useState([
-    {
-      id: 1,
-      eventId: 1,
-      eventName: "Cox's Bazar Beach Trip",
-      invitedBy: 'Alimool Razi',
-      inviterImage: 'AR',
-      date: '2024-12-15',
-      location: "Cox's Bazar"
-    }
-  ]);
 
-  // Friends list for inviting
-  const friends = [
-    { id: 1, name: 'Tasnim Rahman', image: 'TR' },
-    { id: 2, name: 'Ahnaf Rivan', image: 'AR' },
-    { id: 3, name: 'Sabrina Khan', image: 'SK' }
-  ];
->>>>>>> origin/Tashu
 
   const [showInviteModal, setShowInviteModal] = useState(null);
 
@@ -243,17 +85,13 @@ export default function GroupEventsPage() {
   };
 
   // Join event (4.1)
-<<<<<<< HEAD
   const handleJoinEvent = async (eventId) => {
-=======
-  const handleJoinEvent = (eventId) => {
->>>>>>> origin/Tashu
+
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
 
-<<<<<<< HEAD
     try {
       const res = await fetch(`${API_URL}/api/events/${eventId}/join`, {
         method: 'PUT',
@@ -274,31 +112,11 @@ export default function GroupEventsPage() {
       }
     } catch (err) {
       console.error(err);
-=======
-    setEvents(prev => prev.map(event => {
-      if (event.id === eventId && event.status === 'open') {
-        const newParticipants = [...event.participants, { id: Date.now(), name: user?.name || 'You', image: user?.name?.charAt(0) || 'U' }];
-        const isNowFull = newParticipants.length >= event.maxParticipants;
-        return {
-          ...event,
-          participants: newParticipants,
-          hasJoined: true,
-          status: isNowFull ? 'full' : 'open'
-        };
-      }
-      return event;
-    }));
 
-    const event = events.find(e => e.id === eventId);
-    if (event) {
-      setMyEvents(prev => [...prev, { ...event, hasJoined: true }]);
-      showNotificationMsg(`You've joined "${event.name}"! 🎉`);
->>>>>>> origin/Tashu
     }
   };
 
   // Leave event
-<<<<<<< HEAD
   const handleLeaveEvent = async (eventId) => {
     try {
       await fetch(`${API_URL}/api/events/${eventId}/leave`, {
@@ -331,36 +149,11 @@ export default function GroupEventsPage() {
       } catch (err) {
         console.error(err);
       }
-=======
-  const handleLeaveEvent = (eventId) => {
-    setEvents(prev => prev.map(event => {
-      if (event.id === eventId) {
-        return {
-          ...event,
-          participants: event.participants.filter(p => p.name !== (user?.name || 'You')),
-          hasJoined: false,
-          status: 'open'
-        };
-      }
-      return event;
-    }));
-    setMyEvents(prev => prev.filter(e => e.id !== eventId));
-    showNotificationMsg('You left the event', 'info');
-    if (selectedEventId === eventId) setSelectedEventId(null);
-  };
 
-  // Accept invitation (4.2)
-  const handleAcceptInvitation = (invitationId) => {
-    const invitation = invitations.find(i => i.id === invitationId);
-    if (invitation) {
-      handleJoinEvent(invitation.eventId);
-      setInvitations(prev => prev.filter(i => i.id !== invitationId));
->>>>>>> origin/Tashu
     }
   };
 
   // Decline invitation
-<<<<<<< HEAD
   const handleDeclineInvitation = async (invitationId) => {
     try {
       await fetch(`${API_URL}/api/events/invitations/${invitationId}`, {
@@ -403,38 +196,13 @@ export default function GroupEventsPage() {
       } catch (err) {
         console.error(err);
       }
-=======
-  const handleDeclineInvitation = (invitationId) => {
-    setInvitations(prev => prev.filter(i => i.id !== invitationId));
-    showNotificationMsg('Invitation declined', 'info');
-  };
 
-  // Send invitation to friend (4.2)
-  const handleInviteFriend = (eventId, friendId) => {
-    const friend = friends.find(f => f.id === friendId);
-    const event = events.find(e => e.id === eventId);
-    if (friend && event) {
-      setEvents(prev => prev.map(e => {
-        if (e.id === eventId) {
-          return {
-            ...e,
-            invitedFriends: [...(e.invitedFriends || []), friendId]
-          };
-        }
-        return e;
-      }));
-      showNotificationMsg(`Invitation sent to ${friend.name} for "${event.name}"! 📤`);
-      setShowInviteModal(null);
->>>>>>> origin/Tashu
     }
   };
 
   // Create event (4.1)
-<<<<<<< HEAD
   const handleCreateEvent = async () => {
-=======
-  const handleCreateEvent = () => {
->>>>>>> origin/Tashu
+
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -442,7 +210,6 @@ export default function GroupEventsPage() {
 
     if (eventName && eventDate && eventLocation) {
       const newEvent = {
-<<<<<<< HEAD
         name: eventName,
         date: eventDate,
         location: eventLocation,
@@ -472,40 +239,11 @@ export default function GroupEventsPage() {
       } catch (err) {
         console.error(err);
       }
-=======
-        id: Date.now(),
-        name: eventName,
-        date: eventDate,
-        location: eventLocation,
-        organizer: user?.name || 'You',
-        organizerId: Date.now(),
-        participants: [{ id: Date.now(), name: user?.name || 'You', image: user?.name?.charAt(0) || 'U' }],
-        maxParticipants: parseInt(maxParticipants),
-        status: 'open',
-        description: eventDescription || 'Join this exciting trip!',
-        hasJoined: true,
-        invitedFriends: [],
-        itinerary: [],
-        discussion: [],
-        tasks: [],
-        polls: []
-      };
 
-      setEvents(prev => [newEvent, ...prev]);
-      setMyEvents(prev => [newEvent, ...prev]);
-      setShowCreateForm(false);
-      setEventName('');
-      setEventDate('');
-      setEventLocation('');
-      setEventDescription('');
-      setMaxParticipants(10);
-      showNotificationMsg('Event created successfully! 🎊 Invite your friends to join.');
->>>>>>> origin/Tashu
     }
   };
 
   // Add Itinerary Item (4.3)
-<<<<<<< HEAD
   const handleAddItinerary = async () => {
     if (!newItineraryItem.activity || !newItineraryItem.time) return;
     try {
@@ -624,125 +362,7 @@ export default function GroupEventsPage() {
     } catch (err) {
       console.error(err);
     }
-=======
-  const handleAddItinerary = () => {
-    if (!newItineraryItem.activity || !newItineraryItem.time) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          itinerary: [...e.itinerary, { ...newItineraryItem, id: Date.now() }].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
-        };
-      }
-      return e;
-    }));
-    setNewItineraryItem({ day: 1, time: '', activity: '', location: '' });
-    showNotificationMsg('Itinerary updated! 📅');
-  };
 
-  // Add Chat Message (4.4, 4.5)
-  const handleSendMessage = () => {
-    if (!newChatMessage.trim()) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          discussion: [...e.discussion, {
-            id: Date.now(),
-            user: user?.name || 'You',
-            image: user?.name?.charAt(0) || 'U',
-            text: newChatMessage,
-            time: 'Just now'
-          }]
-        };
-      }
-      return e;
-    }));
-    setNewChatMessage('');
-  };
-
-  // Add Task (4.1)
-  const handleAddTask = () => {
-    if (!newTask.trim()) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          tasks: [...e.tasks, {
-            id: Date.now(),
-            title: newTask,
-            assignedTo: 'Unassigned',
-            completed: false
-          }]
-        };
-      }
-      return e;
-    }));
-    setNewTask('');
-    showNotificationMsg('Task added! ✅');
-  };
-
-  // Toggle Task Completion
-  const toggleTask = (taskId) => {
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          tasks: e.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
-        };
-      }
-      return e;
-    }));
-  };
-
-  // Create Poll (4.4)
-  const handleCreatePoll = () => {
-    if (!newPoll.question || !newPoll.option1 || !newPoll.option2) return;
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          polls: [...e.polls, {
-            id: Date.now(),
-            question: newPoll.question,
-            options: [
-              { id: 'a', text: newPoll.option1, votes: 0 },
-              { id: 'b', text: newPoll.option2, votes: 0 }
-            ],
-            userVoted: null
-          }]
-        };
-      }
-      return e;
-    }));
-    setNewPoll({ question: '', option1: '', option2: '' });
-    showNotificationMsg('Poll created! 📊');
-  };
-
-  // Vote on Poll (4.4)
-  const handleVote = (pollId, optionId) => {
-    setEvents(prev => prev.map(e => {
-      if (e.id === selectedEventId) {
-        return {
-          ...e,
-          polls: e.polls.map(p => {
-            if (p.id === pollId) {
-              // Remove old vote if exists
-              const oldVote = p.userVoted;
-              const newOptions = p.options.map(o => {
-                if (o.id === oldVote) return { ...o, votes: o.votes - 1 };
-                if (o.id === optionId) return { ...o, votes: o.votes + 1 };
-                return o;
-              });
-              return { ...p, options: newOptions, userVoted: optionId };
-            }
-            return p;
-          })
-        };
-      }
-      return e;
-    }));
->>>>>>> origin/Tashu
   };
 
   // Login required check
@@ -1225,8 +845,7 @@ export default function GroupEventsPage() {
                         <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0, fontFamily: 'Poppins, sans-serif' }}>
                           {event.name}
                         </h3>
-<<<<<<< HEAD
-=======
+
                         {event.isSponsored && (
                           <div style={{
                             padding: '6px 14px',
@@ -1244,7 +863,7 @@ export default function GroupEventsPage() {
                             Sponsored
                           </div>
                         )}
->>>>>>> origin/Tashu
+
                         <div style={{
                           padding: '6px 14px',
                           borderRadius: '20px',

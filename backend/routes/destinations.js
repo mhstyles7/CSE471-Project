@@ -7,7 +7,6 @@ const { ObjectId } = require('mongodb');
 router.get('/', async (req, res) => {
     try {
         const db = getDb();
-<<<<<<< HEAD
         const rawDestinations = await db.collection('destinations').find().toArray();
 
         // Ensure every destination has a slug
@@ -15,10 +14,6 @@ router.get('/', async (req, res) => {
             ...d,
             slug: d.slug || d.name.toLowerCase().replace(/ /g, '-').replace(/'/g, '')
         }));
-
-=======
-        const destinations = await db.collection('destinations').find().toArray();
->>>>>>> origin/Tashu
         res.json(destinations);
     } catch (err) {
         res.status(500).json({ message: err.message });

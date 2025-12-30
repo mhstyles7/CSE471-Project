@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../../context/AuthContext';
@@ -11,25 +10,10 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const { login, googleLogin, loading, error, setError } = useAuth();
     const navigate = useNavigate();
-=======
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from '../../context/NavigationContext';
-import { Mail, Lock, Facebook, Chrome } from 'lucide-react';
-
-export default function Login() {
-    const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const { login, socialLogin, loading, error } = useAuth();
->>>>>>> origin/Tashu
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-<<<<<<< HEAD
-            await login(email, password);
-            navigate('home');
-=======
             const userData = await login(email, password);
             // Redirect based on user role
             if (userData.role === 'admin') {
@@ -41,13 +25,11 @@ export default function Login() {
             } else {
                 navigate('home');
             }
->>>>>>> origin/Tashu
         } catch (err) {
             // Error is handled by context state
         }
     };
 
-<<<<<<< HEAD
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             // Decode the JWT token from Google
@@ -78,16 +60,6 @@ export default function Login() {
         setter(e.target.value);
     };
 
-=======
-    const handleSocialLogin = async (provider) => {
-        try {
-            await socialLogin(provider);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
->>>>>>> origin/Tashu
     return (
         <div style={{ maxWidth: '400px', margin: '40px auto', padding: '32px', textAlign: 'center', backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Welcome Back</h2>
@@ -106,11 +78,7 @@ export default function Login() {
                         type="email"
                         placeholder="Email Address"
                         value={email}
-<<<<<<< HEAD
                         onChange={handleInputChange(setEmail)}
-=======
-                        onChange={(e) => setEmail(e.target.value)}
->>>>>>> origin/Tashu
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
@@ -121,18 +89,13 @@ export default function Login() {
                         type="password"
                         placeholder="Password"
                         value={password}
-<<<<<<< HEAD
                         onChange={handleInputChange(setPassword)}
-=======
-                        onChange={(e) => setPassword(e.target.value)}
->>>>>>> origin/Tashu
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-<<<<<<< HEAD
                     <button
                         type="button"
                         onClick={() => navigate('forgot-password')}
@@ -140,11 +103,6 @@ export default function Login() {
                     >
                         Forgot Password?
                     </button>
-=======
-                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('forgot-password'); }} style={{ color: '#059669', fontSize: '14px', textDecoration: 'none', fontWeight: '500' }}>
-                        Forgot Password?
-                    </a>
->>>>>>> origin/Tashu
                 </div>
 
                 <button
@@ -174,7 +132,6 @@ export default function Login() {
                 </span>
             </div>
 
-<<<<<<< HEAD
             <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <GoogleLogin
                     onSuccess={handleGoogleSuccess}
@@ -185,73 +142,17 @@ export default function Login() {
                     shape="rectangular"
                     width="350"
                 />
-=======
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <button
-                    type="button"
-                    onClick={() => handleSocialLogin('Google')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Chrome size={20} />
-                    Google
-                </button>
-                <button
-                    type="button"
-                    onClick={() => handleSocialLogin('Facebook')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s'
-                    }}
-                >
-                    <Facebook size={20} color="#1877F2" />
-                    Facebook
-                </button>
->>>>>>> origin/Tashu
             </div>
 
             <p style={{ marginTop: '32px', color: '#6b7280', fontSize: '14px' }}>
                 Don't have an account?{' '}
-<<<<<<< HEAD
                 <button
                     onClick={() => navigate('register')}
                     style={{ color: '#059669', textDecoration: 'none', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                     Sign up
                 </button>
-=======
-                <a href="#" onClick={(e) => { e.preventDefault(); navigate('register'); }} style={{ color: '#059669', textDecoration: 'none', fontWeight: '600' }}>
-                    Sign up
-                </a>
->>>>>>> origin/Tashu
             </p>
         </div>
     );
 }
-<<<<<<< HEAD
-
-
-=======
->>>>>>> origin/Tashu

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../config';
@@ -226,15 +225,7 @@ export default function TripPlannerPage() {
                     <p style={{ color: '#6b7280' }}>Try adjusting your search filters or destination.</p>
                 </div>
             )}
-=======
-import React from 'react';
 
-export default function TripPlannerPage() {
-    return (
-        <div style={{ padding: '40px' }}>
-            <h1>Pre-Planned Trip Suggestions</h1>
-            <p>Get instant 1-day itineraries based on your preferences. (Module 2.1 - Nijaf)</p>
->>>>>>> origin/Tashu
         </div>
     );
 }

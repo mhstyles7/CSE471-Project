@@ -34,17 +34,10 @@ router.post('/', async (req, res) => {
         if (newPost.userId) {
             const pointsToAdd = 10;
             const usersCollection = db.collection('users');
-<<<<<<< HEAD
 
             // Fetch current user to determine new tier
             const user = await usersCollection.findOne({ _id: new ObjectId(newPost.userId) });
 
-=======
-            
-            // Fetch current user to determine new tier
-            const user = await usersCollection.findOne({ _id: new ObjectId(newPost.userId) });
-            
->>>>>>> origin/Tashu
             if (user) {
                 const newPoints = (user.points || 0) + pointsToAdd;
                 let newTier = 'Bronze';
@@ -68,7 +61,6 @@ router.post('/', async (req, res) => {
 router.post('/:id/comments', async (req, res) => {
     try {
         const db = getDb();
-<<<<<<< HEAD
         const { user, text, userId, userImage } = req.body;
         const comment = {
             _id: new ObjectId(), // Generate distinct ID
@@ -80,17 +72,12 @@ router.post('/:id/comments', async (req, res) => {
             likes: 0,
             replies: []
         };
-=======
-        const { user, text } = req.body;
-        const comment = { user, text, date: new Date().toISOString() };
->>>>>>> origin/Tashu
 
         await db.collection('posts').updateOne(
             { _id: new ObjectId(req.params.id) },
             { $push: { comments: comment } }
         );
 
-<<<<<<< HEAD
         res.status(200).json(comment);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -157,9 +144,6 @@ router.post('/:id/react', async (req, res) => {
         );
 
         res.status(200).json({ reactions, action });
-=======
-        res.status(200).json({ message: 'Comment added' });
->>>>>>> origin/Tashu
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

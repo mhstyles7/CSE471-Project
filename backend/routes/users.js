@@ -34,7 +34,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update user profile
-<<<<<<< HEAD
+// Update user profile (Specific fields)
 router.put('/:id/profile', async (req, res) => {
     try {
         const db = getDb();
@@ -59,7 +59,13 @@ router.put('/:id/profile', async (req, res) => {
         }
 
         const { password, ...safeUser } = result;
-=======
+        res.json(safeUser);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update user (Generic - Admin or internal use)
 router.put('/:id', async (req, res) => {
     try {
         const db = getDb();
@@ -76,12 +82,12 @@ router.put('/:id', async (req, res) => {
 
         const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
         const { password, ...safeUser } = updatedUser;
->>>>>>> origin/Tashu
         res.json(safeUser);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 // Send Friend Request
 router.post('/request', async (req, res) => {
@@ -260,7 +266,6 @@ router.get('/:userId/sent-requests', async (req, res) => {
             fromUserId: new ObjectId(req.params.userId),
             status: 'pending'
         }).toArray();
-<<<<<<< HEAD
 
         // Enrich with User Details
         const enrichedRequests = await Promise.all(requests.map(async (req) => {
@@ -280,9 +285,6 @@ router.get('/:userId/sent-requests', async (req, res) => {
         }));
 
         res.json(enrichedRequests.filter(req => req !== null));
-=======
-        res.json(requests.map(r => r.toUserId));
->>>>>>> origin/Tashu
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

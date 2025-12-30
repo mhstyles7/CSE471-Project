@@ -2,14 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../config/db');
 const { ObjectId } = require('mongodb');
-<<<<<<< HEAD
-
-// Get all orders (for testing/admin)
-router.get('/', async (req, res) => {
-    try {
-        const db = getDb();
-        const orders = await db.collection('orders').find().toArray();
-=======
 const { sendBookingConfirmation } = require('../utils/email');
 
 // Get orders (filter by agencyEmail for agency dashboard)
@@ -19,7 +11,7 @@ router.get('/', async (req, res) => {
         const { agencyEmail } = req.query;
         const query = agencyEmail ? { agencyEmail } : {};
         const orders = await db.collection('orders').find(query).sort({ date: -1 }).toArray();
->>>>>>> origin/Tashu
+
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -41,8 +33,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-=======
 // Update order status (for agency)
 router.put('/:id', async (req, res) => {
     try {
@@ -74,6 +64,4 @@ router.put('/:id', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
->>>>>>> origin/Tashu
 module.exports = router;

@@ -7,18 +7,13 @@ const { ObjectId } = require('mongodb');
 router.get('/', async (req, res) => {
     try {
         const db = getDb();
-<<<<<<< HEAD
-        const events = await db.collection('events').find({}).toArray();
-=======
         const events = await db.collection('events').find().sort({ date: 1 }).toArray();
->>>>>>> origin/Tashu
         res.json(events);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-<<<<<<< HEAD
 // Create Event
 router.post('/', async (req, res) => {
     try {
@@ -41,24 +36,6 @@ router.post('/', async (req, res) => {
             polls: [],
             invitedFriends: [], // List of userIds invited
             createdAt: new Date()
-=======
-// Create a sponsored event (agency only)
-router.post('/', async (req, res) => {
-    try {
-        const db = getDb();
-        const { sponsor, agencyEmail, ...eventData } = req.body;
-
-        // Mark as sponsored if created by an agency
-        const isSponsored = !!(sponsor || agencyEmail);
-
-        const newEvent = {
-            ...eventData,
-            sponsor: sponsor || null,
-            agencyEmail: agencyEmail || null,
-            isSponsored,
-            createdAt: new Date().toISOString(),
-            attendees: []
->>>>>>> origin/Tashu
         };
 
         const result = await db.collection('events').insertOne(newEvent);
@@ -68,7 +45,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
 // Join Event
 router.put('/:id/join', async (req, res) => {
     try {
@@ -342,20 +318,6 @@ router.put('/invitations/:inviteId', async (req, res) => {
         );
 
         res.json({ message: `Invitation ${status}` });
-=======
-// Join an event
-router.post('/:id/join', async (req, res) => {
-    try {
-        const db = getDb();
-        const { userName, userEmail } = req.body;
-
-        await db.collection('events').updateOne(
-            { _id: new ObjectId(req.params.id) },
-            { $addToSet: { attendees: { userName, userEmail, joinedAt: new Date().toISOString() } } }
-        );
-
-        res.json({ message: 'Joined event successfully' });
->>>>>>> origin/Tashu
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

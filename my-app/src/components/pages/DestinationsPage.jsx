@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
-<<<<<<< HEAD
-import { MapPin, ArrowRight, Clock, Star } from 'lucide-react';
-import PaymentModal from '../common/PaymentModal';
-import { apiService } from '../../services/apiService';
 
-=======
 import { MapPin, ArrowRight, Clock, Star, Lock, Crown, Sparkles, Calendar, Users, DollarSign, X, Send } from 'lucide-react';
 import PaymentModal from '../common/PaymentModal';
 import { apiService } from '../../services/apiService';
 
 const API_URL = 'http://localhost:1306';
 
->>>>>>> origin/Tashu
+
 export default function DestinationsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -23,8 +18,7 @@ export default function DestinationsPage() {
   // Payment State
   const [isPaymentOpen, setPaymentOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
-<<<<<<< HEAD
-=======
+
   const [bookingQuantity, setBookingQuantity] = useState(1);
 
   // Custom Booking State (Premium Only)
@@ -40,7 +34,7 @@ export default function DestinationsPage() {
 
   // Booking Modal State
   const [isBookingModalOpen, setBookingModalOpen] = useState(false);
->>>>>>> origin/Tashu
+
 
   useEffect(() => {
     fetchPackages();
@@ -64,103 +58,35 @@ export default function DestinationsPage() {
       return;
     }
     setSelectedPackage(pkg);
-<<<<<<< HEAD
     setPaymentOpen(true);
   };
 
   const handleBookingConfirm = async () => {
     if (!selectedPackage) return;
-=======
-    setBookingQuantity(1);
-    setBookingModalOpen(true);
-  };
 
-  const proceedToPayment = () => {
-    setBookingModalOpen(false);
-    setPaymentOpen(true);
-  };
-
-  const initCustomBooking = (pkg) => {
-    if (!user) {
-      alert("Please login to customize a booking.");
-      navigate('login');
-      return;
-    }
-    if (!user.isPremium) {
-      alert("Custom bookings are a Premium feature. Upgrade to Premium to unlock!");
-      navigate('premium');
-      return;
-    }
-    setCustomBookingPkg(pkg);
-    setCustomModalOpen(true);
-  };
-
-  const handleCustomBookingSubmit = async () => {
-    if (!customBookingPkg || !user?.isPremium) return;
-
-    setSubmittingCustom(true);
-    try {
-      await fetch(`${API_URL}/api/custom-bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          packageId: customBookingPkg._id,
-          packageTitle: customBookingPkg.title,
-          agencyEmail: customBookingPkg.agencyEmail,
-          agencyName: customBookingPkg.agencyName,
-          travelerName: user.name,
-          travelerEmail: user.email,
-          isPremium: user.isPremium,
-          ...customForm
-        })
-      });
-
-      setCustomModalOpen(false);
-      setCustomBookingPkg(null);
-      setCustomForm({ preferredDates: '', numberOfTravelers: 1, specialRequests: '', budgetPreference: 'flexible' });
-      alert('🎉 Custom booking request sent! The agency will review your request and respond soon.');
-    } catch (error) {
-      console.error('Error submitting custom booking:', error);
-      alert('Failed to submit request. Please try again.');
-    } finally {
-      setSubmittingCustom(false);
-    }
-  };
-
-  const handleBookingConfirm = async () => {
-    if (!selectedPackage) return;
-    const totalAmount = selectedPackage.price * bookingQuantity;
->>>>>>> origin/Tashu
     try {
       await apiService.post('/orders', {
         type: 'package_booking',
         packageId: selectedPackage._id,
         packageTitle: selectedPackage.title,
         agencyEmail: selectedPackage.agencyEmail,
-<<<<<<< HEAD
-        travelerName: user.name,
-        travelerEmail: user.email,
-        customerName: user.name,
-        amount: selectedPackage.price,
-=======
+
         agencyName: selectedPackage.agencyName,
         travelerName: user.name,
         travelerEmail: user.email,
         customerName: user.name,
         quantity: bookingQuantity,
         amount: totalAmount,
->>>>>>> origin/Tashu
+
         date: new Date().toISOString(),
         status: 'pending'
       });
       setPaymentOpen(false);
       setSelectedPackage(null);
-<<<<<<< HEAD
-      alert('Booking confirmed!');
-=======
+
       setBookingQuantity(1);
       alert(`Booking confirmed! Total: ৳${totalAmount} for ${bookingQuantity} person(s)`);
->>>>>>> origin/Tashu
+
     } catch (error) {
       console.error('Error booking package:', error);
     }
@@ -207,8 +133,7 @@ export default function DestinationsPage() {
 
   return (
     <div>
-<<<<<<< HEAD
-=======
+
       {/* Quantity Selection Modal */}
       {isBookingModalOpen && selectedPackage && (
         <div style={{
@@ -261,18 +186,14 @@ export default function DestinationsPage() {
         </div>
       )}
 
->>>>>>> origin/Tashu
+
       <PaymentModal
         isOpen={isPaymentOpen}
         onClose={() => setPaymentOpen(false)}
         onConfirm={handleBookingConfirm}
-<<<<<<< HEAD
         amount={selectedPackage ? `$${selectedPackage.price}` : '$0'}
         title={selectedPackage?.title}
-=======
-        amount={selectedPackage ? `৳${selectedPackage.price * bookingQuantity}` : '৳0'}
-        title={selectedPackage ? `${selectedPackage.title} (${bookingQuantity} person${bookingQuantity > 1 ? 's' : ''})` : ''}
->>>>>>> origin/Tashu
+
       />
 
       <div style={{ marginBottom: '60px' }}>
@@ -288,10 +209,8 @@ export default function DestinationsPage() {
         {destinations.map((dest, index) => (
           <div
             key={dest.name}
-<<<<<<< HEAD
             onClick={() => navigate('destination-details', { id: dest.name })}
-=======
->>>>>>> origin/Tashu
+
             style={{
               backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
               overflow: 'hidden', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.05)',
@@ -347,7 +266,6 @@ export default function DestinationsPage() {
                     <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Price per person</p>
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#059669' }}>${pkg.price}</p>
                   </div>
-<<<<<<< HEAD
                   <button
                     onClick={() => initBooking(pkg)}
                     style={{
@@ -360,37 +278,7 @@ export default function DestinationsPage() {
                   >
                     Book Now
                   </button>
-=======
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button
-                      onClick={() => initBooking(pkg)}
-                      style={{
-                        padding: '12px 24px', backgroundColor: '#111827', color: 'white',
-                        border: 'none', borderRadius: '12px', fontWeight: '600',
-                        cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                    >
-                      Book Now
-                    </button>
-                    <button
-                      onClick={() => initCustomBooking(pkg)}
-                      style={{
-                        padding: '10px 20px',
-                        backgroundColor: user?.isPremium ? '#fef3c7' : '#f3f4f6',
-                        color: user?.isPremium ? '#d97706' : '#6b7280',
-                        border: 'none', borderRadius: '12px', fontWeight: '600', fontSize: '13px',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {user?.isPremium ? <Sparkles size={14} /> : <Lock size={14} />}
-                      Customize
-                      {!user?.isPremium && <Crown size={12} style={{ color: '#f59e0b' }} />}
-                    </button>
-                  </div>
->>>>>>> origin/Tashu
+
                 </div>
               </div>
             ))}
@@ -398,8 +286,7 @@ export default function DestinationsPage() {
         )}
       </div>
 
-<<<<<<< HEAD
-=======
+
       {/* Custom Booking Modal (Premium Only) */}
       {isCustomModalOpen && customBookingPkg && (
         <div style={{
@@ -499,7 +386,7 @@ export default function DestinationsPage() {
         </div>
       )}
 
->>>>>>> origin/Tashu
+
       <style>{`
         @keyframes slideUp { 
           from { opacity: 0; transform: translateY(20px); } 
