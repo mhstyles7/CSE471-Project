@@ -22,7 +22,7 @@ export default function GroupEventsPage() {
 
   // Events state (4.1)
   const [events, setEvents] = useState([]);
-  const API_URL = 'http://localhost:5000';
+
 
 
   // My joined events

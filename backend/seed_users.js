@@ -23,8 +23,8 @@ async function seedUsers() {
 
         console.log("Connected to MongoDB...");
 
-        // Optional: Clear existing users to avoid duplicates (Comment out if you want to keep old ones)
-        // await collection.deleteMany({}); 
+        // Clear existing users to avoid duplicates and fix password hashes
+        await collection.deleteMany({});
 
         const usersToInsert = [];
         const credentials = [];

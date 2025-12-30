@@ -4,6 +4,7 @@ import { UserPlus, Users, Check, X, MessageCircle, MapPin, Calendar, Heart, Send
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
+import { API_URL } from '../../config';
 
 export default function FriendsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -54,7 +55,7 @@ export default function FriendsPage() {
 
   const handleLikePost = async (postId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/posts/${postId}/react`, {
+      const res = await fetch(`${API_URL}/api/posts/${postId}/react`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id, type: 'like' })
@@ -101,11 +102,11 @@ export default function FriendsPage() {
     setIsLoading(true);
     try {
       // 1. Fetch My Friends
-      const friendsRes = await fetch(`http://localhost:5000/api/users/${user._id}/friends`);
+      const friendsRes = await fetch(`${API_URL}/api/users/${user._id}/friends`);
       const friendsData = await friendsRes.json();
 
       // 2. Fetch Sent Requests (To disable buttons)
-      const sentRes = await fetch(`http://localhost:5000/api/users/${user._id}/sent-requests`);
+      const sentRes = await fetch(`${API_URL}/api/users/${user._id}/sent-requests`);
       const sentData = await sentRes.json();
 
       // Transform keys for UI
@@ -119,7 +120,7 @@ export default function FriendsPage() {
       setSentRequests(mappedSent);
 
       // 3. Fetch Incoming Requests
-      const requestsRes = await fetch(`http://localhost:5000/api/users/${user._id}/requests`);
+      const requestsRes = await fetch(`${API_URL}/api/users/${user._id}/requests`);
 
       const requestsData = await requestsRes.json();
 
@@ -136,7 +137,7 @@ export default function FriendsPage() {
       setFriendRequests(mappedRequests);
 
       // 4. Fetch Suggestions (Filter out friends, me, AND already sent requests)
-      const allUsersRes = await fetch(`http://localhost:5000/api/users`);
+      const allUsersRes = await fetch(`${API_URL}/api/users`);
       const allUsersData = await allUsersRes.json();
 
       const friendIds = new Set(friendsData.map(f => f._id));
@@ -170,7 +171,7 @@ export default function FriendsPage() {
       setFriends(friendsWithMeta);
 
       // 5. Fetch Activity Feed (Posts)
-      const postsRes = await fetch(`http://localhost:5000/api/posts`);
+      const postsRes = await fetch(`${API_URL}/api/posts`);
 
       const postsData = await postsRes.json();
 
@@ -210,7 +211,7 @@ export default function FriendsPage() {
   // Handle Send Request
   const handleSendRequest = async (friendId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/request`, {
+      const res = await fetch(`${API_URL}/api/users/request`, {
 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -238,7 +239,7 @@ export default function FriendsPage() {
   // Accept Request
   const handleAcceptRequest = async (requestId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+      const res = await fetch(`${API_URL}/api/users/request/${requestId}`, {
 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -265,7 +266,7 @@ export default function FriendsPage() {
   // Reject Request
   const handleRejectRequest = async (requestId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+      const res = await fetch(`${API_URL}/api/users/request/${requestId}`, {
 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -307,7 +308,7 @@ export default function FriendsPage() {
   const fetchConversation = async () => {
     if (!selectedFriend) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/messages/${user._id}/${selectedFriend.id || selectedFriend._id}`);
+      const res = await fetch(`${API_URL}/api/messages/${user._id}/${selectedFriend.id || selectedFriend._id}`);
       if (res.ok) {
         const data = await res.json();
         setConversation(data);
@@ -319,7 +320,7 @@ export default function FriendsPage() {
 
   const fetchMyEvents = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/events');
+      const res = await fetch(`${API_URL}/api/events`);
       const data = await res.json();
       // Filter events where I am a participant or organizer
       const joined = data.filter(e =>
@@ -360,7 +361,7 @@ export default function FriendsPage() {
   const handleSendMessage = async () => {
     if (!messageText.trim()) return;
     try {
-      const res = await fetch('http://localhost:5000/api/messages', {
+      const res = await fetch(`${API_URL}/api/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -389,7 +390,7 @@ export default function FriendsPage() {
     if (!selectedEventId) return;
     try {
       // Use existing event invite endpoint
-      const res = await fetch(`http://localhost:5000/api/events/${selectedEventId}/invite`, {
+      const res = await fetch(`${API_URL}/api/events/${selectedEventId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

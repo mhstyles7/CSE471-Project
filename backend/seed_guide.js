@@ -1,8 +1,9 @@
 const { MongoClient } = require('mongodb');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 async function seed() {
-    const uri = process.env.MONGODB_URI; // Corrected env var name
+    const uri = process.env.MONGODB_URI;
     if (!uri) {
         console.error("MONGODB_URI is not defined in .env");
         process.exit(1);
@@ -11,16 +12,17 @@ async function seed() {
 
     try {
         await client.connect();
-        const db = client.db('travel_db'); // Corrected DB name
+        const db = client.db('travel_db');
 
         console.log('Connected to DB: travel_db');
 
         // 1. Create/Update an Approved Guide
         const guideEmail = 'guide@example.com';
+        const hashedPassword = await bcrypt.hash('password123', 10);
         const guideUser = {
             name: 'Local Expert Rahim',
             email: guideEmail,
-            password: 'hashedpassword123',
+            password: hashedPassword,
             role: 'user',
             guideStatus: 'approved',
             trips: 15,
