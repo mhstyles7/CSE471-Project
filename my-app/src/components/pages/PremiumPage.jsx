@@ -5,7 +5,7 @@ import { CreditCard, Check, Crown, Shield, Award } from 'lucide-react';
 import { API_URL } from '../../config';
 
 export default function PremiumPage() {
-    const { user, updateProfile } = useAuth();
+    const { user, updateProfile, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [processing, setProcessing] = useState(false);
@@ -24,15 +24,20 @@ export default function PremiumPage() {
         setTimeout(async () => {
             try {
                 if (selectedPlan === 'premium') {
-                    // Update user to premium
-                    await updateProfile({ isPremium: true, freeGuideBookingUsed: false });
-
-                    // Also update in backend
-                    await fetch(`${API_URL}/api/users/${user._id}`, {
+                    // First update in backend
+                    const backendRes = await fetch(`${API_URL}/api/users/${user._id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ isPremium: true, freeGuideBookingUsed: false })
-                    }).catch(() => { }); // Silent fail for backend
+                    });
+
+                    if (backendRes.ok) {
+                        // Backend updated successfully, now update local state
+                        await updateProfile({ isPremium: true, freeGuideBookingUsed: false });
+                    } else {
+                        // Backend failed, still update local for now
+                        await updateProfile({ isPremium: true, freeGuideBookingUsed: false });
+                    }
 
                     // Check for pending guide booking
                     const pendingBooking = localStorage.getItem('pendingGuideBooking');
@@ -65,6 +70,7 @@ export default function PremiumPage() {
                         navigate('local-guides');
                     } else {
                         alert('🎉 Payment Successful! You are now a Premium Member.\n\n✅ Your first guide booking is FREE!\n✅ Zero platform commission on bookings\n✅ Access to "Cook with Local" experiences');
+                        navigate('home');
                     }
                 } else if (selectedPlan === 'guide_booking') {
                     // Check for pending guide booking

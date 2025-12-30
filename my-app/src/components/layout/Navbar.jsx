@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Users, Map, Calendar, Award, User, Info, LogOut, MessageCircle, ChevronDown, LayoutDashboard, Briefcase, Globe, UserCheck, Utensils, Compass, LogIn, UserPlus } from 'lucide-react';
+import { Home, Users, Map, Calendar, Award, User, Info, LogOut, MessageCircle, ChevronDown, LayoutDashboard, Briefcase, Globe, UserCheck, Utensils, Compass, LogIn, UserPlus, Crown } from 'lucide-react';
 
 export default function Navbar({ currentPage, setCurrentPage, isAuthenticated, user, onLogout }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -24,6 +24,7 @@ export default function Navbar({ currentPage, setCurrentPage, isAuthenticated, u
     { id: 'local-guides', label: 'Local Guides', icon: UserCheck },
     { id: 'culture', label: 'Culture & Food', icon: Utensils },
     { id: 'trip-planner', label: 'Trip Planner', icon: Compass },
+    { id: 'premium', label: 'Get Premium Membership', icon: Crown },
   ];
 
   // Items only for logged out users
@@ -290,6 +291,9 @@ export default function Navbar({ currentPage, setCurrentPage, isAuthenticated, u
               >
                 <User size={18} strokeWidth={2.5} />
                 <span>{user ? user.name.split(' ')[0] : 'Profile'}</span>
+                {user?.isPremium && (
+                  <Crown size={16} color="#f59e0b" fill="#f59e0b" title="Premium Member" />
+                )}
               </button>
 
               {/* Logout Button */}

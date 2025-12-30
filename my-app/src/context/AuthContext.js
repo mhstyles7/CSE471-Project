@@ -80,13 +80,13 @@ export const AuthProvider = ({ children }) => {
     const updateProfile = async (updates) => {
         setLoading(true);
         try {
-            // In a real app, you would make a PUT request to the backend here
-            // const response = await fetch(`${API_URL}/api/users/profile`, { ... });
-
-            // For now, we simulate a successful update
-            const updatedUser = { ...user, ...updates };
-            setUser(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+            // Use functional update to get the latest user state (avoids stale closure)
+            let updatedUser;
+            setUser(currentUser => {
+                updatedUser = { ...currentUser, ...updates };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                return updatedUser;
+            });
 
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 500));

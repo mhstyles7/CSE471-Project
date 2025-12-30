@@ -91,20 +91,7 @@ export default function LocalGuidePage() {
             return;
         }
 
-        // If user is NOT premium, save the guide info and redirect to premium page
-        if (!user.isPremium) {
-            // Save pending booking info so it can be completed after premium payment
-            localStorage.setItem('pendingGuideBooking', JSON.stringify({
-                guideName: post.guideName,
-                guideEmail: post.guideEmail,
-                postId: post._id
-            }));
-            alert("You need a Premium membership to book a guide. After payment, your booking will be automatically completed.");
-            navigate('premium');
-            return;
-        }
-
-        // Premium user - show payment modal (free if first booking, otherwise 400tk)
+        // Show payment modal for guide booking (400tk for all users)
         setSelectedGuidePost(post);
         setPaymentOpen(true);
     };
@@ -112,6 +99,7 @@ export default function LocalGuidePage() {
     const handleBookGuideConfirm = async () => {
         if (!selectedGuidePost) return;
 
+        // Premium users get first guide booking free
         const isFreeBooking = user?.isPremium && !user?.freeGuideBookingUsed;
         const bookingAmount = isFreeBooking ? 0 : 400;
 
