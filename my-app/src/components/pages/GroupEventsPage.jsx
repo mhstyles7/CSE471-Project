@@ -1148,10 +1148,10 @@ export default function GroupEventsPage() {
                 <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
                   <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Add Activity</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                    <input type="number" placeholder="Day" min="1" value={newItineraryItem.day} onChange={e => setNewItineraryItem({ ...newItineraryItem, day: parseInt(e.target.value) })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
-                    <input type="time" value={newItineraryItem.time} onChange={e => setNewItineraryItem({ ...newItineraryItem, time: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
-                    <input type="text" placeholder="Activity" value={newItineraryItem.activity} onChange={e => setNewItineraryItem({ ...newItineraryItem, activity: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', flex: 2 }} />
-                    <input type="text" placeholder="Location" value={newItineraryItem.location} onChange={e => setNewItineraryItem({ ...newItineraryItem, location: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <input type="number" placeholder="Day (e.g. 1, 2, 3)" min="1" value={newItineraryItem.day} onChange={e => setNewItineraryItem({ ...newItineraryItem, day: parseInt(e.target.value) })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <input type="time" placeholder="Time" value={newItineraryItem.time} onChange={e => setNewItineraryItem({ ...newItineraryItem, time: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <input type="text" placeholder="Activity (e.g. Breakfast, Hiking)" value={newItineraryItem.activity} onChange={e => setNewItineraryItem({ ...newItineraryItem, activity: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', flex: 2 }} />
+                    <input type="text" placeholder="Location (e.g. Hotel, Beach)" value={newItineraryItem.location} onChange={e => setNewItineraryItem({ ...newItineraryItem, location: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
                   </div>
                   <button onClick={handleAddItinerary} style={{ backgroundColor: '#059669', color: 'white', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600' }}>Add to Itinerary</button>
                 </div>

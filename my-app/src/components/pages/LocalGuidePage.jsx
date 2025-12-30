@@ -37,7 +37,7 @@ export default function LocalGuidePage() {
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            const data = await apiService.get('/posts?type=update'); // Assuming 'update' type for guide posts
+            const data = await apiService.get('/guide/posts');
 
             setPosts(data);
         } catch (error) {

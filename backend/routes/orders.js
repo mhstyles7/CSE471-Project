@@ -24,9 +24,19 @@ router.post('/', async (req, res) => {
         const db = getDb();
         const newOrder = req.body;
         newOrder.date = new Date().toISOString();
-        newOrder.status = 'pending';
+        newOrder.status = newOrder.status || 'pending';
 
         const result = await db.collection('orders').insertOne(newOrder);
+
+        // If this is a membership purchase, upgrade the user to premium
+        if (newOrder.type === 'membership' && newOrder.userId) {
+            await db.collection('users').updateOne(
+                { _id: new ObjectId(newOrder.userId) },
+                { $set: { isPremium: true, premiumSince: new Date().toISOString() } }
+            );
+            console.log('✨ User upgraded to Premium:', newOrder.userId);
+        }
+
         res.status(201).json({ ...newOrder, _id: result.insertedId });
     } catch (err) {
         res.status(500).json({ message: err.message });

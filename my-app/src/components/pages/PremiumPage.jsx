@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 import { CreditCard, Check, Crown, Shield } from 'lucide-react';
+import { apiService } from '../../services/apiService';
 
 export default function PremiumPage() {
-    const { user, updateProfile } = useAuth();
+    const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
 
     const [selectedPlan, setSelectedPlan] = useState(null);
@@ -19,28 +20,35 @@ export default function PremiumPage() {
             return;
         }
 
-
         setProcessing(true);
 
-        // Simulated payment delay
-        setTimeout(async () => {
-            try {
-                if (selectedPlan === 'premium') {
-                    await updateProfile({ isPremium: true });
-                    alert('Payment Successful! You are now a Premium Member.');
-                } else if (selectedPlan === 'guide_booking') {
-                    // Logic for booking guide payment
-                    alert('Payment Successful! Guide booked.');
+        try {
+            if (selectedPlan === 'premium') {
+                // Create a membership order - backend will upgrade user to premium
+                await apiService.post('/orders', {
+                    type: 'membership',
+                    userId: user._id,
+                    customerName: user.name,
+                    customerEmail: user.email,
+                    amount: 200,
+                    status: 'completed'
+                });
 
-                }
-            } catch (error) {
-                console.error('Payment failed:', error);
-                alert('Payment failed. Please try again.');
-            } finally {
-                setProcessing(false);
-                setSelectedPlan(null);
+                // Refresh user data from server to get updated isPremium status
+                await refreshUser();
+                alert('Payment Successful! You are now a Premium Member.');
+
+            } else if (selectedPlan === 'guide_booking') {
+                // Guide booking handled separately on LocalGuidePage
+                alert('Please use the Local Guides page to book a guide.');
             }
-        }, 1500);
+        } catch (error) {
+            console.error('Payment failed:', error);
+            alert('Payment failed. Please try again.');
+        } finally {
+            setProcessing(false);
+            setSelectedPlan(null);
+        }
     };
 
 

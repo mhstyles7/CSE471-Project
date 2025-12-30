@@ -39,7 +39,7 @@ router.put('/:id/profile', async (req, res) => {
     try {
         const db = getDb();
         const userId = req.params.id;
-        const { name, bio, avatar, coverImage } = req.body;
+        const { name, bio, avatar, coverImage, isPremium, freeGuideBookingUsed } = req.body;
 
         // Build update object with only provided fields
         const updateFields = { updatedAt: new Date() };
@@ -47,6 +47,8 @@ router.put('/:id/profile', async (req, res) => {
         if (bio !== undefined) updateFields.bio = bio;
         if (avatar !== undefined) updateFields.avatar = avatar;
         if (coverImage !== undefined) updateFields.coverImage = coverImage;
+        if (isPremium !== undefined) updateFields.isPremium = isPremium;
+        if (freeGuideBookingUsed !== undefined) updateFields.freeGuideBookingUsed = freeGuideBookingUsed;
 
         const result = await db.collection('users').findOneAndUpdate(
             { _id: new ObjectId(userId) },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 import { ChefHat, Utensils, Calendar, ArrowRight, Lock, X, MapPin, Filter } from 'lucide-react';
+import { API_URL } from '../../config';
 
 // Simple Bangla Date Converter Logic (Prototypical)
 const getBanglaDate = () => {
@@ -62,16 +63,60 @@ export default function CulturePage() {
     const [selectedDistrict, setSelectedDistrict] = useState('All');
     const [loading, setLoading] = useState(false);
     const [selectedDish, setSelectedDish] = useState(null);
+    const [localDishes, setLocalDishes] = useState([]);
+    const [divisions, setDivisions] = useState([]);
+    const [districts, setDistricts] = useState([]);
 
-    // Constants
-    const DIVISIONS = ['All', 'Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi', 'Rangpur', 'Barishal', 'Mymensingh'];
-    const districts = selectedDivision === 'All' ? ['All'] : ['All', 'District 1', 'District 2'];
+    useEffect(() => {
+        fetchDishes();
+        fetchDivisions();
+    }, [selectedDivision, selectedDistrict]);
 
-    const localDishes = [
-        { name: 'Panta Ilish', region: 'Dhaka', desc: 'Traditional fermented rice with Hilsa fish.', image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80' },
-        { name: 'Mezban Meat', region: 'Chittagong', desc: 'Spicy beef curry served in traditional feasts.', image: 'https://images.unsplash.com/photo-1545247181-516773cae754?w=600&q=80' },
-        { name: 'Bhog', region: 'Sylhet', desc: 'Ritualistic vegetarian meal offerings.', image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80' }
-    ];
+    const fetchDishes = async () => {
+        setLoading(true);
+        try {
+            let query = '/api/foods?';
+            if (selectedDivision !== 'All') query += `division=${selectedDivision}&`;
+            if (selectedDistrict !== 'All') query += `district=${selectedDistrict}`;
+
+            const res = await fetch(`${API_URL}${query}`);
+            const data = await res.json();
+            setLocalDishes(data);
+        } catch (error) {
+            console.error('Error fetching dishes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDivisions = async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/foods/divisions`);
+            const data = await res.json();
+            setDivisions(['All', ...data]);
+        } catch (error) {
+            console.error('Error fetching divisions:', error);
+        }
+    };
+
+    // Update districts when division changes
+    useEffect(() => {
+        if (selectedDivision === 'All') {
+            setDistricts(['All']);
+            return;
+        }
+
+        const fetchDistricts = async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/foods/districts/${selectedDivision}`);
+                const data = await res.json();
+                setDistricts(['All', ...data]);
+            } catch (error) {
+                console.error('Error fetching districts:', error);
+            }
+        };
+        fetchDistricts();
+    }, [selectedDivision]);
 
 
 
@@ -219,8 +264,8 @@ export default function CulturePage() {
                                         minWidth: '140px'
                                     }}
                                 >
-                                    {DIVISIONS.map(div => (
-                                        <option key={div} value={div}>{div} Division</option>
+                                    {divisions.map(div => (
+                                        <option key={div} value={div}>{div} {div !== 'All' && 'Division'}</option>
                                     ))}
                                 </select>
                             </div>
