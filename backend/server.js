@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/db');
@@ -11,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to Database
-connectDB();
+// connectDB call moved to bottom
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -38,6 +39,23 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
-app.listen(port, () => {
-    console.log(`Server running on port: ${port}`);
+// Connect to Database and Start Server
+connectDB().then(() => {
+    app.listen(port, () => {
+        console.log(`Server running on port: ${port} `);
+    });
+}).catch(err => {
+    console.error("Failed to connect to Database", err);
+    process.exit(1);
 });
+
+app.get('/health', (req, res) => {
+    try {
+        const { getDb } = require('./config/db');
+        const db = getDb();
+        res.json({ status: 'ok', database: 'connected', dbName: db.databaseName });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
