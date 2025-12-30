@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from "react";
 import {
   MapContainer,
@@ -1824,4 +1825,15 @@ export default function InteractiveMap() {
       </AnimatePresence>
     </div>
   );
+=======
+import React from 'react';
+import Heatmap from './Heatmap';
+
+export default function InteractiveMap() {
+    return (
+        <div className="w-full">
+            <Heatmap />
+        </div>
+    );
+>>>>>>> origin/Tashu
 }

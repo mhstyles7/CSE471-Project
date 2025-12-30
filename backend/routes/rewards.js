@@ -46,6 +46,7 @@ router.post('/redeem', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 // Add Points (Manual/System Action)
 router.post('/add-points', async (req, res) => {
     try {
@@ -115,4 +116,6 @@ router.post('/add-points', async (req, res) => {
     }
 });
 
+=======
+>>>>>>> origin/Tashu
 module.exports = router;

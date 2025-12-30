@@ -2,12 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../config/db');
 const bcrypt = require('bcrypt');
+<<<<<<< HEAD
 const { ObjectId } = require('mongodb');
 
 // Helper: Generate random token
 const generateToken = () => {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
+=======
+>>>>>>> origin/Tashu
 
 // Register
 router.post('/register', async (req, res) => {
@@ -31,16 +34,23 @@ router.post('/register', async (req, res) => {
             tier: 'Bronze',
             isPremium: false,
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
+<<<<<<< HEAD
             joinedDate: new Date().toISOString(),
             authProvider: 'local',
             createdAt: new Date(),
             updatedAt: new Date()
+=======
+            joinedDate: new Date().toISOString()
+>>>>>>> origin/Tashu
         };
 
         const result = await users.insertOne(newUser);
         const { password: _, ...userWithoutPassword } = newUser;
         userWithoutPassword._id = result.insertedId;
+<<<<<<< HEAD
         userWithoutPassword.loginTime = new Date().toISOString();
+=======
+>>>>>>> origin/Tashu
 
         res.status(201).json(userWithoutPassword);
     } catch (err) {
@@ -60,16 +70,20 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+<<<<<<< HEAD
         // Check if user registered with social login
         if (user.authProvider === 'google' && !user.password) {
             return res.status(400).json({ message: 'Please login with Google' });
         }
 
+=======
+>>>>>>> origin/Tashu
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
+<<<<<<< HEAD
         // Update last login time
         await users.updateOne(
             { _id: user._id },
@@ -78,12 +92,16 @@ router.post('/login', async (req, res) => {
 
         const { password: _, ...userWithoutPassword } = user;
         userWithoutPassword.loginTime = new Date().toISOString();
+=======
+        const { password: _, ...userWithoutPassword } = user;
+>>>>>>> origin/Tashu
         res.json(userWithoutPassword);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
+<<<<<<< HEAD
 // Google OAuth Login/Register
 router.post('/google', async (req, res) => {
     try {
@@ -269,8 +287,25 @@ router.post('/validate-session', async (req, res) => {
         res.json({ valid: true, user: userWithoutPassword });
     } catch (err) {
         res.status(500).json({ valid: false, message: err.message });
+=======
+// Get user profile (for refreshing user data)
+router.get('/profile/:email', async (req, res) => {
+    try {
+        const db = getDb();
+        const user = await db.collection('users').findOne({ email: req.params.email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const { password: _, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+>>>>>>> origin/Tashu
     }
 });
 
 module.exports = router;
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/Tashu

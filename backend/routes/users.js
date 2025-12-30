@@ -34,6 +34,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update user profile
+<<<<<<< HEAD
 router.put('/:id/profile', async (req, res) => {
     try {
         const db = getDb();
@@ -58,6 +59,24 @@ router.put('/:id/profile', async (req, res) => {
         }
 
         const { password, ...safeUser } = result;
+=======
+router.put('/:id', async (req, res) => {
+    try {
+        const db = getDb();
+        const updates = req.body;
+
+        // Remove sensitive fields that shouldn't be updated this way
+        delete updates.password;
+        delete updates._id;
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updates }
+        );
+
+        const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
+        const { password, ...safeUser } = updatedUser;
+>>>>>>> origin/Tashu
         res.json(safeUser);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -241,6 +260,7 @@ router.get('/:userId/sent-requests', async (req, res) => {
             fromUserId: new ObjectId(req.params.userId),
             status: 'pending'
         }).toArray();
+<<<<<<< HEAD
 
         // Enrich with User Details
         const enrichedRequests = await Promise.all(requests.map(async (req) => {
@@ -260,6 +280,9 @@ router.get('/:userId/sent-requests', async (req, res) => {
         }));
 
         res.json(enrichedRequests.filter(req => req !== null));
+=======
+        res.json(requests.map(r => r.toUserId));
+>>>>>>> origin/Tashu
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

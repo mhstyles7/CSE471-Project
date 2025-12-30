@@ -27,6 +27,7 @@ export const useCurrentPage = () => {
     return context.currentPage;
 };
 
+<<<<<<< HEAD
 export const usePageParams = () => {
     const context = useContext(NavigationContext);
     if (!context) {
@@ -38,6 +39,11 @@ export const usePageParams = () => {
 export const NavigationProvider = ({ children, navigate, currentPage, pageParams }) => {
     return (
         <NavigationContext.Provider value={{ navigate, currentPage, pageParams }}>
+=======
+export const NavigationProvider = ({ children, navigate, currentPage }) => {
+    return (
+        <NavigationContext.Provider value={{ navigate, currentPage }}>
+>>>>>>> origin/Tashu
             {children}
         </NavigationContext.Provider>
     );

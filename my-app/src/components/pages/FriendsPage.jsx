@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Users, Check, X, MapPin, Heart, Bell, Clock, Activity, Calendar, MessageCircle, Send, UserPlus } from 'lucide-react';
+=======
+import React, { useState, useEffect } from 'react';
+import { UserPlus, Users, Check, X, MessageCircle, MapPin, Calendar, Heart, Send, Bell, Clock, Activity } from 'lucide-react';
+>>>>>>> origin/Tashu
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -14,6 +19,7 @@ export default function FriendsPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+<<<<<<< HEAD
   // Modal & Interaction State
   const [activeModal, setActiveModal] = useState(null); // 'profile', 'message', 'invite'
   const [selectedFriend, setSelectedFriend] = useState(null);
@@ -86,6 +92,8 @@ export default function FriendsPage() {
     }
   };
 
+=======
+>>>>>>> origin/Tashu
 
   // Fetch Data
   useEffect(() => {
@@ -98,6 +106,7 @@ export default function FriendsPage() {
     setIsLoading(true);
     try {
       // 1. Fetch My Friends
+<<<<<<< HEAD
       const friendsRes = await fetch(`http://localhost:5000/api/users/${user._id}/friends`);
       const friendsData = await friendsRes.json();
 
@@ -117,6 +126,18 @@ export default function FriendsPage() {
 
       // 3. Fetch Incoming Requests
       const requestsRes = await fetch(`http://localhost:5000/api/users/${user._id}/requests`);
+=======
+      const friendsRes = await fetch(`http://localhost:1306/api/users/${user._id}/friends`);
+      const friendsData = await friendsRes.json();
+
+      // 2. Fetch Sent Requests (To disable buttons)
+      const sentRes = await fetch(`http://localhost:1306/api/users/${user._id}/sent-requests`);
+      const sentData = await sentRes.json();
+      setSentRequests(sentData); // Store IDs of users I sent requests to
+
+      // 3. Fetch Incoming Requests
+      const requestsRes = await fetch(`http://localhost:1306/api/users/${user._id}/requests`);
+>>>>>>> origin/Tashu
       const requestsData = await requestsRes.json();
 
       // Transform Request Data for UI
@@ -132,11 +153,19 @@ export default function FriendsPage() {
       setFriendRequests(mappedRequests);
 
       // 4. Fetch Suggestions (Filter out friends, me, AND already sent requests)
+<<<<<<< HEAD
       const allUsersRes = await fetch(`http://localhost:5000/api/users`);
       const allUsersData = await allUsersRes.json();
 
       const friendIds = new Set(friendsData.map(f => f._id));
       const sentIds = new Set(sentData.map(r => r.toUser._id)); // Extract toUser ID from request object
+=======
+      const allUsersRes = await fetch(`http://localhost:1306/api/users`);
+      const allUsersData = await allUsersRes.json();
+
+      const friendIds = new Set(friendsData.map(f => f._id));
+      const sentIds = new Set(sentData); // sentData is array of strings (user IDs)
+>>>>>>> origin/Tashu
 
       const newSuggestions = allUsersData.filter(u =>
         u._id !== user._id &&
@@ -165,7 +194,11 @@ export default function FriendsPage() {
       setFriends(friendsWithMeta);
 
       // 5. Fetch Activity Feed (Posts)
+<<<<<<< HEAD
       const postsRes = await fetch(`http://localhost:5000/api/posts`);
+=======
+      const postsRes = await fetch(`http://localhost:1306/api/posts`);
+>>>>>>> origin/Tashu
       const postsData = await postsRes.json();
 
       // Filter posts: Show posts from my friends
@@ -185,9 +218,13 @@ export default function FriendsPage() {
         time: new Date(p.createdAt).toLocaleDateString(), // Simple format
         destination: p.destination,
         rating: p.rating,
+<<<<<<< HEAD
         fullContent: p.content, // Store full text for display
         likes: (p.reactions || []).filter(r => r.type === 'like').length,
         isLiked: (p.reactions || []).some(r => r.userId === user._id && r.type === 'like')
+=======
+        fullContent: p.content // Store full text for display
+>>>>>>> origin/Tashu
       }));
 
       setActivityFeed(mappedFeed);
@@ -203,7 +240,11 @@ export default function FriendsPage() {
   // Handle Send Request
   const handleSendRequest = async (friendId) => {
     try {
+<<<<<<< HEAD
       const res = await fetch(`http://localhost:5000/api/users/request`, {
+=======
+      const res = await fetch(`http://localhost:1306/api/users/request`, {
+>>>>>>> origin/Tashu
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromUserId: user._id, toUserId: friendId })
@@ -230,7 +271,11 @@ export default function FriendsPage() {
   // Accept Request
   const handleAcceptRequest = async (requestId) => {
     try {
+<<<<<<< HEAD
       const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+=======
+      const res = await fetch(`http://localhost:1306/api/users/request/${requestId}`, {
+>>>>>>> origin/Tashu
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'accepted' })
@@ -256,7 +301,11 @@ export default function FriendsPage() {
   // Reject Request
   const handleRejectRequest = async (requestId) => {
     try {
+<<<<<<< HEAD
       const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+=======
+      const res = await fetch(`http://localhost:1306/api/users/request/${requestId}`, {
+>>>>>>> origin/Tashu
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'rejected' })
@@ -271,6 +320,7 @@ export default function FriendsPage() {
     }
   };
 
+<<<<<<< HEAD
 
 
 
@@ -402,6 +452,23 @@ export default function FriendsPage() {
       showNotification("Error sending invite", "error");
     }
   };
+=======
+  // Stub other existing functions to prevent errors if they are used elsewhere or just keep them as visual only for now
+  const [friendRequests, setFriendRequests] = useState([]); // Leave empty for now as we don't have request logic
+  const [sentRequests, setSentRequests] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
+
+  // Mock Notification logic
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Stub handlers
+
+  const handleCancelRequest = () => { };
+  const handleInviteToTrip = () => { };
+>>>>>>> origin/Tashu
 
   // Login required check
   if (!isAuthenticated) {
@@ -436,7 +503,11 @@ export default function FriendsPage() {
       {notification && (
         <div style={{
           position: 'fixed',
+<<<<<<< HEAD
           bottom: '20px',
+=======
+          top: '20px',
+>>>>>>> origin/Tashu
           right: '20px',
           backgroundColor: notification.type === 'success' ? '#059669' : '#6b7280',
           color: 'white',
@@ -598,6 +669,7 @@ export default function FriendsPage() {
                   {activity.time}
                 </p>
               </div>
+<<<<<<< HEAD
               <button
                 onClick={() => handleLikePost(activity.id)}
                 style={{
@@ -616,6 +688,23 @@ export default function FriendsPage() {
                 }}>
                 <Heart size={14} fill={activity.isLiked ? 'white' : 'none'} />
                 {activity.likes ? `${activity.likes} ` : ''}Like
+=======
+              <button style={{
+                backgroundColor: '#f0fdf4',
+                color: '#059669',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                fontWeight: '600'
+              }}>
+                <Heart size={14} />
+                Like
+>>>>>>> origin/Tashu
               </button>
             </div>
           ))}
@@ -830,6 +919,7 @@ export default function FriendsPage() {
               )}
 
               <div style={{ display: 'flex', gap: '8px' }}>
+<<<<<<< HEAD
                 <button
                   onClick={() => handleOpenProfile(friend)}
                   style={{
@@ -864,6 +954,37 @@ export default function FriendsPage() {
                 </button>
                 <button
                   onClick={() => handleOpenInvite(friend)}
+=======
+                <button style={{
+                  backgroundColor: '#f0fdf4',
+                  color: '#059669',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '2px solid #bbf7d0',
+                  cursor: 'pointer',
+                  flex: 1,
+                  fontWeight: '600',
+                  transition: 'all 0.3s'
+                }}>
+                  View Profile
+                </button>
+                <button style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s'
+                }}>
+                  <MessageCircle size={20} strokeWidth={2.5} />
+                </button>
+                <button
+                  onClick={() => showNotification(`Trip invitation sent to ${friend.name}!`)}
+>>>>>>> origin/Tashu
                   style={{
                     backgroundColor: '#f0fdf4',
                     color: '#059669',
@@ -1026,6 +1147,7 @@ export default function FriendsPage() {
         )
       }
 
+<<<<<<< HEAD
       {/* --- MODALS --- */}
 
       {/* 1. Profile Modal */}
@@ -1216,6 +1338,8 @@ export default function FriendsPage() {
         </div>
       )}
 
+=======
+>>>>>>> origin/Tashu
       {/* CSS Animations */}
       <style>{`
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

@@ -1,15 +1,23 @@
+<<<<<<< HEAD
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+=======
+import React, { createContext, useContext, useState, useEffect } from 'react';
+>>>>>>> origin/Tashu
 import { API_URL } from '../config';
 
 const AuthContext = createContext(null);
 
+<<<<<<< HEAD
 const SESSION_TIMEOUT_HOURS = 24;
 
+=======
+>>>>>>> origin/Tashu
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+<<<<<<< HEAD
     // Check session validity on app load
     const validateSession = useCallback(async () => {
         const storedUser = localStorage.getItem('user');
@@ -73,6 +81,18 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         validateSession();
     }, [validateSession]);
+=======
+    useEffect(() => {
+        const initAuth = async () => {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
+            setLoading(false);
+        };
+        initAuth();
+    }, []);
+>>>>>>> origin/Tashu
 
     const login = async (email, password) => {
         setLoading(true);
@@ -89,7 +109,10 @@ export const AuthProvider = ({ children }) => {
 
             setUser(data);
             localStorage.setItem('user', JSON.stringify(data));
+<<<<<<< HEAD
             localStorage.setItem('loginTime', data.loginTime || new Date().toISOString());
+=======
+>>>>>>> origin/Tashu
             return data;
         } catch (err) {
             setError(err.message);
@@ -114,7 +137,10 @@ export const AuthProvider = ({ children }) => {
 
             setUser(data);
             localStorage.setItem('user', JSON.stringify(data));
+<<<<<<< HEAD
             localStorage.setItem('loginTime', data.loginTime || new Date().toISOString());
+=======
+>>>>>>> origin/Tashu
             return data;
         } catch (err) {
             setError(err.message);
@@ -124,6 +150,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+<<<<<<< HEAD
     const logout = () => {
         setUser(null);
         setError(null);
@@ -215,10 +242,21 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
+=======
+    const logout = async () => {
+        setUser(null);
+        localStorage.removeItem('user');
+    };
+
+    const socialLogin = async (provider) => {
+        // Placeholder for social login logic
+        console.log(`Social login with ${provider} not implemented yet.`);
+>>>>>>> origin/Tashu
     };
 
     const updateProfile = async (updates) => {
         setLoading(true);
+<<<<<<< HEAD
         setError(null);
         try {
             const response = await fetch(`${API_URL}/api/users/${user._id}/profile`, {
@@ -237,6 +275,21 @@ export const AuthProvider = ({ children }) => {
             if (loginTime) localStorage.setItem('loginTime', loginTime);
 
             return data;
+=======
+        try {
+            // Use functional update to get the latest user state (avoids stale closure)
+            let updatedUser;
+            setUser(currentUser => {
+                updatedUser = { ...currentUser, ...updates };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                return updatedUser;
+            });
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            return updatedUser;
+>>>>>>> origin/Tashu
         } catch (err) {
             setError(err.message);
             throw err;
@@ -245,6 +298,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+<<<<<<< HEAD
     // Refresh user data from server
     const refreshUser = async () => {
         if (!user?._id) return;
@@ -259,6 +313,25 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (err) {
             console.error('Failed to refresh user:', err);
+=======
+    const forgotPassword = async (email) => {
+        // Placeholder for forgot password logic
+        console.log('Forgot password not implemented yet.');
+    };
+
+    const refreshUser = async () => {
+        if (!user?.email) return;
+        try {
+            const response = await fetch(`${API_URL}/api/auth/profile/${user.email}`);
+            if (response.ok) {
+                const freshUserData = await response.json();
+                setUser(freshUserData);
+                localStorage.setItem('user', JSON.stringify(freshUserData));
+                return freshUserData;
+            }
+        } catch (err) {
+            console.error('Error refreshing user:', err);
+>>>>>>> origin/Tashu
         }
     };
 
@@ -267,6 +340,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         loading,
         error,
+<<<<<<< HEAD
         setError,
         login,
         register,
@@ -276,6 +350,14 @@ export const AuthProvider = ({ children }) => {
         forgotPassword,
         resetPassword,
         updateProfile,
+=======
+        login,
+        register,
+        logout,
+        socialLogin,
+        updateProfile,
+        forgotPassword,
+>>>>>>> origin/Tashu
         refreshUser
     };
 
@@ -293,4 +375,7 @@ export const useAuth = () => {
     }
     return context;
 };
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/Tashu

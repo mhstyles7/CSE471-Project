@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Bell, Bookmark, MoreHorizontal, Award, Camera, TrendingUp, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
+=======
+import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp } from 'lucide-react';
+>>>>>>> origin/Tashu
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -17,10 +21,15 @@ export default function CommunityPage() {
   const [replyText, setReplyText] = useState({});
   const [showReplies, setShowReplies] = useState({});
   const [selectedPhotos, setSelectedPhotos] = useState([]);
+<<<<<<< HEAD
   const [showLocationInput, setShowLocationInput] = useState(false);
   const [showReactions, setShowReactions] = useState(null);
   const [activeTab, setActiveTab] = useState('feed');
   const fileInputRef = React.useRef(null);
+=======
+  const [showReactions, setShowReactions] = useState(null);
+  const [activeTab, setActiveTab] = useState('feed');
+>>>>>>> origin/Tashu
 
   // Reaction types (3.2)
   const reactionTypes = [
@@ -32,6 +41,7 @@ export default function CommunityPage() {
   ];
 
   // Posts state with full functionality (3.1 - 3.4)
+<<<<<<< HEAD
   const [posts, setPosts] = useState([]);
   const API_URL = 'http://localhost:5000'; // Or import from config if available
 
@@ -123,6 +133,128 @@ export default function CommunityPage() {
       .sort((a, b) => b.posts - a.posts)
       .slice(0, 5);
   }, [posts]);
+=======
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      author: 'Alimool Razi',
+      authorImage: 'AR',
+      authorBadge: 'Explorer',
+      time: '2 hours ago',
+      type: 'recommendation',
+      destination: 'Sajek Valley',
+      rating: 5,
+      content: 'Just completed an amazing trek to Sajek Valley! The sunrise view was absolutely breathtaking. Highly recommend visiting during winter season. The weather is perfect and the clouds literally touch your feet! 🏔️✨',
+      photos: [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
+        'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400'
+      ],
+      reactions: { like: 15, love: 8, wow: 3, haha: 0, inspire: 5 },
+      userReaction: null,
+      comments: [
+        {
+          id: 1,
+          author: 'Zarin Raisa',
+          authorImage: 'ZR',
+          text: 'This looks incredible! Adding to my list!',
+          time: '1 hour ago',
+          likes: 3,
+          isLiked: false,
+          replies: [
+            { id: 11, author: 'Alimool Razi', authorImage: 'AR', text: 'You should definitely go! Let me know if you need tips.', time: '45 mins ago', likes: 1, isLiked: false }
+          ]
+        },
+        {
+          id: 2,
+          author: 'Fahim Ahmed',
+          authorImage: 'FA',
+          text: 'How was the road condition? Planning to go next month.',
+          time: '30 mins ago',
+          likes: 1,
+          isLiked: false,
+          replies: []
+        }
+      ],
+      shares: 3,
+      isSaved: false,
+      tags: ['trekking', 'hills', 'winter', 'photography']
+    },
+    {
+      id: 2,
+      author: 'Zarin Raisa',
+      authorImage: 'ZR',
+      authorBadge: 'Foodie',
+      time: '5 hours ago',
+      type: 'story',
+      content: 'Explored the tea gardens of Sylhet yesterday. The fresh air and green hills were so refreshing! If anyone needs local guide recommendations, feel free to ask. ☕🌿\n\nPro tip: Visit early morning for the best photos and fewer crowds!',
+      photos: [
+        'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400'
+      ],
+      reactions: { like: 10, love: 5, wow: 2, haha: 1, inspire: 3 },
+      userReaction: 'love',
+      comments: [
+        {
+          id: 1,
+          author: 'Tasnim Rahman',
+          authorImage: 'TR',
+          text: 'Beautiful! Which tea estate did you visit?',
+          time: '4 hours ago',
+          likes: 2,
+          isLiked: true,
+          replies: [
+            { id: 11, author: 'Zarin Raisa', authorImage: 'ZR', text: 'I went to Malnicherra - it\'s the oldest tea estate!', time: '3 hours ago', likes: 4, isLiked: false },
+            { id: 12, author: 'Karim Uddin', authorImage: 'KU', text: 'Malnicherra is amazing! Try Lakkatura next time.', time: '2 hours ago', likes: 1, isLiked: false }
+          ]
+        }
+      ],
+      shares: 2,
+      isSaved: true,
+      tags: ['tea', 'nature', 'sylhet', 'tips']
+    },
+    {
+      id: 3,
+      author: 'Rafiq Ahmed',
+      authorImage: 'RA',
+      authorBadge: 'Adventurer',
+      time: '1 day ago',
+      type: 'question',
+      content: 'Planning a 5-day trip to explore the Chittagong Hill Tracts. Any suggestions for must-visit places and local experiences? Looking for off-the-beaten-path recommendations! 🗺️',
+      photos: [],
+      reactions: { like: 8, love: 2, wow: 0, haha: 0, inspire: 1 },
+      userReaction: null,
+      comments: [
+        {
+          id: 1,
+          author: 'Sabrina Khan',
+          authorImage: 'SK',
+          text: 'Visit Nilgiri! The sunrise from there is magical. Also try the local Marma cuisine.',
+          time: '20 hours ago',
+          likes: 7,
+          isLiked: false,
+          replies: []
+        }
+      ],
+      shares: 5,
+      isSaved: false,
+      tags: ['question', 'hills', 'advice']
+    }
+  ]);
+
+  // Trending topics for engagement (3.3)
+  const trendingTopics = [
+    { tag: 'wintertravel', posts: 128 },
+    { tag: 'coxsbazar', posts: 95 },
+    { tag: 'foodtour', posts: 76 },
+    { tag: 'trekking', posts: 64 }
+  ];
+
+  // Top contributors (3.3)
+  const topContributors = [
+    { name: 'Alimool Razi', image: 'AR', posts: 24, badge: 'Explorer' },
+    { name: 'Zarin Raisa', image: 'ZR', posts: 18, badge: 'Foodie' },
+    { name: 'Rafiq Ahmed', image: 'RA', posts: 15, badge: 'Adventurer' }
+  ];
+>>>>>>> origin/Tashu
 
   // Destinations for recommendations
   const destinations = [
@@ -136,7 +268,11 @@ export default function CommunityPage() {
   };
 
   // Create post with photos (3.1)
+<<<<<<< HEAD
   const handlePost = async () => {
+=======
+  const handlePost = () => {
+>>>>>>> origin/Tashu
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -148,6 +284,7 @@ export default function CommunityPage() {
     }
 
     const newPost = {
+<<<<<<< HEAD
       user: {
         name: user?.name,
         avatar: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
@@ -157,11 +294,19 @@ export default function CommunityPage() {
       author: user?.name || 'You',
       authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
       authorBadge: 'Member',
+=======
+      id: Date.now(),
+      author: user?.name || 'You',
+      authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
+      authorBadge: 'Member',
+      time: 'Just now',
+>>>>>>> origin/Tashu
       type: postType,
       content: postText,
       destination: postType === 'recommendation' ? selectedDestination : null,
       rating: postType === 'recommendation' ? rating : null,
       photos: selectedPhotos,
+<<<<<<< HEAD
       tags: []
     };
 
@@ -232,28 +377,87 @@ export default function CommunityPage() {
 
   // React to post (3.2)
   const handleReaction = async (postId, reactionType) => {
+=======
+      reactions: { like: 0, love: 0, wow: 0, haha: 0, inspire: 0 },
+      userReaction: null,
+      comments: [],
+      shares: 0,
+      isSaved: false,
+      tags: []
+    };
+
+    setPosts(prev => [newPost, ...prev]);
+    setPostText('');
+    setPostType('story');
+    setSelectedDestination('');
+    setRating(0);
+    setSelectedPhotos([]);
+    showNotificationMsg(
+      postType === 'recommendation'
+        ? `Your recommendation for ${selectedDestination} has been shared! 🌟`
+        : postType === 'question'
+          ? 'Your question has been posted! The community will help you out. 💬'
+          : 'Your story has been shared! 📤'
+    );
+  };
+
+  // Add photo (simulated) (3.1)
+  const handleAddPhoto = () => {
+    const samplePhotos = [
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400',
+      'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400'
+    ];
+    if (selectedPhotos.length < 4) {
+      const randomPhoto = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
+      setSelectedPhotos(prev => [...prev, randomPhoto]);
+      showNotificationMsg('Photo added! 📷', 'info');
+    }
+  };
+
+  // React to post (3.2)
+  const handleReaction = (postId, reactionType) => {
+>>>>>>> origin/Tashu
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
+<<<<<<< HEAD
 
     // Optimistic update can be tricky with complex logic, let's try purely api-based first or simple optimistic
     // Simple optimistic:
+=======
+>>>>>>> origin/Tashu
     setPosts(prev => prev.map(post => {
       if (post.id === postId) {
         const oldReaction = post.userReaction;
         const newReactions = { ...post.reactions };
+<<<<<<< HEAD
         if (oldReaction) newReactions[oldReaction] = Math.max(0, newReactions[oldReaction] - 1);
+=======
+
+        // Remove old reaction if exists
+        if (oldReaction) {
+          newReactions[oldReaction] = Math.max(0, newReactions[oldReaction] - 1);
+        }
+
+        // Add new reaction if different from old
+>>>>>>> origin/Tashu
         if (oldReaction !== reactionType) {
           newReactions[reactionType] = (newReactions[reactionType] || 0) + 1;
           return { ...post, reactions: newReactions, userReaction: reactionType };
         } else {
+<<<<<<< HEAD
+=======
+          // Remove reaction if same (toggle off)
+>>>>>>> origin/Tashu
           return { ...post, reactions: newReactions, userReaction: null };
         }
       }
       return post;
     }));
     setShowReactions(null);
+<<<<<<< HEAD
 
     try {
       await fetch(`${API_URL}/api/posts/${postId}/react`, {
@@ -267,6 +471,8 @@ export default function CommunityPage() {
       console.error(err);
       showNotificationMsg('Failed to update reaction', 'error');
     }
+=======
+>>>>>>> origin/Tashu
   };
 
   // Save post
@@ -297,13 +503,18 @@ export default function CommunityPage() {
   };
 
   // Add comment (3.2)
+<<<<<<< HEAD
   const handleAddComment = async (postId) => {
+=======
+  const handleAddComment = (postId) => {
+>>>>>>> origin/Tashu
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
     if (!commentText[postId]?.trim()) return;
 
+<<<<<<< HEAD
     const text = commentText[postId];
     setCommentText(prev => ({ ...prev, [postId]: '' })); // Clear input immediately
 
@@ -327,6 +538,28 @@ export default function CommunityPage() {
       console.error(err);
       showNotificationMsg('Failed to add comment', 'error');
     }
+=======
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: [...post.comments, {
+            id: Date.now(),
+            author: user?.name || 'You',
+            authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
+            text: commentText[postId],
+            time: 'Just now',
+            likes: 0,
+            isLiked: false,
+            replies: []
+          }]
+        };
+      }
+      return post;
+    }));
+    setCommentText(prev => ({ ...prev, [postId]: '' }));
+    showNotificationMsg('Comment added! 💬');
+>>>>>>> origin/Tashu
   };
 
   // Like comment (3.2)
@@ -356,7 +589,11 @@ export default function CommunityPage() {
   };
 
   // Add reply to comment (3.2)
+<<<<<<< HEAD
   const handleAddReply = async (postId, commentId) => {
+=======
+  const handleAddReply = (postId, commentId) => {
+>>>>>>> origin/Tashu
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -364,6 +601,7 @@ export default function CommunityPage() {
     const replyKey = `${postId}-${commentId}`;
     if (!replyText[replyKey]?.trim()) return;
 
+<<<<<<< HEAD
     const text = replyText[replyKey];
     setReplyText(prev => ({ ...prev, [replyKey]: '' }));
     setReplyingTo(prev => ({ ...prev, [replyKey]: false }));
@@ -388,6 +626,36 @@ export default function CommunityPage() {
       console.error(err);
       showNotificationMsg('Failed to add reply', 'error');
     }
+=======
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: post.comments.map(comment => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                replies: [...comment.replies, {
+                  id: Date.now(),
+                  author: user?.name || 'You',
+                  authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
+                  text: replyText[replyKey],
+                  time: 'Just now',
+                  likes: 0,
+                  isLiked: false
+                }]
+              };
+            }
+            return comment;
+          })
+        };
+      }
+      return post;
+    }));
+    setReplyText(prev => ({ ...prev, [replyKey]: '' }));
+    setReplyingTo(prev => ({ ...prev, [replyKey]: false }));
+    showNotificationMsg('Reply added! 💬');
+>>>>>>> origin/Tashu
   };
 
   // Get total reactions count
@@ -417,7 +685,11 @@ export default function CommunityPage() {
           padding: '16px 24px',
           borderRadius: '12px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+<<<<<<< HEAD
           zIndex: 9999,
+=======
+          zIndex: 1001,
+>>>>>>> origin/Tashu
           animation: 'slideDown 0.3s ease-out',
           display: 'flex',
           alignItems: 'center',
@@ -428,9 +700,15 @@ export default function CommunityPage() {
         </div>
       )}
 
+<<<<<<< HEAD
       <div style={{ display: 'flex', gap: '32px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         {/* Main Feed */}
         <div style={{ flex: 2 }}>
+=======
+      <div style={{ display: 'flex', gap: '32px' }}>
+        {/* Main Feed */}
+        <div style={{ flex: 1, maxWidth: '700px' }}>
+>>>>>>> origin/Tashu
           <div style={{ marginBottom: '32px' }}>
             <h2 style={{
               fontSize: '42px',
@@ -646,6 +924,7 @@ export default function CommunityPage() {
                 </div>
               )}
 
+<<<<<<< HEAD
               {/* Location Input (UI Improvement) */}
               {showLocationInput && (
                 <div style={{ marginBottom: '16px', animation: 'slideDown 0.3s ease-out' }}>
@@ -674,6 +953,8 @@ export default function CommunityPage() {
                 </div>
               )}
 
+=======
+>>>>>>> origin/Tashu
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
@@ -693,6 +974,7 @@ export default function CommunityPage() {
                   >
                     <Camera size={18} /> Photo
                   </button>
+<<<<<<< HEAD
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -714,6 +996,20 @@ export default function CommunityPage() {
                       gap: '6px',
                       fontSize: '13px'
                     }}>
+=======
+                  <button style={{
+                    background: 'none',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    color: '#6b7280',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '13px'
+                  }}>
+>>>>>>> origin/Tashu
                     <MapPin size={18} /> Location
                   </button>
                 </div>
@@ -735,7 +1031,11 @@ export default function CommunityPage() {
                   }}
                 >
                   <Send size={16} />
+<<<<<<< HEAD
                   Share
+=======
+                  Post
+>>>>>>> origin/Tashu
                 </button>
               </div>
             </div>
@@ -1367,6 +1667,10 @@ export default function CommunityPage() {
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
       `}</style>
+<<<<<<< HEAD
     </div >
+=======
+    </div>
+>>>>>>> origin/Tashu
   );
 }

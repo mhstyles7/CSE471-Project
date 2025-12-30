@@ -1,38 +1,54 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+<<<<<<< HEAD
 import { useNavigate } from '../../context/NavigationContext';
 import { Mail, ArrowLeft, CheckCircle, Key } from 'lucide-react';
+=======
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+>>>>>>> origin/Tashu
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
+<<<<<<< HEAD
     const [resetToken, setResetToken] = useState('');
     const { forgotPassword, loading, error, setError } = useAuth();
     const navigate = useNavigate();
+=======
+    const { forgotPassword, loading, error } = useAuth();
+>>>>>>> origin/Tashu
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+<<<<<<< HEAD
             const data = await forgotPassword(email);
             setResetToken(data.token || '');
+=======
+            await forgotPassword(email);
+>>>>>>> origin/Tashu
             setSubmitted(true);
         } catch (err) {
             // Error is handled by context state
         }
     };
 
+<<<<<<< HEAD
     // Clear error when user starts typing
     const handleInputChange = (e) => {
         if (error) setError(null);
         setEmail(e.target.value);
     };
 
+=======
+>>>>>>> origin/Tashu
     if (submitted) {
         return (
             <div style={{ maxWidth: '400px', margin: '40px auto', padding: '32px', textAlign: 'center', backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: '#059669' }}>
                     <CheckCircle size={48} />
                 </div>
+<<<<<<< HEAD
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Reset Link Generated</h2>
                 <p style={{ color: '#6b7280', marginBottom: '24px', lineHeight: '1.5' }}>
                     A password reset link has been generated for <strong>{email}</strong>.
@@ -93,6 +109,27 @@ export default function ForgotPassword() {
                         Back to Login
                     </button>
                 </div>
+=======
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Check your email</h2>
+                <p style={{ color: '#6b7280', marginBottom: '24px', lineHeight: '1.5' }}>
+                    We've sent a password reset link to <strong>{email}</strong>. Please check your inbox and follow the instructions.
+                </p>
+                <button
+                    onClick={() => window.location.href = '/login'}
+                    style={{
+                        padding: '12px 24px',
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        fontWeight: '600'
+                    }}
+                >
+                    Back to Login
+                </button>
+>>>>>>> origin/Tashu
             </div>
         );
     }
@@ -100,6 +137,7 @@ export default function ForgotPassword() {
     return (
         <div style={{ maxWidth: '400px', margin: '40px auto', padding: '32px', textAlign: 'center', backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
             <div style={{ textAlign: 'left', marginBottom: '24px' }}>
+<<<<<<< HEAD
                 <button
                     onClick={() => navigate('login')}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#6b7280', textDecoration: 'none', fontSize: '14px', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -110,6 +148,15 @@ export default function ForgotPassword() {
 
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Reset Password</h2>
             <p style={{ color: '#6b7280', marginBottom: '32px' }}>Enter your email to receive a reset token</p>
+=======
+                <a href="#" onClick={(e) => { e.preventDefault(); window.location.href = '/login'; }} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
+                    <ArrowLeft size={16} /> Back to Login
+                </a>
+            </div>
+
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Reset Password</h2>
+            <p style={{ color: '#6b7280', marginBottom: '32px' }}>Enter your email to receive reset instructions</p>
+>>>>>>> origin/Tashu
 
             {error && (
                 <div style={{ backgroundColor: '#fee2e2', color: '#991b1b', padding: '12px', borderRadius: '8px', marginBottom: '24px', fontSize: '14px' }}>
@@ -124,7 +171,11 @@ export default function ForgotPassword() {
                         type="email"
                         placeholder="Email Address"
                         value={email}
+<<<<<<< HEAD
                         onChange={handleInputChange}
+=======
+                        onChange={(e) => setEmail(e.target.value)}
+>>>>>>> origin/Tashu
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
                         required
                     />
@@ -146,6 +197,7 @@ export default function ForgotPassword() {
                         transition: 'background-color 0.2s'
                     }}
                 >
+<<<<<<< HEAD
                     {loading ? 'Generating Token...' : 'Get Reset Token'}
                 </button>
             </form>
@@ -165,3 +217,11 @@ export default function ForgotPassword() {
     );
 }
 
+=======
+                    {loading ? 'Sending Link...' : 'Send Reset Link'}
+                </button>
+            </form>
+        </div>
+    );
+}
+>>>>>>> origin/Tashu

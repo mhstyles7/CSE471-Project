@@ -14,6 +14,7 @@ export default function AgencyDashboard() {
     const [newPackage, setNewPackage] = useState({ title: '', price: '', duration: '', location: '', description: '', image: '' });
     const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '', sponsor: user?.name });
 
+<<<<<<< HEAD
     // Mock Data for Analytics
     const stats = [
         { label: 'Total Revenue', value: '$12,450', icon: <DollarSign size={24} />, color: '#059669', bg: '#ecfdf5' },
@@ -25,6 +26,40 @@ export default function AgencyDashboard() {
     useEffect(() => {
         if (activeTab === 'packages' || activeTab === 'overview') fetchPackages();
         if (activeTab === 'orders' || activeTab === 'overview') fetchOrders();
+=======
+    // Calculate dynamic stats from real data
+    const calculateStats = () => {
+        // Total Revenue from confirmed orders only
+        const totalRevenue = orders
+            .filter(o => o.status === 'Confirmed' || o.status === 'accepted')
+            .reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
+
+        // Active bookings (pending + confirmed)
+        const activeBookings = orders.filter(o =>
+            o.status === 'Pending' || o.status === 'pending' ||
+            o.status === 'Confirmed' || o.status === 'accepted'
+        ).length;
+
+        return [
+            { label: 'Total Revenue', value: `৳${totalRevenue.toLocaleString()}`, icon: <DollarSign size={24} />, color: '#059669', bg: '#ecfdf5' },
+            { label: 'Active Bookings', value: activeBookings.toString(), icon: <ShoppingBag size={24} />, color: '#3b82f6', bg: '#eff6ff' },
+            { label: 'Total Packages', value: packages.length.toString(), icon: <Package size={24} />, color: '#f59e0b', bg: '#fffbeb' },
+            { label: 'Total Orders', value: orders.length.toString(), icon: <TrendingUp size={24} />, color: '#8b5cf6', bg: '#f5f3ff' }
+        ];
+    };
+
+    const stats = calculateStats();
+
+    useEffect(() => {
+        // Always fetch data on mount for overview stats
+        fetchPackages();
+        fetchOrders();
+    }, []);
+
+    useEffect(() => {
+        if (activeTab === 'packages') fetchPackages();
+        if (activeTab === 'orders') fetchOrders();
+>>>>>>> origin/Tashu
     }, [activeTab]);
 
     const fetchPackages = async () => {
@@ -50,15 +85,48 @@ export default function AgencyDashboard() {
     const fetchOrders = async () => {
         setLoading(true);
         try {
+<<<<<<< HEAD
             // Mock data if API fails or is empty
             const data = await apiService.get(`/orders?agencyEmail=${user.email}`).catch(() => []);
             if (data.length === 0) {
+=======
+            // Fetch regular orders
+            const ordersData = await apiService.get(`/orders?agencyEmail=${user.email}`).catch(() => []);
+
+            // Fetch custom bookings (premium user requests)
+            const customBookingsData = await apiService.get(`/custom-bookings/agency/${user.email}`).catch(() => []);
+
+            // Transform custom bookings to match order format
+            const transformedCustomBookings = customBookingsData.map(cb => ({
+                _id: cb._id,
+                customerName: cb.travelerName,
+                package: cb.packageTitle,
+                amount: cb.proposedPrice || 'Custom',
+                status: cb.status === 'pending' ? 'Pending' : cb.status === 'accepted' ? 'Confirmed' : cb.status,
+                date: cb.createdAt,
+                type: 'custom',
+                travelerEmail: cb.travelerEmail,
+                preferredDates: cb.preferredDates,
+                numberOfTravelers: cb.numberOfTravelers,
+                specialRequests: cb.specialRequests,
+                budgetPreference: cb.budgetPreference
+            }));
+
+            // Merge both lists
+            const allOrders = [...ordersData, ...transformedCustomBookings];
+
+            if (allOrders.length === 0) {
+>>>>>>> origin/Tashu
                 setOrders([
                     { _id: 'ORD-001', customerName: 'Rahim Ahmed', package: 'Sylhet Tea Garden Tour', amount: 150, status: 'Pending', date: '2024-12-05' },
                     { _id: 'ORD-002', customerName: 'Fatima Begum', package: 'Cox\'s Bazar Retreat', amount: 200, status: 'Confirmed', date: '2024-12-04' }
                 ]);
             } else {
+<<<<<<< HEAD
                 setOrders(data);
+=======
+                setOrders(allOrders);
+>>>>>>> origin/Tashu
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -92,8 +160,37 @@ export default function AgencyDashboard() {
         }
     };
 
+<<<<<<< HEAD
     const handleUpdateStatus = (orderId, newStatus) => {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+=======
+    const handleUpdateStatus = async (orderId, newStatus, orderType) => {
+        try {
+            // Map UI status to backend status
+            const backendStatus = newStatus === 'Confirmed' ? 'accepted' : newStatus === 'Cancelled' ? 'rejected' : newStatus.toLowerCase();
+
+            // Use correct endpoint based on order type
+            const endpoint = orderType === 'custom'
+                ? `/custom-bookings/${orderId}`
+                : `/orders/${orderId}`;
+
+            // Update in backend (this triggers the email notification)
+            await apiService.put(endpoint, { status: backendStatus });
+
+            // Update local state
+            setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+
+            if (newStatus === 'Confirmed') {
+                alert('✅ Order confirmed! Confirmation email sent to the customer.');
+            }
+
+            // Refresh orders to get updated data
+            fetchOrders();
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            alert('Failed to update order status');
+        }
+>>>>>>> origin/Tashu
     };
 
     const handleDeletePackage = (pkgId) => {
@@ -289,8 +386,13 @@ export default function AgencyDashboard() {
                                         </td>
                                         <td style={{ padding: '16px' }}>
                                             <div style={{ display: 'flex', gap: '8px' }}>
+<<<<<<< HEAD
                                                 <button onClick={() => handleUpdateStatus(order._id, 'Confirmed')} title="Confirm" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#d1fae5', color: '#059669', cursor: 'pointer' }}><CheckCircle size={18} /></button>
                                                 <button onClick={() => handleUpdateStatus(order._id, 'Cancelled')} title="Cancel" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#fee2e2', color: '#dc2626', cursor: 'pointer' }}><XCircle size={18} /></button>
+=======
+                                                <button onClick={() => handleUpdateStatus(order._id, 'Confirmed', order.type)} title="Confirm" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#d1fae5', color: '#059669', cursor: 'pointer' }}><CheckCircle size={18} /></button>
+                                                <button onClick={() => handleUpdateStatus(order._id, 'Cancelled', order.type)} title="Cancel" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#fee2e2', color: '#dc2626', cursor: 'pointer' }}><XCircle size={18} /></button>
+>>>>>>> origin/Tashu
                                             </div>
                                         </td>
                                     </tr>

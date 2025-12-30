@@ -30,6 +30,10 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/trip-plans', require('./routes/tripPlans'));
 app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/guide', require('./routes/guide'));
+app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/foods', require('./routes/foods'));
+app.use('/api/custom-bookings', require('./routes/custom-bookings'));
 
 // Serve static files from 'uploads' directory
 app.use('/uploads', express.static('uploads'));
