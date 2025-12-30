@@ -14,7 +14,6 @@ router.get('/', async (req, res) => {
             ...d,
             slug: d.slug || d.name.toLowerCase().replace(/ /g, '-').replace(/'/g, '')
         }));
-
         res.json(destinations);
     } catch (err) {
         res.status(500).json({ message: err.message });

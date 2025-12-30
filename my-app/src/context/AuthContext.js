@@ -21,7 +21,15 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const userData = JSON.parse(storedUser);
+            let userData;
+            try {
+                userData = JSON.parse(storedUser);
+            } catch (parseError) {
+                console.error('Error parsing stored user data:', parseError);
+                logout();
+                setLoading(false);
+                return;
+            }
 
             // Check if session expired locally first
             const loginDate = new Date(loginTime);
@@ -54,15 +62,20 @@ export const AuthProvider = ({ children }) => {
                 }
             }
         } catch (err) {
+            console.error('Session validation error:', err);
             // If server is down, still use local session if not expired
-            const userData = JSON.parse(storedUser);
-            const loginDate = new Date(loginTime);
-            const now = new Date();
-            const hoursDiff = (now - loginDate) / (1000 * 60 * 60);
+            try {
+                const userData = JSON.parse(storedUser);
+                const loginDate = new Date(loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginDate) / (1000 * 60 * 60);
 
-            if (hoursDiff <= SESSION_TIMEOUT_HOURS) {
-                setUser(userData);
-            } else {
+                if (hoursDiff <= SESSION_TIMEOUT_HOURS) {
+                    setUser(userData);
+                } else {
+                    logout();
+                }
+            } catch (fallbackError) {
                 logout();
             }
         } finally {
@@ -78,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
+            console.log('Attempting login to:', `${API_URL}/api/auth/login`); // Debug log to verify URL
             const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -92,7 +106,13 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('loginTime', data.loginTime || new Date().toISOString());
             return data;
         } catch (err) {
-            setError(err.message);
+            console.error('Login request failed:', err);
+            // Check if it's a network error vs server error
+            if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+                setError('Unable to connect to server. Please check if backend is running.');
+            } else {
+                setError(err.message || 'Login failed');
+            }
             throw err;
         } finally {
             setLoading(false);
@@ -217,6 +237,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // Placeholder for social login (for Tashu's future use)
+    const socialLogin = async (provider) => {
+        console.log(`Social login with ${provider} - use googleLogin for Google.`);
+    };
+
     const updateProfile = async (updates) => {
         setLoading(true);
         setError(null);
@@ -273,6 +298,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         googleLogin,
         demoGoogleLogin,
+        socialLogin,
         forgotPassword,
         resetPassword,
         updateProfile,
@@ -293,4 +319,3 @@ export const useAuth = () => {
     }
     return context;
 };
-

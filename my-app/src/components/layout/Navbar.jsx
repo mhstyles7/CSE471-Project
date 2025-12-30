@@ -20,6 +20,7 @@ import {
   LogIn,
   UserPlus,
   TrendingUp,
+  Crown,
 } from "lucide-react";
 
 export default function Navbar({
@@ -53,6 +54,8 @@ export default function Navbar({
     { id: "culture", label: "Culture & Food", icon: Utensils },
     { id: "trip-planner", label: "Trip Planner", icon: Compass },
     { id: "route-planner", label: "Route Estimator", icon: Navigation },
+    { id: "guide-dashboard", label: "Guide Dashboard", icon: UserCheck },
+    { id: "premium", label: "Get Premium Membership", icon: Crown },
   ];
 
   // Items only for logged out users
@@ -349,6 +352,9 @@ export default function Navbar({
               >
                 <User size={18} strokeWidth={2.5} />
                 <span>{user ? user.name.split(" ")[0] : "Profile"}</span>
+                {user?.isPremium && (
+                  <Crown size={16} color="#f59e0b" fill="#f59e0b" title="Premium Member" />
+                )}
               </button>
 
               {/* Logout Button */}

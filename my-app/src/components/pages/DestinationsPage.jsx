@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
-import { MapPin, ArrowRight, Clock, Star } from 'lucide-react';
+
+import { MapPin, ArrowRight, Clock, Star, Lock, Crown, Sparkles, Calendar, Users, DollarSign, X, Send } from 'lucide-react';
 import PaymentModal from '../common/PaymentModal';
 import { apiService } from '../../services/apiService';
+
+
 
 export default function DestinationsPage() {
   const { user } = useAuth();
@@ -14,6 +17,23 @@ export default function DestinationsPage() {
   // Payment State
   const [isPaymentOpen, setPaymentOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
+
+  const [bookingQuantity, setBookingQuantity] = useState(1);
+
+  // Custom Booking State (Premium Only)
+  const [isCustomModalOpen, setCustomModalOpen] = useState(false);
+  const [customBookingPkg, setCustomBookingPkg] = useState(null);
+  const [customForm, setCustomForm] = useState({
+    preferredDates: '',
+    numberOfTravelers: 1,
+    specialRequests: '',
+    budgetPreference: 'flexible'
+  });
+  const [submittingCustom, setSubmittingCustom] = useState(false);
+
+  // Booking Modal State
+  const [isBookingModalOpen, setBookingModalOpen] = useState(false);
+
 
   useEffect(() => {
     fetchPackages();
@@ -42,24 +62,63 @@ export default function DestinationsPage() {
 
   const handleBookingConfirm = async () => {
     if (!selectedPackage) return;
+    const totalAmount = selectedPackage.price * bookingQuantity;
+
     try {
       await apiService.post('/orders', {
         type: 'package_booking',
         packageId: selectedPackage._id,
         packageTitle: selectedPackage.title,
         agencyEmail: selectedPackage.agencyEmail,
+
+        agencyName: selectedPackage.agencyName,
         travelerName: user.name,
         travelerEmail: user.email,
         customerName: user.name,
-        amount: selectedPackage.price,
+        quantity: bookingQuantity,
+        amount: totalAmount,
+
         date: new Date().toISOString(),
         status: 'pending'
       });
       setPaymentOpen(false);
       setSelectedPackage(null);
-      alert('Booking confirmed!');
+
+      setBookingQuantity(1);
+      alert(`Booking confirmed! Total: ৳${totalAmount} for ${bookingQuantity} person(s)`);
+
     } catch (error) {
       console.error('Error booking package:', error);
+    }
+  };
+
+  const proceedToPayment = () => {
+    setBookingModalOpen(false);
+    setPaymentOpen(true);
+  };
+
+  const handleCustomBookingSubmit = async () => {
+    if (!customBookingPkg || !customForm.preferredDates) return;
+    setSubmittingCustom(true);
+    try {
+      await apiService.post('/orders', {
+        type: 'custom_booking_request',
+        packageId: customBookingPkg._id,
+        packageTitle: customBookingPkg.title,
+        agencyEmail: customBookingPkg.agencyEmail,
+        customerName: user?.name,
+        customerEmail: user?.email,
+        ...customForm,
+        status: 'pending_review'
+      });
+      alert('Custom booking request sent to the agency!');
+      setCustomModalOpen(false);
+      setCustomForm({ preferredDates: '', numberOfTravelers: 1, specialRequests: '', budgetPreference: 'flexible' });
+    } catch (error) {
+      console.error('Error submitting custom booking:', error);
+      alert('Failed to submit request. Please try again.');
+    } finally {
+      setSubmittingCustom(false);
     }
   };
 
@@ -104,12 +163,67 @@ export default function DestinationsPage() {
 
   return (
     <div>
+
+      {/* Quantity Selection Modal */}
+      {isBookingModalOpen && selectedPackage && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'
+        }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '24px', maxWidth: '450px', width: '100%', padding: '32px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', color: '#1f2937' }}>Book Package</h2>
+            <p style={{ color: '#6b7280', marginBottom: '24px' }}>{selectedPackage.title}</p>
+
+            <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <span style={{ fontWeight: '600', color: '#374151' }}>Price per person</span>
+                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#059669' }}>৳{selectedPackage.price}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <span style={{ fontWeight: '600', color: '#374151' }}>Number of People</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    onClick={() => setBookingQuantity(Math.max(1, bookingQuantity - 1))}
+                    style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #e5e7eb', backgroundColor: 'white', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >−</button>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', minWidth: '40px', textAlign: 'center' }}>{bookingQuantity}</span>
+                  <button
+                    onClick={() => setBookingQuantity(bookingQuantity + 1)}
+                    style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #059669', backgroundColor: '#f0fdf4', color: '#059669', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >+</button>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '2px dashed #e5e7eb', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937' }}>Total Amount</span>
+                <span style={{ fontSize: '28px', fontWeight: '800', color: '#059669' }}>৳{selectedPackage.price * bookingQuantity}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => { setBookingModalOpen(false); setSelectedPackage(null); }}
+                style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #e5e7eb', backgroundColor: 'white', fontWeight: '600', cursor: 'pointer' }}
+              >Cancel</button>
+              <button
+                onClick={proceedToPayment}
+                style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#059669', color: 'white', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)' }}
+              >Proceed to Payment</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       <PaymentModal
         isOpen={isPaymentOpen}
         onClose={() => setPaymentOpen(false)}
         onConfirm={handleBookingConfirm}
         amount={selectedPackage ? `$${selectedPackage.price}` : '$0'}
         title={selectedPackage?.title}
+
       />
 
       <div style={{ marginBottom: '60px' }}>
@@ -126,6 +240,7 @@ export default function DestinationsPage() {
           <div
             key={dest.name}
             onClick={() => navigate('destination-details', { id: dest.name })}
+
             style={{
               backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
               overflow: 'hidden', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.05)',
@@ -193,12 +308,114 @@ export default function DestinationsPage() {
                   >
                     Book Now
                   </button>
+
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+
+      {/* Custom Booking Modal (Premium Only) */}
+      {isCustomModalOpen && customBookingPkg && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'
+        }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '24px', maxWidth: '550px', width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
+            <div style={{ padding: '28px', borderBottom: '1px solid #e5e7eb' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Crown size={20} color="#f59e0b" />
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#d97706', backgroundColor: '#fef3c7', padding: '4px 12px', borderRadius: '12px' }}>Premium Feature</span>
+                  </div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0, color: '#1f2937' }}>Customize Your Booking</h2>
+                  <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>{customBookingPkg.title}</p>
+                </div>
+                <button onClick={() => setCustomModalOpen(false)} style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: '#f3f4f6', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div style={{ padding: '28px' }}>
+              <div style={{ display: 'grid', gap: '24px' }}>
+                <div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                    <Calendar size={16} color="#6b7280" /> Preferred Dates
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Dec 25-30, 2024 or Flexible"
+                    value={customForm.preferredDates}
+                    onChange={(e) => setCustomForm({ ...customForm, preferredDates: e.target.value })}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '15px', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                    <Users size={16} color="#6b7280" /> Number of Travelers
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={customForm.numberOfTravelers}
+                    onChange={(e) => setCustomForm({ ...customForm, numberOfTravelers: e.target.value })}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '15px', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                    <DollarSign size={16} color="#6b7280" /> Budget Preference
+                  </label>
+                  <select
+                    value={customForm.budgetPreference}
+                    onChange={(e) => setCustomForm({ ...customForm, budgetPreference: e.target.value })}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '15px', outline: 'none', backgroundColor: 'white' }}
+                  >
+                    <option value="flexible">Flexible</option>
+                    <option value="budget">Budget-friendly</option>
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium/Luxury</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block', color: '#374151' }}>Special Requests / Notes</label>
+                  <textarea
+                    placeholder="Any special requirements, dietary restrictions, accessibility needs, or specific activities you'd like to include..."
+                    value={customForm.specialRequests}
+                    onChange={(e) => setCustomForm({ ...customForm, specialRequests: e.target.value })}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '15px', outline: 'none', minHeight: '100px', resize: 'vertical' }}
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleCustomBookingSubmit}
+                disabled={submittingCustom || !customForm.preferredDates}
+                style={{
+                  width: '100%', marginTop: '28px', padding: '16px',
+                  backgroundColor: submittingCustom || !customForm.preferredDates ? '#9ca3af' : '#059669',
+                  color: 'white', border: 'none', borderRadius: '14px', fontWeight: '700', fontSize: '16px',
+                  cursor: submittingCustom || !customForm.preferredDates ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                  boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+                }}
+              >
+                <Send size={18} />
+                {submittingCustom ? 'Sending Request...' : 'Send Custom Request to Agency'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <style>{`
         @keyframes slideUp { 

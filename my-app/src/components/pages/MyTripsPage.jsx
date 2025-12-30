@@ -150,6 +150,7 @@ export default function MyTripsPage() {
             }}
           />
 
+
           {trips.map((trip, index) => (
             <div
               key={trip.id}
@@ -186,6 +187,7 @@ export default function MyTripsPage() {
                 }}
               >
                 {trip.status === "upcoming" ? (
+
                   <TrendingUp size={14} color="white" strokeWidth={3} />
                 ) : (
                   <Calendar size={14} color="white" strokeWidth={3} />
@@ -288,6 +290,7 @@ export default function MyTripsPage() {
                               trip.status === "upcoming" ? "#3b82f6" : "#059669"
                             }
                           />
+
                         </div>
                         {trip.duration}
                       </div>
@@ -309,6 +312,7 @@ export default function MyTripsPage() {
                     }}
                   >
                     {trip.status === "upcoming" ? "Upcoming" : "Completed"}
+
                   </div>
                 </div>
               </div>
@@ -354,9 +358,12 @@ export default function MyTripsPage() {
           Total Trips: {trips.length}
         </h3>
         <p style={{ color: "#6b7280", fontSize: "15px", lineHeight: "1.6" }}>
+
           Keep exploring and add more destinations to your travel history!
         </p>
       </div>
     </div>
   );
+
 }
+

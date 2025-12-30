@@ -225,6 +225,7 @@ export default function TripPlannerPage() {
                     <p style={{ color: '#6b7280' }}>Try adjusting your search filters or destination.</p>
                 </div>
             )}
+
         </div>
     );
 }

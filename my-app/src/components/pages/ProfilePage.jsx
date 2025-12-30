@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
 import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save, TrendingUp, Star, Upload } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -17,6 +18,39 @@ export default function ProfilePage() {
   // Refs for file inputs
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
+
+  // State for profile stats from MongoDB
+  const [profileStats, setProfileStats] = useState({
+    tripsCompleted: 0,
+    friendsCount: 0,
+    points: 0,
+    reviewsCount: 0,
+    badges: [],
+    recentActivity: []
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Fetch profile stats from MongoDB
+  useEffect(() => {
+    const fetchProfileStats = async () => {
+      if (!user?._id) return;
+
+      try {
+        setStatsLoading(true);
+        const response = await fetch(`${API_URL}/api/users/${user._id}/stats`);
+        if (response.ok) {
+          const data = await response.json();
+          setProfileStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile stats:', err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchProfileStats();
+  }, [user?._id]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -52,29 +86,25 @@ export default function ProfilePage() {
 
   if (!user) return <div>Loading...</div>;
 
-  // Stats synced with Gamification
+  // Stats from MongoDB (dynamic)
   const stats = [
-    { label: 'Trips Completed', value: user.trips || 12, icon: <MapPin size={24} />, color: '#059669', bg: '#ecfdf5' },
-    { label: 'Friends', value: user.friends || 45, icon: <Users size={24} />, color: '#0d9488', bg: '#f0fdfa' },
-    { label: 'Travel Points', value: user.points ?? 0, icon: <Award size={24} />, color: '#f59e0b', bg: '#fffbeb' },
-    { label: 'Reviews Written', value: 8, icon: <Edit size={24} />, color: '#3b82f6', bg: '#eff6ff' }
+    { label: 'Trips Completed', value: profileStats.tripsCompleted, icon: <MapPin size={24} />, color: '#059669', bg: '#ecfdf5' },
+    { label: 'Friends', value: profileStats.friendsCount, icon: <Users size={24} />, color: '#0d9488', bg: '#f0fdfa' },
+    { label: 'Travel Points', value: profileStats.points, icon: <Award size={24} />, color: '#f59e0b', bg: '#fffbeb' },
+    { label: 'Reviews Written', value: profileStats.reviewsCount, icon: <Edit size={24} />, color: '#3b82f6', bg: '#eff6ff' }
   ];
 
-  // Badges synced with RewardsPage
-  const badges = [
-    { id: 1, name: 'Explorer', icon: '🌍', unlocked: true, description: 'Visited 5 different districts' },
-    { id: 2, name: 'Photographer', icon: '📸', unlocked: true, description: 'Uploaded 50 photos' },
-    { id: 3, name: 'Social Butterfly', icon: '🦋', unlocked: false, description: 'Invited 10 friends' },
-    { id: 4, name: 'Reviewer', icon: '✍️', unlocked: false, description: 'Wrote 20 reviews' },
-    { id: 5, name: 'Mountaineer', icon: '🏔️', unlocked: true, description: 'Visited 3 hill stations' }
+  // Badges from MongoDB (dynamic)
+  const badges = profileStats.badges.length > 0 ? profileStats.badges : [
+    { id: 1, name: 'Explorer', icon: '🌍', unlocked: false, description: 'Complete 3 or more trips' },
+    { id: 2, name: 'Photographer', icon: '📸', unlocked: false, description: 'Earn 200+ travel points' },
+    { id: 3, name: 'Social Butterfly', icon: '🦋', unlocked: false, description: 'Make 5 or more friends' },
+    { id: 4, name: 'Reviewer', icon: '✍️', unlocked: false, description: 'Write 5 or more reviews' },
+    { id: 5, name: 'Mountaineer', icon: '🏔️', unlocked: false, description: 'Complete 5 or more trips' }
   ];
 
-  // Recent Activity Data
-  const recentActivity = [
-    { id: 1, action: 'Completed trip to Sajek Valley', date: '2 days ago', points: '+100' },
-    { id: 2, action: 'Reviewed "Hotel Sea Palace"', date: '5 days ago', points: '+50' },
-    { id: 3, action: 'Earned "Photographer" Badge', date: '1 week ago', points: 'Badge' }
-  ];
+  // Recent Activity from MongoDB (dynamic)
+  const recentActivity = profileStats.recentActivity.length > 0 ? profileStats.recentActivity : [];
 
   return (
     <div>
@@ -471,46 +501,59 @@ export default function ProfilePage() {
             Recent Activity
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {recentActivity.map((activity, index) => (
-              <div key={activity.id} style={{
-                display: 'flex',
-                gap: '16px',
-                paddingBottom: index < recentActivity.length - 1 ? '20px' : 0,
-                borderBottom: index < recentActivity.length - 1 ? '1px solid #f3f4f6' : 'none'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: '#eff6ff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <TrendingUp size={20} color="#3b82f6" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: '0 0 4px 0', fontWeight: '600', color: '#374151', fontSize: '15px' }}>
-                    {activity.action}
-                  </p>
-                  <p style={{ margin: 0, color: '#9ca3af', fontSize: '13px' }}>
-                    {activity.date}
-                  </p>
-                </div>
-                <div style={{
-                  fontWeight: '700',
-                  color: '#059669',
-                  fontSize: '14px',
-                  backgroundColor: '#ecfdf5',
-                  padding: '4px 10px',
-                  borderRadius: '10px',
-                  height: 'fit-content'
-                }}>
-                  {activity.points}
-                </div>
+            {statsLoading ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#9ca3af' }}>
+                Loading activities...
               </div>
-            ))}
+            ) : recentActivity.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#9ca3af' }}>
+                <p style={{ margin: 0, fontSize: '14px' }}>No recent activity yet.</p>
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>Start exploring, writing reviews, or completing trips to see your activity here!</p>
+              </div>
+            ) : (
+              recentActivity.map((activity, index) => (
+                <div key={activity.id} style={{
+                  display: 'flex',
+                  gap: '16px',
+                  paddingBottom: index < recentActivity.length - 1 ? '20px' : 0,
+                  borderBottom: index < recentActivity.length - 1 ? '1px solid #f3f4f6' : 'none'
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: '#eff6ff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <TrendingUp size={20} color="#3b82f6" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: '0 0 4px 0', fontWeight: '600', color: '#374151', fontSize: '15px', wordWrap: 'break-word' }}>
+                      {activity.action}
+                    </p>
+                    <p style={{ margin: 0, color: '#9ca3af', fontSize: '13px' }}>
+                      {activity.date}
+                    </p>
+                  </div>
+                  <div style={{
+                    fontWeight: '700',
+                    color: '#059669',
+                    fontSize: '14px',
+                    backgroundColor: '#ecfdf5',
+                    padding: '4px 10px',
+                    borderRadius: '10px',
+                    height: 'fit-content',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }}>
+                    {activity.points}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <button style={{
             width: '100%',

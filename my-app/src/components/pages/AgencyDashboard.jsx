@@ -25,21 +25,14 @@ export default function AgencyDashboard() {
     useEffect(() => {
         if (activeTab === 'packages' || activeTab === 'overview') fetchPackages();
         if (activeTab === 'orders' || activeTab === 'overview') fetchOrders();
+
     }, [activeTab]);
 
     const fetchPackages = async () => {
         setLoading(true);
         try {
-            // Mock data if API fails or is empty
-            const data = await apiService.get(`/packages?agencyEmail=${user.email}`).catch(() => []);
-            if (data.length === 0) {
-                setPackages([
-                    { _id: 1, title: 'Sylhet Tea Garden Tour', price: 150, duration: '3 Days', location: 'Sylhet', description: 'Experience the green beauty.', status: 'Active' },
-                    { _id: 2, title: 'Cox\'s Bazar Beach Retreat', price: 200, duration: '4 Days', location: 'Cox\'s Bazar', description: 'Relax at the world\'s longest beach.', status: 'Active' }
-                ]);
-            } else {
-                setPackages(data);
-            }
+            const data = await apiService.get(`/packages?agencyEmail=${user.email}`);
+            setPackages(data);
         } catch (error) {
             console.error('Error fetching packages:', error);
         } finally {
@@ -50,16 +43,8 @@ export default function AgencyDashboard() {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            // Mock data if API fails or is empty
-            const data = await apiService.get(`/orders?agencyEmail=${user.email}`).catch(() => []);
-            if (data.length === 0) {
-                setOrders([
-                    { _id: 'ORD-001', customerName: 'Rahim Ahmed', package: 'Sylhet Tea Garden Tour', amount: 150, status: 'Pending', date: '2024-12-05' },
-                    { _id: 'ORD-002', customerName: 'Fatima Begum', package: 'Cox\'s Bazar Retreat', amount: 200, status: 'Confirmed', date: '2024-12-04' }
-                ]);
-            } else {
-                setOrders(data);
-            }
+            const data = await apiService.get(`/orders?agencyEmail=${user.email}`);
+            setOrders(data);
         } catch (error) {
             console.error('Error fetching orders:', error);
         } finally {
@@ -94,6 +79,7 @@ export default function AgencyDashboard() {
 
     const handleUpdateStatus = (orderId, newStatus) => {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+
     };
 
     const handleDeletePackage = (pkgId) => {
@@ -291,6 +277,7 @@ export default function AgencyDashboard() {
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button onClick={() => handleUpdateStatus(order._id, 'Confirmed')} title="Confirm" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#d1fae5', color: '#059669', cursor: 'pointer' }}><CheckCircle size={18} /></button>
                                                 <button onClick={() => handleUpdateStatus(order._id, 'Cancelled')} title="Cancel" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#fee2e2', color: '#dc2626', cursor: 'pointer' }}><XCircle size={18} /></button>
+
                                             </div>
                                         </td>
                                     </tr>

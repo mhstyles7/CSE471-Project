@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Bell, Bookmark, MoreHorizontal, Award, Camera, TrendingUp, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
+
+import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp, X } from 'lucide-react';
+
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -21,6 +23,7 @@ export default function CommunityPage() {
   const [showReactions, setShowReactions] = useState(null);
   const [activeTab, setActiveTab] = useState('feed');
   const fileInputRef = React.useRef(null);
+
 
   // Reaction types (3.2)
   const reactionTypes = [
@@ -124,6 +127,7 @@ export default function CommunityPage() {
       .slice(0, 5);
   }, [posts]);
 
+
   // Destinations for recommendations
   const destinations = [
     "Cox's Bazar", 'Sundarbans', 'Sylhet', 'Sajek Valley', 'Bandarban',
@@ -137,6 +141,7 @@ export default function CommunityPage() {
 
   // Create post with photos (3.1)
   const handlePost = async () => {
+
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -157,6 +162,7 @@ export default function CommunityPage() {
       author: user?.name || 'You',
       authorImage: user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U',
       authorBadge: 'Member',
+
       type: postType,
       content: postText,
       destination: postType === 'recommendation' ? selectedDestination : null,
@@ -232,22 +238,26 @@ export default function CommunityPage() {
 
   // React to post (3.2)
   const handleReaction = async (postId, reactionType) => {
+
     if (!isAuthenticated) {
       navigate('login');
       return;
     }
 
-    // Optimistic update can be tricky with complex logic, let's try purely api-based first or simple optimistic
-    // Simple optimistic:
+
     setPosts(prev => prev.map(post => {
       if (post.id === postId) {
         const oldReaction = post.userReaction;
         const newReactions = { ...post.reactions };
         if (oldReaction) newReactions[oldReaction] = Math.max(0, newReactions[oldReaction] - 1);
+
         if (oldReaction !== reactionType) {
           newReactions[reactionType] = (newReactions[reactionType] || 0) + 1;
           return { ...post, reactions: newReactions, userReaction: reactionType };
         } else {
+
+          // Remove reaction if same (toggle off)
+
           return { ...post, reactions: newReactions, userReaction: null };
         }
       }
@@ -255,18 +265,7 @@ export default function CommunityPage() {
     }));
     setShowReactions(null);
 
-    try {
-      await fetch(`${API_URL}/api/posts/${postId}/react`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user?._id || user?.id, type: reactionType })
-      });
-      // Optionally fetchPosts() to sync exact count
-      // fetchPosts();
-    } catch (err) {
-      console.error(err);
-      showNotificationMsg('Failed to update reaction', 'error');
-    }
+
   };
 
   // Save post
@@ -298,6 +297,7 @@ export default function CommunityPage() {
 
   // Add comment (3.2)
   const handleAddComment = async (postId) => {
+
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -327,6 +327,7 @@ export default function CommunityPage() {
       console.error(err);
       showNotificationMsg('Failed to add comment', 'error');
     }
+
   };
 
   // Like comment (3.2)
@@ -357,6 +358,7 @@ export default function CommunityPage() {
 
   // Add reply to comment (3.2)
   const handleAddReply = async (postId, commentId) => {
+
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -388,6 +390,7 @@ export default function CommunityPage() {
       console.error(err);
       showNotificationMsg('Failed to add reply', 'error');
     }
+
   };
 
   // Get total reactions count
@@ -417,7 +420,9 @@ export default function CommunityPage() {
           padding: '16px 24px',
           borderRadius: '12px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          zIndex: 9999,
+
+          zIndex: 1001,
+
           animation: 'slideDown 0.3s ease-out',
           display: 'flex',
           alignItems: 'center',
@@ -431,6 +436,7 @@ export default function CommunityPage() {
       <div style={{ display: 'flex', gap: '32px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         {/* Main Feed */}
         <div style={{ flex: 2 }}>
+
           <div style={{ marginBottom: '32px' }}>
             <h2 style={{
               fontSize: '42px',
@@ -674,6 +680,7 @@ export default function CommunityPage() {
                 </div>
               )}
 
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
@@ -714,6 +721,7 @@ export default function CommunityPage() {
                       gap: '6px',
                       fontSize: '13px'
                     }}>
+
                     <MapPin size={18} /> Location
                   </button>
                 </div>
@@ -735,7 +743,9 @@ export default function CommunityPage() {
                   }}
                 >
                   <Send size={16} />
-                  Share
+
+                  Post
+
                 </button>
               </div>
             </div>
@@ -1367,6 +1377,8 @@ export default function CommunityPage() {
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
       `}</style>
-    </div >
+
+    </div>
+
   );
 }

@@ -27,6 +27,8 @@ import LocalGuidePage from './components/pages/LocalGuidePage';
 import CulturePage from './components/pages/CulturePage';
 import TripPlannerPage from './components/pages/TripPlannerPage';
 import DestinationDetailsPage from './components/pages/DestinationDetailsPage';
+import GuideDashboard from './components/pages/GuideDashboard';
+import PremiumPage from './components/pages/PremiumPage';
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -48,7 +50,9 @@ function AppContent() {
     'rewards',
     'group-events',
     'agency',
-    'trip-planner'
+    'trip-planner',
+    'guide-dashboard',
+    'premium'
   ];
 
   // Render the appropriate page based on currentPage state
@@ -104,6 +108,10 @@ function AppContent() {
         return <CulturePage />;
       case 'trip-planner':
         return <TripPlannerPage />;
+      case 'guide-dashboard':
+        return <GuideDashboard />;
+      case 'premium':
+        return <PremiumPage />;
       default:
         return <HomePage />;
     }

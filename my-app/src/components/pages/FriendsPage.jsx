@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Check, X, MapPin, Heart, Bell, Clock, Activity, Calendar, MessageCircle, Send, UserPlus } from 'lucide-react';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { UserPlus, Users, Check, X, MessageCircle, MapPin, Calendar, Heart, Send, Bell, Clock, Activity } from 'lucide-react';
+
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 
@@ -87,6 +89,7 @@ export default function FriendsPage() {
   };
 
 
+
   // Fetch Data
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -117,6 +120,7 @@ export default function FriendsPage() {
 
       // 3. Fetch Incoming Requests
       const requestsRes = await fetch(`http://localhost:5000/api/users/${user._id}/requests`);
+
       const requestsData = await requestsRes.json();
 
       // Transform Request Data for UI
@@ -137,6 +141,7 @@ export default function FriendsPage() {
 
       const friendIds = new Set(friendsData.map(f => f._id));
       const sentIds = new Set(sentData.map(r => r.toUser._id)); // Extract toUser ID from request object
+
 
       const newSuggestions = allUsersData.filter(u =>
         u._id !== user._id &&
@@ -166,6 +171,7 @@ export default function FriendsPage() {
 
       // 5. Fetch Activity Feed (Posts)
       const postsRes = await fetch(`http://localhost:5000/api/posts`);
+
       const postsData = await postsRes.json();
 
       // Filter posts: Show posts from my friends
@@ -188,6 +194,7 @@ export default function FriendsPage() {
         fullContent: p.content, // Store full text for display
         likes: (p.reactions || []).filter(r => r.type === 'like').length,
         isLiked: (p.reactions || []).some(r => r.userId === user._id && r.type === 'like')
+
       }));
 
       setActivityFeed(mappedFeed);
@@ -204,6 +211,7 @@ export default function FriendsPage() {
   const handleSendRequest = async (friendId) => {
     try {
       const res = await fetch(`http://localhost:5000/api/users/request`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromUserId: user._id, toUserId: friendId })
@@ -231,6 +239,7 @@ export default function FriendsPage() {
   const handleAcceptRequest = async (requestId) => {
     try {
       const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'accepted' })
@@ -257,6 +266,7 @@ export default function FriendsPage() {
   const handleRejectRequest = async (requestId) => {
     try {
       const res = await fetch(`http://localhost:5000/api/users/request/${requestId}`, {
+
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'rejected' })
@@ -403,6 +413,7 @@ export default function FriendsPage() {
     }
   };
 
+
   // Login required check
   if (!isAuthenticated) {
     return (
@@ -436,7 +447,9 @@ export default function FriendsPage() {
       {notification && (
         <div style={{
           position: 'fixed',
-          bottom: '20px',
+
+          top: '20px',
+
           right: '20px',
           backgroundColor: notification.type === 'success' ? '#059669' : '#6b7280',
           color: 'white',
@@ -616,6 +629,7 @@ export default function FriendsPage() {
                 }}>
                 <Heart size={14} fill={activity.isLiked ? 'white' : 'none'} />
                 {activity.likes ? `${activity.likes} ` : ''}Like
+
               </button>
             </div>
           ))}
@@ -864,6 +878,7 @@ export default function FriendsPage() {
                 </button>
                 <button
                   onClick={() => handleOpenInvite(friend)}
+
                   style={{
                     backgroundColor: '#f0fdf4',
                     color: '#059669',
@@ -1215,6 +1230,7 @@ export default function FriendsPage() {
           </div>
         </div>
       )}
+
 
       {/* CSS Animations */}
       <style>{`

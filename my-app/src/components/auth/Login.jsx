@@ -13,11 +13,24 @@ export default function Login() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Stop event bubbling
+        console.log('Login form submitted with:', email); // Debug log
         try {
-            await login(email, password);
-            navigate('home');
+            const userData = await login(email, password);
+            console.log('Login successful:', userData); // Debug log
+            // Redirect based on user role
+            if (userData.role === 'admin') {
+                navigate('dashboard');
+            } else if (userData.role === 'agency') {
+                navigate('agency');
+            } else if (userData.guideStatus === 'approved') {
+                navigate('local-guides');
+            } else {
+                navigate('home');
+            }
         } catch (err) {
-            // Error is handled by context state
+            console.error('Login Error caught in component:', err);
+            setError(err.message || 'Login failed. Please check console for details.');
         }
     };
 
@@ -147,5 +160,3 @@ export default function Login() {
         </div>
     );
 }
-
-

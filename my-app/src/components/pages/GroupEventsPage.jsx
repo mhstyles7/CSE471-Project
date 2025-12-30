@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, MessageSquare, ListTodo, BarChart2, ChevronLeft } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, Clock, MessageSquare, ListTodo, BarChart2, Trash2, Edit2, ChevronLeft, Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
+import { API_URL } from '../../config';
+
 
 export default function GroupEventsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -20,6 +23,7 @@ export default function GroupEventsPage() {
   // Events state (4.1)
   const [events, setEvents] = useState([]);
   const API_URL = 'http://localhost:5000';
+
 
   // My joined events
   const [myEvents, setMyEvents] = useState([]);
@@ -66,6 +70,7 @@ export default function GroupEventsPage() {
     fetchData();
   }, [fetchData]); // Refetch when user logs in
 
+
   const [showInviteModal, setShowInviteModal] = useState(null);
 
   // New Item States
@@ -81,6 +86,7 @@ export default function GroupEventsPage() {
 
   // Join event (4.1)
   const handleJoinEvent = async (eventId) => {
+
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -106,6 +112,7 @@ export default function GroupEventsPage() {
       }
     } catch (err) {
       console.error(err);
+
     }
   };
 
@@ -142,6 +149,7 @@ export default function GroupEventsPage() {
       } catch (err) {
         console.error(err);
       }
+
     }
   };
 
@@ -188,11 +196,13 @@ export default function GroupEventsPage() {
       } catch (err) {
         console.error(err);
       }
+
     }
   };
 
   // Create event (4.1)
   const handleCreateEvent = async () => {
+
     if (!isAuthenticated) {
       navigate('login');
       return;
@@ -229,6 +239,7 @@ export default function GroupEventsPage() {
       } catch (err) {
         console.error(err);
       }
+
     }
   };
 
@@ -351,6 +362,7 @@ export default function GroupEventsPage() {
     } catch (err) {
       console.error(err);
     }
+
   };
 
   // Login required check
@@ -833,6 +845,25 @@ export default function GroupEventsPage() {
                         <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0, fontFamily: 'Poppins, sans-serif' }}>
                           {event.name}
                         </h3>
+
+                        {event.isSponsored && (
+                          <div style={{
+                            padding: '6px 14px',
+                            borderRadius: '20px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'
+                          }}>
+                            <Star size={14} fill="white" />
+                            Sponsored
+                          </div>
+                        )}
+
                         <div style={{
                           padding: '6px 14px',
                           borderRadius: '20px',
@@ -1117,10 +1148,10 @@ export default function GroupEventsPage() {
                 <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
                   <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Add Activity</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                    <input type="number" placeholder="Day" min="1" value={newItineraryItem.day} onChange={e => setNewItineraryItem({ ...newItineraryItem, day: parseInt(e.target.value) })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
-                    <input type="time" value={newItineraryItem.time} onChange={e => setNewItineraryItem({ ...newItineraryItem, time: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
-                    <input type="text" placeholder="Activity" value={newItineraryItem.activity} onChange={e => setNewItineraryItem({ ...newItineraryItem, activity: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', flex: 2 }} />
-                    <input type="text" placeholder="Location" value={newItineraryItem.location} onChange={e => setNewItineraryItem({ ...newItineraryItem, location: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <input type="number" placeholder="Day (e.g. 1, 2, 3)" min="1" value={newItineraryItem.day} onChange={e => setNewItineraryItem({ ...newItineraryItem, day: parseInt(e.target.value) })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <input type="time" placeholder="Time" value={newItineraryItem.time} onChange={e => setNewItineraryItem({ ...newItineraryItem, time: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <input type="text" placeholder="Activity (e.g. Breakfast, Hiking)" value={newItineraryItem.activity} onChange={e => setNewItineraryItem({ ...newItineraryItem, activity: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', flex: 2 }} />
+                    <input type="text" placeholder="Location (e.g. Hotel, Beach)" value={newItineraryItem.location} onChange={e => setNewItineraryItem({ ...newItineraryItem, location: e.target.value })} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
                   </div>
                   <button onClick={handleAddItinerary} style={{ backgroundColor: '#059669', color: 'white', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600' }}>Add to Itinerary</button>
                 </div>

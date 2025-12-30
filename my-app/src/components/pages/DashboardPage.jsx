@@ -384,6 +384,7 @@ function StatCard({ icon, label, value, color, bg }) {
             <div>
                 <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937' }}>{value}</div>
                 <div style={{ fontSize: '14px', color: '#6b7280' }}>{label}</div>
+
             </div>
         </div>
     );
@@ -399,3 +400,4 @@ function QuickAction({ icon, label, onClick }) {
         </button>
     );
 }
+

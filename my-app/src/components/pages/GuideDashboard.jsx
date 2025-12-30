@@ -5,13 +5,15 @@ import { Send, Star, MapPin, Users, Award } from 'lucide-react';
 import { API_URL } from '../../config';
 
 export default function GuideDashboard() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [postContent, setPostContent] = useState('');
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [bookings, setBookings] = useState([]);
 
     useEffect(() => {
         if (user) fetchMyPosts();
+
     }, [user]);
 
     const fetchMyPosts = async () => {
@@ -20,6 +22,7 @@ export default function GuideDashboard() {
             const res = await fetch(`${API_URL}/guide/posts`);
             const data = await res.json();
             // Filter posts for this guide
+
             setPosts(data.filter(p => p.guideEmail === user.email));
         } catch (error) {
             console.error('Error fetching posts:', error);
@@ -28,12 +31,25 @@ export default function GuideDashboard() {
         }
     };
 
+
+    const fetchBookings = async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/bookings?guideEmail=${user.email}`);
+            const data = await res.json();
+            setBookings(data);
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+        }
+    };
+
+
     const handlePost = async (e) => {
         e.preventDefault();
         if (!postContent.trim()) return;
 
         try {
             const res = await fetch(`${API_URL}/guide/posts`, {
+
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -52,6 +68,46 @@ export default function GuideDashboard() {
             console.error('Error posting update:', error);
         }
     };
+
+
+    const handleBookingAction = async (bookingId, status) => {
+        try {
+            await fetch(`${API_URL}/api/bookings/${bookingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            fetchBookings();
+
+            // Refresh user data to update trip count when completed
+            if (status === 'completed') {
+                await refreshUser();
+            }
+
+            alert(`Booking ${status}!`);
+        } catch (error) {
+            console.error('Error updating booking:', error);
+        }
+    };
+
+    const handleReplyToComment = async (postId, commentIndex, replyText) => {
+        if (!replyText?.trim()) return;
+        try {
+            await fetch(`${API_URL}/api/guide/posts/${postId}/comments/${commentIndex}/reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user: user.name,
+                    text: replyText,
+                    userEmail: user.email
+                })
+            });
+            fetchMyPosts();
+        } catch (error) {
+            console.error('Error replying:', error);
+        }
+    };
+
 
     // STRICT ACCESS CHECK
     if (user?.role !== 'admin' && user?.guideStatus !== 'approved') {
@@ -77,6 +133,7 @@ export default function GuideDashboard() {
 
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
+
             {/* Header / Stats */}
             <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', marginBottom: '32px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -89,12 +146,14 @@ export default function GuideDashboard() {
                         <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
                             {user?.name}
                             {hasTrustedBadge && <Award color="#fbbf24" fill="#fbbf24" size={24} title="Trusted Guide" />}
+
                         </h1>
                         <p style={{ color: '#6b7280', marginTop: '4px' }}>Local Guide • {guideCount} Trips Guided</p>
                     </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '32px', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}>
+
                     <div style={{ textAlign: 'center' }}>
                         <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669' }}>{guideCount}</h3>
                         <p style={{ color: '#6b7280', fontSize: '14px' }}>Trips Guided</p>
@@ -159,6 +218,7 @@ export default function GuideDashboard() {
                     <p style={{ color: '#6b7280' }}>No new bookings request.</p>
                 </div>
             </div>
+
         </div>
     );
 }

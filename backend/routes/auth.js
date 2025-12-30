@@ -272,5 +272,19 @@ router.post('/validate-session', async (req, res) => {
     }
 });
 
-module.exports = router;
+// Get user profile (for refreshing user data)
+router.get('/profile/:email', async (req, res) => {
+    try {
+        const db = getDb();
+        const user = await db.collection('users').findOne({ email: req.params.email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const { password: _, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
+module.exports = router;

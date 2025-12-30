@@ -7,7 +7,7 @@ const { ObjectId } = require('mongodb');
 router.get('/', async (req, res) => {
     try {
         const db = getDb();
-        const events = await db.collection('events').find({}).toArray();
+        const events = await db.collection('events').find().sort({ date: 1 }).toArray();
         res.json(events);
     } catch (err) {
         res.status(500).json({ message: err.message });
