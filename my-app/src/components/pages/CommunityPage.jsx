@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, B
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
+import { API_URL } from '../../config';
 
 export default function CommunityPage() {
   const { user, isAuthenticated } = useAuth();
@@ -36,7 +37,7 @@ export default function CommunityPage() {
 
   // Posts state with full functionality (3.1 - 3.4)
   const [posts, setPosts] = useState([]);
-  const API_URL = 'http://localhost:5000'; // Or import from config if available
+
 
   // Fetch posts from backend
   // Fetch posts from backend
