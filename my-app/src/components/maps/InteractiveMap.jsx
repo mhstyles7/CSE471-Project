@@ -32,6 +32,7 @@ import {
   getAIRecommendations,
   getCoordinates,
 } from "../../services/travelAIService";
+import { API_URL } from "../../config";
 
 // Fix Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -248,14 +249,14 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
     safeData.riskLevel === "High"
       ? "#fee2e2"
       : safeData.riskLevel === "Medium"
-      ? "#fef3c7"
-      : "#f0fdf4";
+        ? "#fef3c7"
+        : "#f0fdf4";
   const riskTextColor =
     safeData.riskLevel === "High"
       ? "#991b1b"
       : safeData.riskLevel === "Medium"
-      ? "#92400e"
-      : "#166534";
+        ? "#92400e"
+        : "#166534";
 
   return (
     <motion.div
@@ -1116,7 +1117,7 @@ export default function InteractiveMap() {
         console.log("[Map] Fetching initial data...");
         setLoading(true);
         // 1. Fetch Destinations (Districts)
-        const distRes = await fetch("http://localhost:5000/api/destinations");
+        const distRes = await fetch(`${API_URL}/api/destinations`);
         const distData = await distRes.json();
         const distMap = {};
         distData.forEach((d) => {
@@ -1125,7 +1126,7 @@ export default function InteractiveMap() {
         setDistricts(distMap);
 
         // 3. Fetch Routes (Trips)
-        const routeRes = await fetch("http://localhost:5000/api/routes");
+        const routeRes = await fetch(`${API_URL}/api/routes`);
         const routeData = await routeRes.json();
         console.log(`[Map] Found ${routeData.length} trips.`);
 
