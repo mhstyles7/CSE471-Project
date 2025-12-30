@@ -16,6 +16,7 @@ import {
   Navigation,
   TrendingUp
 } from 'lucide-react';
+import { API_URL } from '../../config';
 
 
 // Fix Leaflet marker icons
@@ -67,7 +68,7 @@ export default function Heatmap() {
       try {
         setLoading(true);
         // 1. Fetch Destinations (Districts)
-        const distRes = await fetch("http://localhost:5000/api/destinations");
+        const distRes = await fetch(`${API_URL}/api/destinations`);
         const distData = await distRes.json();
         const distMap = {};
         distData.forEach((d) => {
@@ -77,7 +78,7 @@ export default function Heatmap() {
 
         // 2. Fetch Heatmap Analytics
         const heatRes = await fetch(
-          `http://localhost:5000/api/heatmap?period=${timeFilter}&type=${typeFilter}`
+          `${API_URL}/api/heatmap?period=${timeFilter}&type=${typeFilter}`
         );
         const heatData = await heatRes.json();
         setHeatmapData(heatData.heatmap || {});

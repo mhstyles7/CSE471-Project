@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Calendar, MapPin, Clock, TrendingUp, PlusCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { API_URL } from "../../config";
 
 export default function MyTripsPage() {
   const { user } = useAuth();
@@ -46,7 +47,7 @@ export default function MyTripsPage() {
     // 2. Call Backend to Award Points
     try {
       const response = await fetch(
-        "http://localhost:5000/api/rewards/add-points",
+        `${API_URL}/api/rewards/add-points`,
         {
           method: "POST",
           headers: {
@@ -200,9 +201,8 @@ export default function MyTripsPage() {
                     trip.status === "upcoming" ? "#f0f9ff" : "#f0fdf4",
                   borderRadius: "16px",
                   padding: "20px 24px",
-                  border: `2px solid ${
-                    trip.status === "upcoming" ? "#bfdbfe" : "#bbf7d0"
-                  }`,
+                  border: `2px solid ${trip.status === "upcoming" ? "#bfdbfe" : "#bbf7d0"
+                    }`,
                   transition: "all 0.3s",
                 }}
                 onMouseEnter={(e) => {

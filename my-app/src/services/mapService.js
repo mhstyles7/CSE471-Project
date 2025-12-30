@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/search';
 
 /**
@@ -27,7 +28,7 @@ export const searchLocation = async (query) => {
  */
 export const getRouteEstimates = async (start, end) => {
     try {
-        const response = await fetch('http://localhost:5000/api/route-estimator/estimate', {
+        const response = await fetch(`${API_URL}/api/route-estimator/estimate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
