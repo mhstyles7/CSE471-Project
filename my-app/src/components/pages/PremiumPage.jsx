@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from '../../context/NavigationContext';
 import { CreditCard, Check, Crown, Shield } from 'lucide-react';
 
 export default function PremiumPage() {
     const { user, updateProfile } = useAuth();
+    const navigate = useNavigate();
 
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [processing, setProcessing] = useState(false);

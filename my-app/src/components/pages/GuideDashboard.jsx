@@ -5,10 +5,11 @@ import { Send, Star, MapPin, Users, Award } from 'lucide-react';
 import { API_URL } from '../../config';
 
 export default function GuideDashboard() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [postContent, setPostContent] = useState('');
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [bookings, setBookings] = useState([]);
 
     useEffect(() => {
         if (user) fetchMyPosts();

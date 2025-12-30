@@ -61,7 +61,7 @@ export default function AgencyDashboard() {
                 ]);
             } else {
 
-                setOrders(allOrders);
+                setOrders(data);
 
             }
         } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';

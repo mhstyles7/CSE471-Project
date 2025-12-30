@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
-import { MessageCircle, Award } from 'lucide-react';
+import { MessageCircle, Award, Send } from 'lucide-react';
 import PaymentModal from '../common/PaymentModal';
 
 import { apiService } from '../../services/apiService';
+import { API_URL } from '../../config';
 
 export default function LocalGuidePage() {
-    const { user } = useAuth();
+    const { user, updateProfile } = useAuth();
 
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
@@ -66,6 +67,30 @@ export default function LocalGuidePage() {
             fetchPosts();
         } catch (error) {
             console.error('Error posting comment:', error);
+        }
+    };
+
+    const handleReplySubmit = async (postId, commentIndex) => {
+        const replyKey = `${postId}-${commentIndex}`;
+        const text = replyTexts[replyKey];
+
+        if (!text?.trim() || !user) return;
+
+        try {
+            await fetch(`${API_URL}/api/guide/posts/${postId}/comments/${commentIndex}/reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user: user.name,
+                    text: text,
+                    userEmail: user.email
+                })
+            });
+            setReplyTexts(prev => ({ ...prev, [replyKey]: '' }));
+            setShowReplyFor(null);
+            fetchPosts();
+        } catch (error) {
+            console.error('Error posting reply:', error);
         }
     };
 

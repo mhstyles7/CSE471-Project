@@ -6,7 +6,6 @@ import { MapPin, ArrowRight, Clock, Star, Lock, Crown, Sparkles, Calendar, Users
 import PaymentModal from '../common/PaymentModal';
 import { apiService } from '../../services/apiService';
 
-const API_URL = 'http://localhost:1306';
 
 
 export default function DestinationsPage() {
@@ -63,6 +62,7 @@ export default function DestinationsPage() {
 
   const handleBookingConfirm = async () => {
     if (!selectedPackage) return;
+    const totalAmount = selectedPackage.price * bookingQuantity;
 
     try {
       await apiService.post('/orders', {
@@ -89,6 +89,36 @@ export default function DestinationsPage() {
 
     } catch (error) {
       console.error('Error booking package:', error);
+    }
+  };
+
+  const proceedToPayment = () => {
+    setBookingModalOpen(false);
+    setPaymentOpen(true);
+  };
+
+  const handleCustomBookingSubmit = async () => {
+    if (!customBookingPkg || !customForm.preferredDates) return;
+    setSubmittingCustom(true);
+    try {
+      await apiService.post('/orders', {
+        type: 'custom_booking_request',
+        packageId: customBookingPkg._id,
+        packageTitle: customBookingPkg.title,
+        agencyEmail: customBookingPkg.agencyEmail,
+        customerName: user?.name,
+        customerEmail: user?.email,
+        ...customForm,
+        status: 'pending_review'
+      });
+      alert('Custom booking request sent to the agency!');
+      setCustomModalOpen(false);
+      setCustomForm({ preferredDates: '', numberOfTravelers: 1, specialRequests: '', budgetPreference: 'flexible' });
+    } catch (error) {
+      console.error('Error submitting custom booking:', error);
+      alert('Failed to submit request. Please try again.');
+    } finally {
+      setSubmittingCustom(false);
     }
   };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
-import { ChefHat, Utensils, Calendar, ArrowRight, Lock } from 'lucide-react';
+import { ChefHat, Utensils, Calendar, ArrowRight, Lock, X, MapPin, Filter } from 'lucide-react';
 
 // Simple Bangla Date Converter Logic (Prototypical)
 const getBanglaDate = () => {
@@ -56,11 +56,23 @@ export default function CulturePage() {
     const navigate = useNavigate();
     const banglaDate = getBanglaDate();
 
+    // State for directory feature
+    const [showDirectory, setShowDirectory] = useState(false);
+    const [selectedDivision, setSelectedDivision] = useState('All');
+    const [selectedDistrict, setSelectedDistrict] = useState('All');
+    const [loading, setLoading] = useState(false);
+    const [selectedDish, setSelectedDish] = useState(null);
+
+    // Constants
+    const DIVISIONS = ['All', 'Dhaka', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi', 'Rangpur', 'Barishal', 'Mymensingh'];
+    const districts = selectedDivision === 'All' ? ['All'] : ['All', 'District 1', 'District 2'];
+
     const localDishes = [
         { name: 'Panta Ilish', region: 'Dhaka', desc: 'Traditional fermented rice with Hilsa fish.', image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80' },
         { name: 'Mezban Meat', region: 'Chittagong', desc: 'Spicy beef curry served in traditional feasts.', image: 'https://images.unsplash.com/photo-1545247181-516773cae754?w=600&q=80' },
         { name: 'Bhog', region: 'Sylhet', desc: 'Ritualistic vegetarian meal offerings.', image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80' }
     ];
+
 
 
     return (

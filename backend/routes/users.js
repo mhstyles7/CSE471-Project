@@ -290,4 +290,120 @@ router.get('/:userId/sent-requests', async (req, res) => {
     }
 });
 
+// Get user profile stats (for profile page - real-time MongoDB data)
+router.get('/:id/stats', async (req, res) => {
+    try {
+        const db = getDb();
+        const userId = req.params.id;
+
+        // Get user basic info
+        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Count reviews written by this user
+        const reviewsCount = await db.collection('reviews').countDocuments({ userId: userId });
+
+        // Count trips completed (from bookings or saved_trip_plans)
+        const tripsCompleted = await db.collection('bookings').countDocuments({
+            userId: userId,
+            status: { $in: ['confirmed', 'completed'] }
+        });
+
+        // Friends count from user.friends array
+        const friendsCount = (user.friends && Array.isArray(user.friends)) ? user.friends.length : 0;
+
+        // Travel points from user document
+        const points = user.points || 0;
+
+        // Compute badges dynamically based on achievements
+        const badges = [
+            {
+                id: 1,
+                name: 'Explorer',
+                icon: '🌍',
+                unlocked: tripsCompleted >= 3,
+                description: 'Completed 3 or more trips'
+            },
+            {
+                id: 2,
+                name: 'Photographer',
+                icon: '📸',
+                unlocked: points >= 200,
+                description: 'Earned 200+ travel points'
+            },
+            {
+                id: 3,
+                name: 'Social Butterfly',
+                icon: '🦋',
+                unlocked: friendsCount >= 5,
+                description: 'Made 5 or more friends'
+            },
+            {
+                id: 4,
+                name: 'Reviewer',
+                icon: '✍️',
+                unlocked: reviewsCount >= 5,
+                description: 'Wrote 5 or more reviews'
+            },
+            {
+                id: 5,
+                name: 'Mountaineer',
+                icon: '🏔️',
+                unlocked: tripsCompleted >= 5,
+                description: 'Completed 5 or more trips'
+            }
+        ];
+
+        // Get recent activities from user_activities collection
+        const recentActivity = await db.collection('user_activities')
+            .find({ userId: userId })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .toArray();
+
+        // Format activities for frontend
+        const formattedActivity = recentActivity.map((activity, index) => {
+            // Calculate relative time
+            const now = new Date();
+            const activityDate = new Date(activity.createdAt);
+            const diffMs = now - activityDate;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            let dateStr;
+            if (diffDays === 0) dateStr = 'Today';
+            else if (diffDays === 1) dateStr = 'Yesterday';
+            else if (diffDays < 7) dateStr = `${diffDays} days ago`;
+            else dateStr = `${Math.floor(diffDays / 7)} week(s) ago`;
+
+            // Determine points based on activity type
+            let pointsStr = '+10';
+            if (activity.type === 'review_posted') pointsStr = '+50';
+            else if (activity.type === 'trip_completed') pointsStr = '+100';
+            else if (activity.type === 'badge_earned') pointsStr = 'Badge';
+
+            return {
+                id: index + 1,
+                action: activity.description || activity.type,
+                date: dateStr,
+                points: pointsStr
+            };
+        });
+
+        res.json({
+            tripsCompleted,
+            friendsCount,
+            points,
+            reviewsCount,
+            tier: user.tier || 'Bronze',
+            badges,
+            recentActivity: formattedActivity
+        });
+
+    } catch (err) {
+        console.error('Error fetching user stats:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

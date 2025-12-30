@@ -1,20 +1,20 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, CircleMarker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Heatmap.css';
 import L from 'leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Map as MapIcon,
-    Calendar,
-    Shield,
-    Leaf,
-    Smile,
-    CloudSun,
-    Newspaper,
-    Navigation,
-    TrendingUp
+  Map as MapIcon,
+  Calendar,
+  Shield,
+  Leaf,
+  Smile,
+  CloudSun,
+  Newspaper,
+  Navigation,
+  TrendingUp
 } from 'lucide-react';
 
 
@@ -25,6 +25,15 @@ L.Icon.Default.mergeOptions({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
+
+// Stub for getTrendAnalysis - returns mock trend messages
+async function getTrendAnalysis(topDistricts) {
+  // Return mock trend data for each district
+  return topDistricts.map(d => ({
+    district: d.district,
+    message: `${d.district} is trending with score ${d.score}. Popular destination this ${d.rank === 1 ? 'period' : 'week'}!`
+  }));
+}
 
 function MapController({ center, zoom }) {
   const map = useMap();
