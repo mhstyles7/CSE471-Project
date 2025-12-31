@@ -14,7 +14,7 @@ export default function GroupEventsPage() {
   const [eventDate, setEventDate] = useState('');
   const [eventLocation, setEventLocation] = useState('');
   const [eventDescription, setEventDescription] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState(10);
+  const [maxParticipants, setMaxParticipants] = useState('');
   const [notification, setNotification] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
   const [selectedEventId, setSelectedEventId] = useState(null); // For detailed view
@@ -214,7 +214,7 @@ export default function GroupEventsPage() {
         date: eventDate,
         location: eventLocation,
         description: eventDescription || 'Join this exciting trip!',
-        maxParticipants: parseInt(maxParticipants),
+        maxParticipants: parseInt(maxParticipants) || 10,
         organizer: user?.name || 'You',
         organizerId: user?._id || user?.id,
       };
@@ -233,7 +233,7 @@ export default function GroupEventsPage() {
           setEventDate('');
           setEventLocation('');
           setEventDescription('');
-          setMaxParticipants(10);
+          setMaxParticipants('');
           showNotificationMsg('Event created successfully! 🎊 Invite your friends to join.');
         }
       } catch (err) {
