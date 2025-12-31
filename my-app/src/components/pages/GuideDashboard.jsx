@@ -12,8 +12,10 @@ export default function GuideDashboard() {
     const [bookings, setBookings] = useState([]);
 
     useEffect(() => {
-        if (user) fetchMyPosts();
-
+        if (user) {
+            fetchMyPosts();
+            fetchBookings();
+        }
     }, [user]);
 
     const fetchMyPosts = async () => {
@@ -215,7 +217,59 @@ export default function GuideDashboard() {
 
                 <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', height: 'fit-content' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>Recent Bookings</h2>
-                    <p style={{ color: '#6b7280' }}>No new bookings request.</p>
+                    {bookings.length === 0 ? (
+                        <p style={{ color: '#6b7280' }}>No new bookings request.</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {bookings.slice(0, 5).map(booking => (
+                                <div key={booking._id} style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <p style={{ fontWeight: '600', margin: 0 }}>{booking.travelerName}</p>
+                                        <span style={{
+                                            padding: '4px 10px',
+                                            borderRadius: '12px',
+                                            fontSize: '11px',
+                                            fontWeight: '600',
+                                            backgroundColor: booking.status === 'completed' ? '#d1fae5' : booking.status === 'accepted' ? '#dbeafe' : '#fef3c7',
+                                            color: booking.status === 'completed' ? '#059669' : booking.status === 'accepted' ? '#2563eb' : '#d97706'
+                                        }}>
+                                            {booking.status}
+                                        </span>
+                                    </div>
+                                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                                        {booking.type === 'cook_with_local' ? '🍳 Cook with Local' : '🎒 Guide Booking'} • ৳{booking.amount}
+                                    </p>
+                                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0' }}>
+                                        {new Date(booking.createdAt).toLocaleDateString()}
+                                    </p>
+                                    {booking.status === 'pending' && (
+                                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                            <button
+                                                onClick={() => handleBookingAction(booking._id, 'accepted')}
+                                                style={{ padding: '6px 12px', backgroundColor: '#d1fae5', color: '#059669', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                            >
+                                                Accept
+                                            </button>
+                                            <button
+                                                onClick={() => handleBookingAction(booking._id, 'rejected')}
+                                                style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    )}
+                                    {booking.status === 'accepted' && (
+                                        <button
+                                            onClick={() => handleBookingAction(booking._id, 'completed')}
+                                            style={{ marginTop: '12px', padding: '6px 12px', backgroundColor: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                        >
+                                            Mark Complete
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
