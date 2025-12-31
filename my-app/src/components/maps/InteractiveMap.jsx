@@ -82,13 +82,17 @@ const discoveryIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
-function MapController({ center, zoom }) {
+function MapController({ center, zoom, bounds }) {
   const map = useMap();
+
   useEffect(() => {
-    if (center) {
+    if (bounds) {
+      map.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
+    } else if (center) {
       map.flyTo(center, zoom, { duration: 1.5 });
     }
-  }, [center, zoom, map]);
+  }, [center, zoom, bounds, map]);
+
   return null;
 }
 
@@ -1107,6 +1111,7 @@ export default function InteractiveMap() {
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [mapCenter, setMapCenter] = useState([23.685, 90.3563]); // Bangladesh center
   const [mapZoom, setMapZoom] = useState(7);
+  const [mapBounds, setMapBounds] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
 
   // 4.7 Comparison State
@@ -1370,6 +1375,7 @@ export default function InteractiveMap() {
     if (district.coordinates?.lat && district.coordinates?.lng) {
       setMapCenter([district.coordinates.lat, district.coordinates.lng]);
       setMapZoom(10);
+      setMapBounds(null); // Clear bounds to prioritize center/zoom
     }
     setSelectedTrip(null);
   };
@@ -1387,9 +1393,11 @@ export default function InteractiveMap() {
       const to = [toDist.coordinates.lat, toDist.coordinates.lng];
       const centerLat = (from[0] + to[0]) / 2;
       const centerLng = (from[1] + to[1]) / 2;
-      console.log("Centering map to:", centerLat, centerLng);
+      console.log("Centering map to bounds:", from, to);
+      // setMapCenter is less relevant if we use bounds, but keeping it for reference
       setMapCenter([centerLat, centerLng]);
-      setMapZoom(9);
+      setMapBounds([from, to]);
+      // Removed fixed setMapZoom(9)
     } else {
       console.warn(
         "Cannot center map: missing district data for",
@@ -1522,6 +1530,7 @@ export default function InteractiveMap() {
                   setSelectedTrip(null);
                   setMapZoom(7);
                   setMapCenter([23.685, 90.3563]);
+                  setMapBounds(null);
                 }}
                 style={{
                   background: "none",
@@ -1619,7 +1628,7 @@ export default function InteractiveMap() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          <MapController center={mapCenter} zoom={mapZoom} />
+          <MapController center={mapCenter} zoom={mapZoom} bounds={mapBounds} />
 
           {/* District Markers - DYNAMICALLY STYLED */}
           {Object.values(districts).map((dist) => {

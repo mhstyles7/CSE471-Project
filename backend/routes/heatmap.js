@@ -25,18 +25,24 @@ router.get('/', async (req, res) => {
         // 1. Aggregating TRIPS
         if (type === 'all' || type === 'trips') {
             // Correct collection is 'trips', not 'routes'
-            const trips = await db.collection('trips').find({}).toArray();
+            const trips = await db.collection('trips').find({
+                startDate: { $gte: startDate.toISOString() }
+            }).toArray();
 
             trips.forEach(trip => {
                 // Trips schema typically has 'destinationName', or 'from'/'to' if detailed.
-                // We'll score the destination.
+                // Score Destination
                 if (trip.destinationName) {
                     const slug = trip.destinationName.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
                     heatScores[slug] = (heatScores[slug] || 0) + 5; // 1 trip = 5 points
+                } else if (trip.to) {
+                    heatScores[trip.to] = (heatScores[trip.to] || 0) + 5;
                 }
-                // Also check if it has explicit from/to (from Route Planner saves)
-                if (trip.from) heatScores[trip.from] = (heatScores[trip.from] || 0) + 2;
-                if (trip.to) heatScores[trip.to] = (heatScores[trip.to] || 0) + 5;
+
+                // Score Origin (Starting Point) - Re-enabled as per user request
+                if (trip.from) {
+                    heatScores[trip.from] = (heatScores[trip.from] || 0) + 5;
+                }
             });
         }
 
@@ -56,10 +62,12 @@ router.get('/', async (req, res) => {
             posts.forEach(post => {
                 let slug = null;
 
-                // 1. Try explicit fields first
-                const explicitLoc = post.destination || post.location;
-                if (explicitLoc) {
-                    slug = explicitLoc.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                // 1. Try explicit destination field first
+                // User requirement: "For the destination that is not null, use those"
+                if (post.destination) {
+                    slug = post.destination.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                } else if (post.location) {
+                    slug = post.location.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
                 }
 
                 // 2. If no explicit location, scan CONTENT for mentions/hashtags
