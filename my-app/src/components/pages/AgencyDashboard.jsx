@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Package, ShoppingBag, PlusCircle, Calendar, MapPin, DollarSign, Users, TrendingUp, Edit, Trash2, CheckCircle, XCircle, Eye, Clock } from 'lucide-react';
+import { Package, ShoppingBag, PlusCircle, Calendar, MapPin, DollarSign, Users, TrendingUp, Edit, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { apiService } from '../../services/apiService';
 
 export default function AgencyDashboard() {
@@ -13,14 +13,28 @@ export default function AgencyDashboard() {
     // Form states
     const [newPackage, setNewPackage] = useState({ title: '', price: '', duration: '', location: '', description: '', image: '' });
     const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '', sponsor: user?.name });
+    const [customAmounts, setCustomAmounts] = useState({}); // Track custom order amounts by orderId
 
-    // Mock Data for Analytics
-    const stats = [
-        { label: 'Total Revenue', value: '$12,450', icon: <DollarSign size={24} />, color: '#059669', bg: '#ecfdf5' },
-        { label: 'Active Bookings', value: '24', icon: <ShoppingBag size={24} />, color: '#3b82f6', bg: '#eff6ff' },
-        { label: 'Package Views', value: '1,205', icon: <Eye size={24} />, color: '#f59e0b', bg: '#fffbeb' },
-        { label: 'Avg. Rating', value: '4.8', icon: <Users size={24} />, color: '#8b5cf6', bg: '#f5f3ff' }
-    ];
+    // Calculate real-time stats from orders
+    const calculateStats = () => {
+        const totalRevenue = orders
+            .filter(o => o.status === 'Confirmed' || o.status === 'completed')
+            .reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
+
+        const activeBookings = orders.filter(o => o.status === 'Confirmed' || o.status === 'completed').length;
+        const activeOrders = orders.filter(o => o.status !== 'Cancelled').length;
+        const pendingOrders = orders.filter(o => o.status === 'Pending' || o.status === 'pending').length;
+
+        return [
+            { label: 'Total Revenue', value: `${totalRevenue.toLocaleString()}tk`, icon: <DollarSign size={24} />, color: '#059669', bg: '#ecfdf5' },
+            { label: 'Active Bookings', value: String(activeBookings), icon: <ShoppingBag size={24} />, color: '#3b82f6', bg: '#eff6ff' },
+            { label: 'Active Orders', value: String(activeOrders), icon: <Package size={24} />, color: '#f59e0b', bg: '#fffbeb' },
+            { label: 'Pending Orders', value: String(pendingOrders), icon: <Clock size={24} />, color: '#8b5cf6', bg: '#f5f3ff' }
+        ];
+    };
+
+    const stats = calculateStats();
+
 
     useEffect(() => {
         if (activeTab === 'packages' || activeTab === 'overview') fetchPackages();
@@ -77,9 +91,25 @@ export default function AgencyDashboard() {
         }
     };
 
-    const handleUpdateStatus = (orderId, newStatus) => {
-        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+    const handleUpdateStatus = async (orderId, newStatus, customAmount = null) => {
+        try {
+            // Build update data
+            const updateData = { status: newStatus };
+            if (customAmount !== null) {
+                updateData.amount = parseFloat(customAmount);
+            }
 
+            // Call backend API to update status
+            await apiService.put(`/orders/${orderId}`, updateData);
+
+            // Update local state after successful API call
+            setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus, amount: customAmount !== null ? parseFloat(customAmount) : o.amount } : o));
+
+            alert(`Order ${newStatus} successfully!`);
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            alert('Failed to update order status');
+        }
     };
 
     const handleDeletePackage = (pkgId) => {
@@ -257,31 +287,61 @@ export default function AgencyDashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {orders.map(order => (
-                                    <tr key={order._id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                        <td style={{ padding: '16px', fontWeight: '600' }}>{order._id}</td>
-                                        <td style={{ padding: '16px' }}>{order.customerName}</td>
-                                        <td style={{ padding: '16px' }}>{order.package}</td>
-                                        <td style={{ padding: '16px', color: '#6b7280' }}>{order.date}</td>
-                                        <td style={{ padding: '16px', fontWeight: '600' }}>${order.amount}</td>
-                                        <td style={{ padding: '16px' }}>
-                                            <span style={{
-                                                padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600',
-                                                backgroundColor: order.status === 'Confirmed' ? '#d1fae5' : order.status === 'Cancelled' ? '#fee2e2' : '#fef3c7',
-                                                color: order.status === 'Confirmed' ? '#059669' : order.status === 'Cancelled' ? '#dc2626' : '#d97706'
-                                            }}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '16px' }}>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button onClick={() => handleUpdateStatus(order._id, 'Confirmed')} title="Confirm" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#d1fae5', color: '#059669', cursor: 'pointer' }}><CheckCircle size={18} /></button>
-                                                <button onClick={() => handleUpdateStatus(order._id, 'Cancelled')} title="Cancel" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#fee2e2', color: '#dc2626', cursor: 'pointer' }}><XCircle size={18} /></button>
+                                {orders.map(order => {
+                                    const isCustomOrder = order.type === 'custom_booking_request';
+                                    return (
+                                        <tr key={order._id} style={{ borderBottom: '1px solid #f3f4f6', backgroundColor: isCustomOrder ? '#fef3c7' : 'transparent' }}>
+                                            <td style={{ padding: '16px', fontWeight: '600' }}>
+                                                {order._id.slice(-8)}
+                                                {isCustomOrder && <span style={{ marginLeft: '8px', padding: '2px 8px', backgroundColor: '#f59e0b', color: 'white', borderRadius: '8px', fontSize: '10px' }}>CUSTOM</span>}
+                                            </td>
+                                            <td style={{ padding: '16px' }}>{order.customerName}</td>
+                                            <td style={{ padding: '16px' }}>{order.packageTitle || order.package}</td>
+                                            <td style={{ padding: '16px', color: '#6b7280' }}>{new Date(order.date).toLocaleDateString()}</td>
+                                            <td style={{ padding: '16px', fontWeight: '600' }}>
+                                                {isCustomOrder && order.status !== 'Confirmed' ? (
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Enter amount"
+                                                        value={customAmounts[order._id] || ''}
+                                                        onChange={(e) => setCustomAmounts(prev => ({ ...prev, [order._id]: e.target.value }))}
+                                                        style={{ width: '100px', padding: '8px', borderRadius: '8px', border: '2px solid #f59e0b', fontSize: '14px', fontWeight: '600' }}
+                                                    />
+                                                ) : (
+                                                    <span>৳{order.amount || 0}</span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '16px' }}>
+                                                <span style={{
+                                                    padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600',
+                                                    backgroundColor: order.status === 'Confirmed' ? '#d1fae5' : order.status === 'Cancelled' ? '#fee2e2' : '#fef3c7',
+                                                    color: order.status === 'Confirmed' ? '#059669' : order.status === 'Cancelled' ? '#dc2626' : '#d97706'
+                                                }}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '16px' }}>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (isCustomOrder && !customAmounts[order._id]) {
+                                                                alert('Please enter an amount for this custom order');
+                                                                return;
+                                                            }
+                                                            handleUpdateStatus(order._id, 'Confirmed', isCustomOrder ? customAmounts[order._id] : null);
+                                                        }}
+                                                        title="Confirm"
+                                                        style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#d1fae5', color: '#059669', cursor: 'pointer' }}
+                                                    >
+                                                        <CheckCircle size={18} />
+                                                    </button>
+                                                    <button onClick={() => handleUpdateStatus(order._id, 'Cancelled')} title="Cancel" style={{ padding: '6px', borderRadius: '6px', border: 'none', backgroundColor: '#fee2e2', color: '#dc2626', cursor: 'pointer' }}><XCircle size={18} /></button>
 
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

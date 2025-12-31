@@ -57,7 +57,8 @@ export default function DestinationsPage() {
       return;
     }
     setSelectedPackage(pkg);
-    setPaymentOpen(true);
+    setBookingQuantity(1); // Reset quantity when opening
+    setBookingModalOpen(true); // Show quantity selection modal first
   };
 
   const handleBookingConfirm = async () => {
@@ -221,8 +222,8 @@ export default function DestinationsPage() {
         isOpen={isPaymentOpen}
         onClose={() => setPaymentOpen(false)}
         onConfirm={handleBookingConfirm}
-        amount={selectedPackage ? `$${selectedPackage.price}` : '$0'}
-        title={selectedPackage?.title}
+        amount={selectedPackage ? `৳${selectedPackage.price * bookingQuantity}` : '৳0'}
+        title={selectedPackage ? `${selectedPackage.title} (${bookingQuantity} person${bookingQuantity > 1 ? 's' : ''})` : ''}
 
       />
 
@@ -294,21 +295,45 @@ export default function DestinationsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid #f3f4f6' }}>
                   <div>
                     <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Price per person</p>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#059669' }}>${pkg.price}</p>
+                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#059669' }}>৳{pkg.price}</p>
                   </div>
-                  <button
-                    onClick={() => initBooking(pkg)}
-                    style={{
-                      padding: '12px 24px', backgroundColor: '#111827', color: 'white',
-                      border: 'none', borderRadius: '12px', fontWeight: '600',
-                      cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                  >
-                    Book Now
-                  </button>
-
+                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                    <button
+                      onClick={() => initBooking(pkg)}
+                      style={{
+                        padding: '12px 24px', backgroundColor: '#111827', color: 'white',
+                        border: 'none', borderRadius: '12px', fontWeight: '600',
+                        cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      Book Now
+                    </button>
+                    {user?.isPremium ? (
+                      <button
+                        onClick={() => { setCustomBookingPkg(pkg); setCustomModalOpen(true); }}
+                        style={{
+                          padding: '10px 20px', backgroundColor: '#fef3c7', color: '#d97706',
+                          border: '1px solid #fcd34d', borderRadius: '12px', fontWeight: '600',
+                          cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center'
+                        }}
+                      >
+                        <Sparkles size={16} /> Customize
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => navigate('premium')}
+                        style={{
+                          padding: '10px 20px', backgroundColor: '#f3f4f6', color: '#9ca3af',
+                          border: '1px solid #e5e7eb', borderRadius: '12px', fontWeight: '600',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center'
+                        }}
+                      >
+                        <Lock size={14} /> Customize
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

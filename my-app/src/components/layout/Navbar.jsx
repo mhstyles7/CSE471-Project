@@ -32,30 +32,45 @@ export default function Navbar({
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  // Primary navigation items (always visible)
-  const primaryNavItems = [
+  // Primary navigation items (filtered for agency users)
+  const allPrimaryNavItems = [
     { id: "home", label: "Home", icon: Home },
     { id: "destinations", label: "Destinations", icon: Map },
     { id: "about", label: "About", icon: Info },
   ];
 
-  // Items only for logged in users
-  const privateNavItems = [
+  // Agency users only see Home and About
+  const primaryNavItems = user?.role === 'agency'
+    ? allPrimaryNavItems.filter(item => item.id !== 'destinations')
+    : allPrimaryNavItems;
+
+  // Agency users don't see the More dropdown
+  const showMoreDropdown = user?.role !== 'agency';
+
+  // Items only for logged in users (base items)
+  const basePrivateNavItems = [
     { id: "community", label: "Community", icon: MessageCircle },
     { id: "my-trips", label: "My Trips", icon: Calendar },
     { id: "friends", label: "Friends", icon: Users },
     { id: "rewards", label: "Rewards", icon: Award },
     { id: "group-events", label: "Group Events", icon: Calendar },
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "agency", label: "Agency Portal", icon: Briefcase },
     { id: "map", label: "Interactive Map", icon: Globe },
     { id: "heatmap", label: "Activity Heatmap", icon: TrendingUp },
     { id: "local-guides", label: "Local Guides", icon: UserCheck },
     { id: "culture", label: "Culture & Food", icon: Utensils },
     { id: "trip-planner", label: "Trip Planner", icon: Compass },
     { id: "route-planner", label: "Route Estimator", icon: Navigation },
-    { id: "guide-dashboard", label: "Guide Dashboard", icon: UserCheck },
     { id: "premium", label: "Get Premium Membership", icon: Crown },
+  ];
+
+  // Add role-specific items
+  const privateNavItems = [
+    ...basePrivateNavItems,
+    // Agency Portal - only for agency users
+    ...(user?.role === 'agency' ? [{ id: "agency", label: "Agency Portal", icon: Briefcase }] : []),
+    // Guide Dashboard - only for approved guides or admins
+    ...(user?.guideStatus === 'approved' || user?.role === 'admin' ? [{ id: "guide-dashboard", label: "Guide Dashboard", icon: UserCheck }] : []),
   ];
 
   // Items only for logged out users
@@ -207,113 +222,115 @@ export default function Navbar({
             );
           })}
 
-          {/* More Dropdown */}
-          <div style={{ position: "relative" }}>
-            <button
-              onClick={() => setShowMoreMenu(!showMoreMenu)}
-              style={{
-                padding: "10px 20px",
-                borderRadius: "12px",
-                fontSize: "15px",
-                fontWeight: "600",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                backgroundColor: isSecondaryActive ? "#059669" : "transparent",
-                color: isSecondaryActive ? "#ffffff" : "#374151",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                transform: isSecondaryActive
-                  ? "translateY(-2px)"
-                  : "translateY(0)",
-                boxShadow: isSecondaryActive
-                  ? "0 4px 12px rgba(5, 150, 105, 0.3)"
-                  : "none",
-              }}
-              onMouseEnter={(e) => {
-                if (!isSecondaryActive) {
-                  e.currentTarget.style.backgroundColor = "#f0fdf4";
-                  e.currentTarget.style.color = "#059669";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSecondaryActive) {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = "#374151";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }
-              }}
-            >
-              <span>More</span>
-              <ChevronDown
-                size={16}
+          {/* More Dropdown - hidden for agency users */}
+          {showMoreDropdown && (
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
                 style={{
-                  transform: showMoreMenu ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 0.3s",
+                  padding: "10px 20px",
+                  borderRadius: "12px",
+                  fontSize: "15px",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  backgroundColor: isSecondaryActive ? "#059669" : "transparent",
+                  color: isSecondaryActive ? "#ffffff" : "#374151",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform: isSecondaryActive
+                    ? "translateY(-2px)"
+                    : "translateY(0)",
+                  boxShadow: isSecondaryActive
+                    ? "0 4px 12px rgba(5, 150, 105, 0.3)"
+                    : "none",
                 }}
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            {showMoreMenu && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 8px)",
-                  right: 0,
-                  backgroundColor: "white",
-                  borderRadius: "16px",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                  padding: "8px",
-                  minWidth: "220px",
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  animation: "slideDown 0.2s ease-out",
+                onMouseEnter={(e) => {
+                  if (!isSecondaryActive) {
+                    e.currentTarget.style.backgroundColor = "#f0fdf4";
+                    e.currentTarget.style.color = "#059669";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSecondaryActive) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#374151";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }
                 }}
               >
-                {secondaryNavItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentPage === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavClick(item.id)}
-                      style={{
-                        width: "100%",
-                        padding: "12px 16px",
-                        borderRadius: "10px",
-                        fontSize: "15px",
-                        fontWeight: "500",
-                        border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                        backgroundColor: isActive ? "#f0fdf4" : "transparent",
-                        color: isActive ? "#059669" : "#374151",
-                        transition: "all 0.2s",
-                        textAlign: "left",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f0fdf4";
-                        e.currentTarget.style.color = "#059669";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                          e.currentTarget.style.color = "#374151";
-                        }
-                      }}
-                    >
-                      <Icon size={18} />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                <span>More</span>
+                <ChevronDown
+                  size={16}
+                  style={{
+                    transform: showMoreMenu ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s",
+                  }}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showMoreMenu && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    backgroundColor: "white",
+                    borderRadius: "16px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    padding: "8px",
+                    minWidth: "220px",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    animation: "slideDown 0.2s ease-out",
+                  }}
+                >
+                  {secondaryNavItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPage === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleNavClick(item.id)}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          borderRadius: "10px",
+                          fontSize: "15px",
+                          fontWeight: "500",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          backgroundColor: isActive ? "#f0fdf4" : "transparent",
+                          color: isActive ? "#059669" : "#374151",
+                          transition: "all 0.2s",
+                          textAlign: "left",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#f0fdf4";
+                          e.currentTarget.style.color = "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                            e.currentTarget.style.color = "#374151";
+                          }
+                        }}
+                      >
+                        <Icon size={18} />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Section - Profile & Logout */}

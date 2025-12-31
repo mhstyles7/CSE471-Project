@@ -19,7 +19,7 @@ export default function GuideDashboard() {
     const fetchMyPosts = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/guide/posts`);
+            const res = await fetch(`${API_URL}/api/guide/posts`);
             const data = await res.json();
             // Filter posts for this guide
 
@@ -48,7 +48,7 @@ export default function GuideDashboard() {
         if (!postContent.trim()) return;
 
         try {
-            const res = await fetch(`${API_URL}/guide/posts`, {
+            const res = await fetch(`${API_URL}/api/guide/posts`, {
 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

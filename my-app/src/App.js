@@ -64,6 +64,10 @@ function AppContent() {
 
     switch (currentPage) {
       case 'home':
+        // Agency users see Agency Portal as their home page
+        if (user?.role === 'agency') {
+          return <AgencyDashboard />;
+        }
         return <HomePage />;
       case 'destinations':
         return <DestinationsPage />;

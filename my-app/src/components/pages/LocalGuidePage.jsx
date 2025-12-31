@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from '../../context/NavigationContext';
-import { MessageCircle, Award, Send } from 'lucide-react';
+import { useNavigate, usePageParams } from '../../context/NavigationContext';
+import { MessageCircle, Award, Send, UserPlus, X, ChefHat } from 'lucide-react';
 import PaymentModal from '../common/PaymentModal';
 
 import { apiService } from '../../services/apiService';
@@ -11,6 +11,9 @@ export default function LocalGuidePage() {
     const { user, updateProfile } = useAuth();
 
     const navigate = useNavigate();
+    const pageParams = usePageParams();
+    const isCookMode = pageParams?.cookMode === true;
+
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [commentTexts, setCommentTexts] = useState({});
@@ -22,11 +25,13 @@ export default function LocalGuidePage() {
     // Payment State
     const [isPaymentOpen, setPaymentOpen] = useState(false);
     const [selectedGuidePost, setSelectedGuidePost] = useState(null);
+    const [bookingType, setBookingType] = useState('guide_booking'); // 'guide_booking' or 'cook_with_local'
 
 
     // Guide Request State
     const [showGuideRequest, setShowGuideRequest] = useState(false);
     const [guideReason, setGuideReason] = useState('');
+    const [guideNID, setGuideNID] = useState('');
     const [requesting, setRequesting] = useState(false);
 
 
@@ -94,13 +99,20 @@ export default function LocalGuidePage() {
         }
     };
 
-    const initBookGuide = (post) => {
+    const initBookGuide = (post, type = 'guide_booking') => {
         if (!user) {
             alert("Please login to book a guide.");
             return;
         }
 
+        // Guides cannot book themselves
+        if (user.email === post.guideEmail) {
+            alert("You cannot book yourself as a guide.");
+            return;
+        }
+
         setSelectedGuidePost(post);
+        setBookingType(type);
         setPaymentOpen(true);
     };
 
@@ -117,7 +129,7 @@ export default function LocalGuidePage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    type: 'guide_booking',
+                    type: bookingType,
                     guideName: selectedGuidePost.guideName,
                     guideEmail: selectedGuidePost.guideEmail,
                     travelerName: user.name,
@@ -135,7 +147,8 @@ export default function LocalGuidePage() {
 
             setPaymentOpen(false);
             setSelectedGuidePost(null);
-            alert('Guide booked successfully!' + (isFreeBooking ? ' Your free premium booking has been used.' : ''));
+            const typeLabel = bookingType === 'cook_with_local' ? 'Cook with Local experience' : 'Guide';
+            alert(`${typeLabel} booked successfully!` + (isFreeBooking ? ' Your free premium booking has been used.' : ''));
 
         } catch (error) {
             console.error('Error booking guide:', error);
@@ -152,8 +165,8 @@ export default function LocalGuidePage() {
                 isOpen={isPaymentOpen}
                 onClose={() => setPaymentOpen(false)}
                 onConfirm={handleBookGuideConfirm}
-                amount="$30" // Flat fee for contacting guide
-                title={`Book Guide: ${selectedGuidePost?.guideName}`}
+                amount={user?.isPremium && !user?.freeGuideBookingUsed ? 'FREE' : '400tk'}
+                title={isCookMode ? `Cook with Local: ${selectedGuidePost?.guideName}` : `Book Guide: ${selectedGuidePost?.guideName}`}
             />
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -162,12 +175,13 @@ export default function LocalGuidePage() {
                     <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937' }}>Local Guides & Updates</h1>
                     <p style={{ color: '#6b7280' }}>Connect with locals and see what's happening around you.</p>
                 </div>
-                {isGuide && (
+                {/* Become Guide Button - for travelers who aren't guides */}
+                {user && !isGuide && user.guideStatus !== 'pending' && (
                     <button
-                        onClick={() => navigate('guide-dashboard')}
+                        onClick={() => setShowGuideRequest(true)}
                         style={{
                             padding: '12px 24px',
-                            backgroundColor: '#059669',
+                            backgroundColor: '#7c3aed',
                             color: 'white',
                             border: 'none',
                             borderRadius: '24px',
@@ -176,13 +190,65 @@ export default function LocalGuidePage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            boxShadow: '0 4px 6px rgba(5, 150, 105, 0.2)'
+                            boxShadow: '0 4px 6px rgba(124, 58, 237, 0.2)'
                         }}
                     >
-                        <Award size={20} /> Guide Others
+                        <UserPlus size={20} /> Become Guide
                     </button>
                 )}
+
+                {/* Pending Status Badge */}
+                {user && user.guideStatus === 'pending' && (
+                    <span style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#fef3c7',
+                        color: '#92400e',
+                        borderRadius: '24px',
+                        fontWeight: '600',
+                        fontSize: '14px'
+                    }}>
+                        ⏳ Guide Request Pending
+                    </span>
+                )}
             </div>
+
+            {/* Cook with Local Banner */}
+            {isCookMode && (
+                <div style={{
+                    backgroundColor: '#fff7ed',
+                    border: '2px solid #ea580c',
+                    borderRadius: '16px',
+                    padding: '20px 24px',
+                    marginBottom: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px'
+                }}>
+                    <ChefHat size={32} color="#ea580c" />
+                    <div>
+                        <h3 style={{ margin: 0, color: '#ea580c', fontWeight: 'bold' }}>Cook with a Local Experience</h3>
+                        <p style={{ margin: '4px 0 0', color: '#9a3412', fontSize: '14px' }}>
+                            Select a local guide below to book your authentic cooking experience!
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => navigate('local-guides')}
+                        style={{
+                            marginLeft: 'auto',
+                            padding: '8px 16px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #ea580c',
+                            borderRadius: '8px',
+                            color: '#ea580c',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '600'
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
 
             <div style={{ display: 'grid', gap: '24px' }}>
                 {loading ? <p>Loading updates...</p> : posts.map(post => (
@@ -194,18 +260,35 @@ export default function LocalGuidePage() {
                                     {post.guideName?.[0]}
                                 </div>
                                 <div>
-                                    <h3 style={{ fontWeight: 'bold', margin: 0 }}>{post.guideName}</h3>
+                                    <h3 style={{ fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        {post.guideName}
+                                        {post.guideTrips > 5 && (
+                                            <Award size={16} color="#fbbf24" fill="#fbbf24" title="Trusted Guide" />
+                                        )}
+                                    </h3>
                                     <p style={{ fontSize: '12px', color: '#6b7280' }}>{new Date(post.createdAt).toLocaleDateString()}</p>
                                 </div>
                             </div>
 
                             {user?.email !== post.guideEmail && (
                                 <button
-                                    onClick={() => initBookGuide(post)}
-                                    style={{ padding: '6px 16px', backgroundColor: '#e0f2fe', color: '#0369a1', border: 'none', borderRadius: '16px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                    onClick={() => initBookGuide(post, isCookMode ? 'cook_with_local' : 'guide_booking')}
+                                    style={{
+                                        padding: '6px 16px',
+                                        backgroundColor: isCookMode ? '#fff7ed' : '#e0f2fe',
+                                        color: isCookMode ? '#ea580c' : '#0369a1',
+                                        border: isCookMode ? '1px solid #ea580c' : 'none',
+                                        borderRadius: '16px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
                                 >
-                                    Book Guide
-
+                                    {isCookMode && <ChefHat size={14} />}
+                                    {isCookMode ? 'Book Cooking' : 'Book Guide'}
                                 </button>
                             )}
                         </div>
@@ -292,6 +375,108 @@ export default function LocalGuidePage() {
                     </div>
                 ))}
             </div>
+
+            {/* Become Guide Request Modal */}
+            {showGuideRequest && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 9999, padding: '20px'
+                }}>
+                    <div style={{
+                        backgroundColor: 'white', borderRadius: '24px',
+                        maxWidth: '500px', width: '100%', padding: '32px'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>Become a Local Guide</h3>
+                            <button onClick={() => setShowGuideRequest(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}>
+                                <X size={24} color="#9ca3af" />
+                            </button>
+                        </div>
+
+                        <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+                            Share your local knowledge and earn by helping travelers explore your area!
+                        </p>
+
+                        <input
+                            type="text"
+                            placeholder="National ID (NID) Number *"
+                            value={guideNID}
+                            onChange={(e) => setGuideNID(e.target.value)}
+                            style={{
+                                width: '100%', padding: '14px 16px',
+                                borderRadius: '12px', border: '1px solid #e5e7eb',
+                                fontSize: '14px', boxSizing: 'border-box',
+                                marginBottom: '16px'
+                            }}
+                        />
+
+                        <textarea
+                            placeholder="Tell us why you'd like to become a guide and what makes you qualified (your local expertise, languages spoken, specialties, etc.)"
+                            value={guideReason}
+                            onChange={(e) => setGuideReason(e.target.value)}
+                            style={{
+                                width: '100%', minHeight: '120px', padding: '16px',
+                                borderRadius: '12px', border: '1px solid #e5e7eb',
+                                fontSize: '14px', resize: 'vertical', boxSizing: 'border-box',
+                                fontFamily: 'inherit'
+                            }}
+                        />
+
+                        <button
+                            onClick={async () => {
+                                if (!guideNID.trim()) {
+                                    alert('Please provide your National ID number.');
+                                    return;
+                                }
+                                if (!guideReason.trim()) {
+                                    alert('Please provide a reason for your application.');
+                                    return;
+                                }
+                                setRequesting(true);
+                                try {
+                                    const res = await fetch(`${API_URL}/api/guide/request`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            userId: user._id,
+                                            userName: user.name,
+                                            userEmail: user.email,
+                                            nid: guideNID,
+                                            reason: guideReason
+                                        })
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        alert('Your guide request has been submitted! An admin will review it soon.');
+                                        setShowGuideRequest(false);
+                                        setGuideReason('');
+                                        setGuideNID('');
+                                        await updateProfile({ guideStatus: 'pending' });
+                                    } else {
+                                        alert(data.message || 'Failed to submit request');
+                                    }
+                                } catch (error) {
+                                    console.error('Error:', error);
+                                    alert('Failed to submit request');
+                                } finally {
+                                    setRequesting(false);
+                                }
+                            }}
+                            disabled={requesting}
+                            style={{
+                                width: '100%', padding: '16px', marginTop: '20px',
+                                backgroundColor: requesting ? '#9ca3af' : '#7c3aed',
+                                color: 'white', border: 'none', borderRadius: '12px',
+                                fontWeight: 'bold', fontSize: '16px', cursor: requesting ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {requesting ? 'Submitting...' : 'Submit Application'}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

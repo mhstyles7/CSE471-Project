@@ -4,53 +4,141 @@ import { useNavigate } from '../../context/NavigationContext';
 import { ChefHat, Utensils, Calendar, ArrowRight, Lock, X, MapPin, Filter } from 'lucide-react';
 import { API_URL } from '../../config';
 
-// Simple Bangla Date Converter Logic (Prototypical)
+// Bangla Date Converter - Accurate Calculation
 const getBanglaDate = () => {
     const date = new Date();
     const day = date.getDate();
-    const month = date.getMonth(); // 0-11
+    const month = date.getMonth(); // 0-11 (Jan=0, Dec=11)
     const year = date.getFullYear();
 
-
-    // Bangla Months
+    // Bangla Months with their start dates in Gregorian calendar
     const banglaMonths = [
-        "Boishakh", "Joishtho", "Ashar", "Srabon", "Bhadro", "Ashwin",
-        "Kartik", "Agrahayan", "Poush", "Magh", "Falgun", "Chaitra"
+        { name: "Boishakh", startMonth: 3, startDay: 14 },    // Apr 14
+        { name: "Joishtho", startMonth: 4, startDay: 15 },    // May 15
+        { name: "Ashar", startMonth: 5, startDay: 15 },       // Jun 15
+        { name: "Srabon", startMonth: 6, startDay: 16 },      // Jul 16
+        { name: "Bhadro", startMonth: 7, startDay: 16 },      // Aug 16
+        { name: "Ashwin", startMonth: 8, startDay: 16 },      // Sep 16
+        { name: "Kartik", startMonth: 9, startDay: 16 },      // Oct 16
+        { name: "Agrahayan", startMonth: 10, startDay: 16 },  // Nov 16
+        { name: "Poush", startMonth: 11, startDay: 15 },      // Dec 15
+        { name: "Magh", startMonth: 0, startDay: 14 },        // Jan 14
+        { name: "Falgun", startMonth: 1, startDay: 13 },      // Feb 13
+        { name: "Chaitra", startMonth: 2, startDay: 14 }      // Mar 14
     ];
 
-    // Rough conversion: Boishakh starts mid-April (approx 14th)
-    // This is a simplified calculation for demo
-    let banglaYear = year - 593;
-    let banglaMonthIndex;
-    let banglaDay;
+    // Bangla Seasons (Ritu)
+    const banglaSeasons = [
+        { name: "Grisho (Summer)", months: ["Boishakh", "Joishtho"] },
+        { name: "Borsha (Monsoon)", months: ["Ashar", "Srabon"] },
+        { name: "Shorot (Autumn)", months: ["Bhadro", "Ashwin"] },
+        { name: "Hemonto (Late Autumn)", months: ["Kartik", "Agrahayan"] },
+        { name: "Sheet (Winter)", months: ["Poush", "Magh"] },
+        { name: "Boshonto (Spring)", months: ["Falgun", "Chaitra"] }
+    ];
 
-    if (month < 3 || (month === 3 && day < 14)) {
-        banglaYear--; // Before Boishakh
+    // Find current Bangla month
+    let banglaMonthIndex = -1;
+    for (let i = 0; i < banglaMonths.length; i++) {
+        const current = banglaMonths[i];
+        const next = banglaMonths[(i + 1) % 12];
+
+        // Check if current date falls in this Bangla month
+        if (month === current.startMonth && day >= current.startDay) {
+            banglaMonthIndex = i;
+            break;
+        } else if (month === next.startMonth && day < next.startDay) {
+            banglaMonthIndex = i;
+            break;
+        } else if (month > current.startMonth && month < next.startMonth) {
+            banglaMonthIndex = i;
+            break;
+        }
     }
 
-    // Logic to find month (simplified)
-    // Mapping Gregorian to Bangla roughly
-    if (month === 3 && day >= 14) { banglaMonthIndex = 0; banglaDay = day - 13; }
-    else if (month === 3 && day < 14) { banglaMonthIndex = 11; banglaDay = day + 17; }
-    else if (month === 4) { if (day < 15) { banglaMonthIndex = 0; banglaDay = day + 17; } else { banglaMonthIndex = 1; banglaDay = day - 14; } }
-    // ... skipping full logic for brevity, implementing "Today's Date" simulator
+    // Handle edge cases for year-end months
+    if (banglaMonthIndex === -1) {
+        // December 15 - December 31 is Poush
+        if (month === 11 && day >= 15) {
+            banglaMonthIndex = 8; // Poush
+        }
+        // January 1 - January 13 is Poush
+        else if (month === 0 && day < 14) {
+            banglaMonthIndex = 8; // Poush
+        }
+        // Default fallback
+        else {
+            banglaMonthIndex = 0;
+        }
+    }
 
-    // For specific requirement "Upcoming Eventful Days", we can map static impactful dates
+    const currentBanglaMonth = banglaMonths[banglaMonthIndex];
+
+    // Calculate Bangla day
+    let banglaDay;
+    if (month === currentBanglaMonth.startMonth) {
+        banglaDay = day - currentBanglaMonth.startDay + 1;
+    } else {
+        // Days from end of previous Gregorian month
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+        banglaDay = (daysInPrevMonth - currentBanglaMonth.startDay + 1) + day;
+    }
+
+    // Calculate Bangla year
+    // Bangla year 1432 started on April 14, 2025
+    let banglaYear = year - 593;
+    if (month < 3 || (month === 3 && day < 14)) {
+        banglaYear--;
+    }
+
+    // Find current season
+    const currentMonthName = currentBanglaMonth.name;
+    let currentSeason = "";
+    for (const season of banglaSeasons) {
+        if (season.months.includes(currentMonthName)) {
+            currentSeason = season.name;
+            break;
+        }
+    }
+
     return {
-        day: "12",
-        month: "Agrahayan",
-        year: "1431",
-        season: "Hemonta"
+        day: String(banglaDay),
+        month: currentBanglaMonth.name,
+        year: String(banglaYear),
+        season: currentSeason
     };
 };
 
-const UPCOMING_EVENTS = [
-    { name: "Pohela Boishakh", banglaDate: "1 Boishakh", engDate: "April 14", desc: "Bengali New Year" },
-    { name: "Nobanno Utshob", banglaDate: "1 Agrahayan", engDate: "Nov 15", desc: "Harvest Festival" },
-    { name: "Poush Mela", banglaDate: "Poush Month", engDate: "December", desc: "Folk Fair & Music" },
-    { name: "Boshonto Utshob", banglaDate: "1 Falgun", engDate: "February 13", desc: "Spring Festival" }
+// Calculate days remaining until an event
+const getDaysRemaining = (eventMonth, eventDay) => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
 
-];
+    // Create event date for current year
+    let eventDate = new Date(currentYear, eventMonth - 1, eventDay);
+
+    // If event has passed this year, calculate for next year
+    if (eventDate < today) {
+        eventDate = new Date(currentYear + 1, eventMonth - 1, eventDay);
+    }
+
+    const diffTime = eventDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+};
+
+// Upcoming events with Gregorian month/day for calculating days remaining
+const UPCOMING_EVENTS = [
+    { name: "Pohela Boishakh", banglaDate: "1 Boishakh", engDate: "April 14", month: 4, day: 14, desc: "Bengali New Year" },
+    { name: "Nobanno Utshob", banglaDate: "1 Agrahayan", engDate: "Nov 15", month: 11, day: 15, desc: "Harvest Festival" },
+    { name: "Poush Mela", banglaDate: "1 Poush", engDate: "Dec 15", month: 12, day: 15, desc: "Folk Fair & Music" },
+    { name: "Boshonto Utshob", banglaDate: "1 Falgun", engDate: "Feb 13", month: 2, day: 13, desc: "Spring Festival" }
+].map(evt => ({
+    ...evt,
+    daysRemaining: getDaysRemaining(evt.month, evt.day)
+})).sort((a, b) => a.daysRemaining - b.daysRemaining);
+
 
 export default function CulturePage() {
     const { user } = useAuth();
@@ -66,6 +154,10 @@ export default function CulturePage() {
     const [localDishes, setLocalDishes] = useState([]);
     const [divisions, setDivisions] = useState([]);
     const [districts, setDistricts] = useState([]);
+
+    // Limit initial dishes display (6 items = 2-3 rows)
+    const INITIAL_DISHES_LIMIT = 6;
+    const isFiltered = selectedDivision !== 'All' || selectedDistrict !== 'All';
 
     useEffect(() => {
         fetchDishes();
@@ -167,7 +259,20 @@ export default function CulturePage() {
                                     <div style={{ textAlign: 'right' }}>
                                         <p style={{ fontWeight: 'bold', color: '#d97706' }}>{evt.banglaDate}</p>
                                         <p style={{ fontSize: '12px', color: '#9ca3af' }}>({evt.engDate})</p>
-
+                                        <p style={{
+                                            fontSize: '11px',
+                                            color: evt.daysRemaining <= 30 ? '#059669' : '#6b7280',
+                                            fontWeight: evt.daysRemaining <= 30 ? '600' : '400',
+                                            marginTop: '4px',
+                                            padding: '2px 8px',
+                                            backgroundColor: evt.daysRemaining <= 30 ? '#ecfdf5' : '#f3f4f6',
+                                            borderRadius: '10px',
+                                            display: 'inline-block'
+                                        }}>
+                                            {evt.daysRemaining === 0 ? '🎉 Today!' :
+                                                evt.daysRemaining === 1 ? '⏰ Tomorrow!' :
+                                                    `${evt.daysRemaining} days left`}
+                                        </p>
                                     </div>
                                 </div>
                             ))}
@@ -184,7 +289,7 @@ export default function CulturePage() {
                     <h2 style={{ fontSize: '28px', fontWeight: 'bold' }}>Local Delicacies</h2>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '32px' }}>
-                    {localDishes.map((dish, i) => (
+                    {(showDirectory ? [] : localDishes.slice(0, INITIAL_DISHES_LIMIT)).map((dish, i) => (
 
                         <div key={i} style={{ borderRadius: '16px', overflow: 'hidden', backgroundColor: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
                             <img src={dish.image} alt={dish.name} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
@@ -194,7 +299,9 @@ export default function CulturePage() {
                                     <span style={{ fontSize: '12px', padding: '4px 10px', backgroundColor: '#fff7ed', color: '#c2410c', borderRadius: '20px', fontWeight: '600' }}>{dish.region}</span>
                                 </div>
                                 <p style={{ color: '#6b7280', lineHeight: '1.5' }}>{dish.desc}</p>
-                                <button style={{ marginTop: '16px', color: '#ea580c', fontWeight: '600', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <button
+                                    onClick={() => setSelectedDish(dish)}
+                                    style={{ marginTop: '16px', color: '#ea580c', fontWeight: '600', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     View Recipe <ArrowRight size={16} />
 
                                 </button>
@@ -202,6 +309,16 @@ export default function CulturePage() {
                         </div>
                     ))}
                 </div>
+
+                {/* Show count of remaining dishes when not in directory mode */}
+                {!showDirectory && localDishes.length > INITIAL_DISHES_LIMIT && (
+                    <div style={{ textAlign: 'center', marginTop: '24px', padding: '16px', backgroundColor: '#fef3c7', borderRadius: '12px' }}>
+                        <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
+                            Showing {INITIAL_DISHES_LIMIT} of {localDishes.length} dishes.
+                            <strong> Click "Explore Local Delicacies by Region" below</strong> to filter and see more!
+                        </p>
+                    </div>
+                )}
 
 
                 {/* Explore Local Delicacies Button */}
@@ -403,8 +520,10 @@ export default function CulturePage() {
                     </p>
 
                     {user?.isPremium ? (
-                        <button style={{ padding: '14px 32px', backgroundColor: '#ea580c', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', fontSize: '16px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-
+                        <button
+                            onClick={() => navigate('local-guides', { cookMode: true })}
+                            style={{ padding: '14px 32px', backgroundColor: '#ea580c', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', fontSize: '16px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+                        >
                             Book Experience <ArrowRight size={20} />
                         </button>
                     ) : (
