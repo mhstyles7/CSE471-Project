@@ -508,6 +508,7 @@ export default function RoutePlanner() {
                         {est.mode === "train" && "🚆"}
                         {est.mode === "car" && "🚗"}
                         {est.mode === "flight" && "✈️"}
+                        {est.mode === "cng" && "🛺"}
                       </div>
                       <div>
                         <h3
@@ -615,5 +616,4 @@ export default function RoutePlanner() {
       </div>
     </div>
   );
-
 }

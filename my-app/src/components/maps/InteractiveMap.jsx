@@ -249,14 +249,14 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
     safeData.riskLevel === "High"
       ? "#fee2e2"
       : safeData.riskLevel === "Medium"
-        ? "#fef3c7"
-        : "#f0fdf4";
+      ? "#fef3c7"
+      : "#f0fdf4";
   const riskTextColor =
     safeData.riskLevel === "High"
       ? "#991b1b"
       : safeData.riskLevel === "Medium"
-        ? "#92400e"
-        : "#166534";
+      ? "#92400e"
+      : "#166534";
 
   return (
     <motion.div
@@ -976,8 +976,18 @@ function Timeline({ trips, onSelectTrip, selectedTripId, districts }) {
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
             {trips.map((trip) => {
-              const fromName = districts[trip.from]?.name || trip.from;
-              const toName = districts[trip.to]?.name || trip.to;
+              const fromName =
+                districts[trip.from]?.name ||
+                trip.from
+                  .split("-")
+                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                  .join(" ");
+              const toName =
+                districts[trip.to]?.name ||
+                trip.to
+                  .split("-")
+                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                  .join(" ");
               return (
                 <div
                   key={trip.id}
@@ -1499,8 +1509,13 @@ export default function InteractiveMap() {
               }}
             >
               <span>
-                Selected: {trips.find((t) => t.id === selectedTrip.id)?.from} →{" "}
-                {trips.find((t) => t.id === selectedTrip.id)?.to}
+                Selected:{" "}
+                {districts[trips.find((t) => t.id === selectedTrip.id)?.from]
+                  ?.name ||
+                  trips.find((t) => t.id === selectedTrip.id)?.from}{" "}
+                →{" "}
+                {districts[trips.find((t) => t.id === selectedTrip.id)?.to]
+                  ?.name || trips.find((t) => t.id === selectedTrip.id)?.to}
               </span>
               <button
                 onClick={() => {
@@ -1634,7 +1649,11 @@ export default function InteractiveMap() {
                         fontSize: "14px",
                       }}
                     >
-                      {dist.name}
+                      {dist.name ||
+                        dist.slug
+                          .split("-")
+                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                          .join(" ")}
                     </h3>
                     <div
                       style={{
