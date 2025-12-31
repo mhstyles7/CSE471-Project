@@ -180,7 +180,8 @@ router.post('/forgot-password', async (req, res) => {
         console.log(`\n========== PASSWORD RESET ==========`);
         console.log(`Email: ${email}`);
         console.log(`Reset Token: ${resetToken}`);
-        console.log(`Reset URL: http://localhost:3000/reset-password?token=${resetToken}`);
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        console.log(`Reset URL: ${clientUrl}/reset-password?token=${resetToken}`);
         console.log(`====================================\n`);
 
         res.json({
