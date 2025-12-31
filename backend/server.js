@@ -43,8 +43,23 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
+const { getDb } = require('./config/db');
+
 // Connect to Database and Start Server
-connectDB().then(() => {
+connectDB().then(async () => {
+    // Auto-fix images on startup
+    try {
+        const db = getDb();
+        console.log("Running Auto-Fix for Images...");
+        await db.collection('destinations').updateOne({ slug: 'coxsbazar' }, { $set: { images: ["https://images.unsplash.com/photo-1594191494411-bd56a81bf6d7?auto=format&fit=crop&w=800"] } });
+        await db.collection('destinations').updateOne({ slug: 'sylhet' }, { $set: { images: ["https://images.unsplash.com/photo-1599407335272-b7a48dbe559d?auto=format&fit=crop&w=800"] } });
+        await db.collection('destinations').updateOne({ slug: 'dhaka' }, { $set: { images: ["https://images.unsplash.com/photo-1606216065532-618451996720?auto=format&fit=crop&w=800"] } });
+        await db.collection('destinations').updateOne({ slug: 'chittagong' }, { $set: { images: ["https://images.unsplash.com/photo-1587216694668-3058a97e682e?auto=format&fit=crop&w=800"] } });
+        console.log("Images Fixed!");
+    } catch (err) {
+        console.error("Auto-Fix Failed:", err);
+    }
+
     app.listen(port, () => {
         console.log(`Server running on port: ${port} `);
     });
