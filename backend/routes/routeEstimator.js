@@ -98,7 +98,7 @@ router.post('/estimate', (req, res) => {
                 baseFare: 60,
                 emissionPerKm: 65, // 2-stroke/4-stroke mix
                 comfort: 4,
-                icon: 'car' // Using car icon for now, fallback
+                icon: '🛺' // Using car icon for now, fallback
             },
             {
                 id: 'car',
