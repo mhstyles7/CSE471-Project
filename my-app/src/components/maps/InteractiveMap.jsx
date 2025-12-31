@@ -1371,12 +1371,7 @@ export default function InteractiveMap() {
     if (!district) return;
 
     setSelectedDistrict(district);
-    // Ensure coords are valid before flying
-    if (district.coordinates?.lat && district.coordinates?.lng) {
-      setMapCenter([district.coordinates.lat, district.coordinates.lng]);
-      setMapZoom(10);
-      setMapBounds(null); // Clear bounds to prioritize center/zoom
-    }
+    setMapBounds(null); // Clear any active bounds
     setSelectedTrip(null);
   };
 
