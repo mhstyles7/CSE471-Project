@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {
