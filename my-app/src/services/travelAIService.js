@@ -139,10 +139,14 @@ export const getTrendAnalysis = async (trendingDistricts) => {
 };
 
 export const getCoordinates = async (placeName) => {
-    // Hardcoded Fallback for Capital to ensure default always works
-    if (placeName.toLowerCase().includes('dhaka')) {
-        return { lat: 23.8103, lng: 90.4125 };
-    }
+    const lowerName = placeName.toLowerCase();
+
+    // Hardcoded Fallbacks for Stability
+    if (lowerName.includes('dhaka')) return { lat: 23.8103, lng: 90.4125 };
+    if (lowerName.includes('sajek valley')) return { lat: 23.3819, lng: 92.2938 };
+    if (lowerName.includes("cox's bazar")) return { lat: 21.4272, lng: 91.9858 };
+    if (lowerName.includes('sylhet')) return { lat: 24.8949, lng: 91.8687 };
+    if (lowerName.includes('chittagong') || lowerName.includes('chatta')) return { lat: 22.3569, lng: 91.7832 };
 
     const prompt = `What are the latitude and longitude of "${placeName}, Bangladesh"? Return ONLY a JSON object: { "lat": 23.8103, "lng": 90.4125 }.`;
     try {
