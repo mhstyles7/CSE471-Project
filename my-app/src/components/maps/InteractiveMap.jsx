@@ -1639,7 +1639,6 @@ export default function InteractiveMap() {
                 eventHandlers={{
                   click: () => {
                     setSelectedDistrict(dist);
-                    setMapZoom(10);
                   },
                 }}
               >
