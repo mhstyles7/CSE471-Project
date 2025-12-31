@@ -41,15 +41,15 @@ export default function FriendsPage() {
   // Legacy Handlers
   const handleCancelRequest = async (requestId) => {
     try {
-      // In a real app, delete from DB:
-      // await fetch(`/api/users/request/${requestId}`, { method: 'DELETE' });
+      // Delete from DB
+      await fetch(`${API_URL}/api/users/request/${requestId}`, { method: 'DELETE' });
 
-      // For now, just update UI state since we don't have a specific delete endpoint for requests ready yet
-      // ACTUALLY, we should likely add one, but for now let's just update UI
+      // Update UI state
       setSentRequests(prev => prev.filter(r => r.id !== requestId));
       showNotification("Request cancelled");
     } catch (err) {
       console.error(err);
+      showNotification("Failed to cancel request", "error");
     }
   };
 
