@@ -14,7 +14,7 @@ export default function GroupEventsPage() {
   const [eventDate, setEventDate] = useState('');
   const [eventLocation, setEventLocation] = useState('');
   const [eventDescription, setEventDescription] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState(10);
+  const [maxParticipants, setMaxParticipants] = useState('');
   const [notification, setNotification] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
   const [selectedEventId, setSelectedEventId] = useState(null); // For detailed view
@@ -214,7 +214,7 @@ export default function GroupEventsPage() {
         date: eventDate,
         location: eventLocation,
         description: eventDescription || 'Join this exciting trip!',
-        maxParticipants: parseInt(maxParticipants),
+        maxParticipants: parseInt(maxParticipants) || 10,
         organizer: user?.name || 'You',
         organizerId: user?._id || user?.id,
       };
@@ -233,7 +233,7 @@ export default function GroupEventsPage() {
           setEventDate('');
           setEventLocation('');
           setEventDescription('');
-          setMaxParticipants(10);
+          setMaxParticipants('');
           showNotificationMsg('Event created successfully! 🎊 Invite your friends to join.');
         }
       } catch (err) {
@@ -725,7 +725,7 @@ export default function GroupEventsPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                   <input
                     type="text"
-                    placeholder="Event Name"
+                    placeholder="e.g., Weekend Getaway to Sajek"
                     value={eventName}
                     onChange={(e) => setEventName(e.target.value)}
                     style={{
@@ -750,7 +750,7 @@ export default function GroupEventsPage() {
                   />
                   <input
                     type="text"
-                    placeholder="Location"
+                    placeholder="e.g., Sajek Valley, Rangamati"
                     value={eventLocation}
                     onChange={(e) => setEventLocation(e.target.value)}
                     style={{
@@ -778,7 +778,7 @@ export default function GroupEventsPage() {
                   />
                 </div>
                 <textarea
-                  placeholder="Event Description"
+                  placeholder="Describe your event plan, meeting point, cost estimation, and what to bring..."
                   value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
                   style={{

@@ -217,6 +217,26 @@ router.put('/request/:requestId', async (req, res) => {
     }
 });
 
+// Cancel (Delete) Friend Request
+router.delete('/request/:requestId', async (req, res) => {
+    try {
+        const db = getDb();
+        const requestId = req.params.requestId;
+
+        const result = await db.collection('friend_requests').deleteOne({
+            _id: new ObjectId(requestId)
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Request not found" });
+        }
+
+        res.json({ message: "Request cancelled successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Remove a friend
 router.delete('/:id/friends/:friendId', async (req, res) => {
     try {
