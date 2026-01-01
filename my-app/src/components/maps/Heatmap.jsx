@@ -1,10 +1,17 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, CircleMarker } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import './Heatmap.css';
-import L from 'leaflet';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+  CircleMarker,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import "./Heatmap.css";
+import L from "leaflet";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Map as MapIcon,
   Calendar,
@@ -14,10 +21,15 @@ import {
   CloudSun,
   Newspaper,
   Navigation,
-  TrendingUp
-} from 'lucide-react';
-import { API_URL } from '../../config';
-
+  TrendingUp,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
+import { API_URL } from "../../config";
+import {
+  getTrendAnalysis,
+  getCachedInsight,
+} from "../../services/travelAIService";
 
 // Fix Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -26,15 +38,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
-
-// Stub for getTrendAnalysis - returns mock trend messages
-async function getTrendAnalysis(topDistricts) {
-  // Return mock trend data for each district
-  return topDistricts.map(d => ({
-    district: d.district,
-    message: `${d.district} is trending with score ${d.score}. Popular destination this ${d.rank === 1 ? 'period' : 'week'}!`
-  }));
-}
 
 function MapController({ center, zoom }) {
   const map = useMap();
@@ -62,6 +65,7 @@ export default function Heatmap() {
   const [heatmapData, setHeatmapData] = useState({});
   const [insights, setInsights] = useState([]);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [aiRequested, setAiRequested] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,39 +85,27 @@ export default function Heatmap() {
           `${API_URL}/api/heatmap?period=${timeFilter}&type=${typeFilter}`
         );
         const heatData = await heatRes.json();
+
         setHeatmapData(heatData.heatmap || {});
-        // setInsights(heatData.insights || []); // SKIP STATIC BACKEND DATA
 
         setLoading(false);
 
-        // 3. Generate AI Trends (Client-Side)
-        setLoadingAI(true);
-        const rawScores = heatData.rawScores || {};
-        const topDistricts = Object.entries(rawScores)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, 3)
-          .map(([slug, score], idx) => ({
-            district: slug,
-            score,
-            rank: idx + 1,
-          }));
+        // 3. AI Trends - Check Cache Logic
+        setLoadingAI(false);
+        // We no longer pre-calculate top districts from data for AI purposes
+        // because we want GLOBAL trends.
 
-        if (topDistricts.length > 0) {
-          const aiTrends = await getTrendAnalysis(topDistricts);
-          const finalInsights = topDistricts.map((d) => {
-            const ai = aiTrends.find(
-              (t) => t.district.toLowerCase() === d.district.toLowerCase()
-            );
-            return {
-              ...d,
-              message: ai ? ai.message : "Trending now.",
-            };
-          });
-          setInsights(finalInsights);
+        // Check Global Cache
+        const cacheKey = `trends-global-bangladesh-v1`;
+        const cached = getCachedInsight(cacheKey);
+
+        if (cached) {
+          setInsights(cached);
+          setAiRequested(true);
         } else {
+          // Show empty state or prompts
           setInsights([]);
         }
-        setLoadingAI(false);
       } catch (error) {
         console.error("Error fetching heatmap data:", error);
         setLoading(false);
@@ -521,8 +513,85 @@ export default function Heatmap() {
             )}
           </div>
         </div>
+        {/* Manual Trigger / Controls */}
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          {!aiRequested && insights.length === 0 && !loadingAI && (
+            <button
+              onClick={async () => {
+                setLoadingAI(true);
+                setAiRequested(true);
+                const data = await getTrendAnalysis([], true); // Global fetch
+                setInsights(data);
+                setLoadingAI(false);
+              }}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#4f46e5",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontWeight: "600",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: "0 4px 6px -1px rgba(79, 70, 229, 0.2)",
+              }}
+            >
+              <Sparkles size={16} /> Discover Top Trends in Bangladesh
+            </button>
+          )}
+
+          {aiRequested && !loadingAI && (
+            <button
+              onClick={async () => {
+                setLoadingAI(true);
+                const data = await getTrendAnalysis([], true); // Force Refresh Global
+                setInsights(data);
+                setLoadingAI(false);
+              }}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#e0e7ff",
+                color: "#4338ca",
+                border: "none",
+                borderRadius: "8px",
+                fontWeight: "600",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <RefreshCw size={16} /> Regenerate Analysis
+            </button>
+          )}
+
+          {loadingAI && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                color: "#6366f1",
+                fontWeight: "500",
+              }}
+            >
+              <RefreshCw size={16} className="spin-anim" /> Analyzing trending
+              activity zones...
+              <style>{`
+                      .spin-anim { animation: spin 1s linear infinite; }
+                    `}</style>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
-
 }

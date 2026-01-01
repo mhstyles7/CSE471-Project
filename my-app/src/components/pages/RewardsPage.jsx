@@ -1,10 +1,19 @@
-
-import React, { useState, useEffect } from 'react';
-import { Award, Gift, Star, TrendingUp, Sparkles, Crown, Trophy, Medal, Lock, CheckCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from '../../context/NavigationContext';
-import { API_URL } from '../../config';
-
+import React, { useState, useEffect } from "react";
+import {
+  Award,
+  Gift,
+  Star,
+  TrendingUp,
+  Sparkles,
+  Crown,
+  Trophy,
+  Medal,
+  Lock,
+  CheckCircle,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "../../context/NavigationContext";
+import { API_URL } from "../../config";
 
 export default function RewardsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -20,13 +29,41 @@ export default function RewardsPage() {
 
   // Rewards (Static for now, but could be DB driven)
   const [rewards, setRewards] = useState([
-
-    { id: 1, name: '10% discount on agency packages', points: 500, unlocked: false, redeemed: false },
-    { id: 2, name: 'Free local guide booking (1 per quarter)', points: 750, unlocked: false, redeemed: false },
-    { id: 3, name: 'Premium badge on profile', points: 750, unlocked: false, redeemed: false },
-    { id: 4, name: 'Early access to sponsored events', points: 1000, unlocked: false, redeemed: false },
-    { id: 5, name: 'Exclusive travel recommendations', points: 1000, unlocked: false, redeemed: false }
-
+    {
+      id: 1,
+      name: "10% discount on agency packages",
+      points: 500,
+      unlocked: false,
+      redeemed: false,
+    },
+    {
+      id: 2,
+      name: "Free local guide booking (1 per quarter)",
+      points: 750,
+      unlocked: false,
+      redeemed: false,
+    },
+    {
+      id: 3,
+      name: "Premium badge on profile",
+      points: 750,
+      unlocked: false,
+      redeemed: false,
+    },
+    {
+      id: 4,
+      name: "Early access to sponsored events",
+      points: 1000,
+      unlocked: false,
+      redeemed: false,
+    },
+    {
+      id: 5,
+      name: "Exclusive travel recommendations",
+      points: 1000,
+      unlocked: false,
+      redeemed: false,
+    },
   ]);
 
   useEffect(() => {
@@ -36,9 +73,7 @@ export default function RewardsPage() {
 
         // 1. Fetch Latest User Data (Points & Tier)
         if (isAuthenticated && user?._id) {
-          const userRes = await fetch(
-            `${API_URL}/api/users/${user._id}`
-          );
+          const userRes = await fetch(`${API_URL}/api/users/${user._id}`);
 
           const userDataFull = await userRes.json();
           setUserData(userDataFull);
@@ -53,9 +88,7 @@ export default function RewardsPage() {
         }
 
         // 2. Fetch Leaderboard
-        const lbRes = await fetch(
-          `${API_URL}/api/rewards/leaderboard`
-        );
+        const lbRes = await fetch(`${API_URL}/api/rewards/leaderboard`);
 
         const lbData = await lbRes.json();
 
@@ -67,14 +100,10 @@ export default function RewardsPage() {
           tier: u.tier || "Bronze",
           image: u.name.substring(0, 2).toUpperCase(),
           isMe: isAuthenticated && user?._id === u._id,
-
         }));
 
         setLeaderboard(formattedLb);
         setLoading(false);
-
-
-
       } catch (error) {
         console.error("Error fetching rewards data:", error);
         setLoading(false);
@@ -85,7 +114,6 @@ export default function RewardsPage() {
   }, [isAuthenticated, user]);
 
   const showNotificationMsg = (message, type = "success") => {
-
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
@@ -119,7 +147,6 @@ export default function RewardsPage() {
             cost: reward.points,
             rewardTitle: reward.name,
           }),
-
         });
 
         const data = await res.json();
@@ -136,7 +163,6 @@ export default function RewardsPage() {
       } catch (error) {
         console.error("Redeem error:", error);
         showNotificationMsg("Network error occurred", "error");
-
       }
     }
   };
@@ -148,21 +174,20 @@ export default function RewardsPage() {
     currentTier === "Gold"
       ? "Platinum"
       : currentTier === "Silver"
-        ? "Gold"
-        : "Silver";
+      ? "Gold"
+      : "Silver";
   const pointsToNextTier =
     currentTier === "Gold"
       ? 2000 - userPoints
       : currentTier === "Silver"
-        ? 1000 - userPoints
-        : 500 - userPoints;
+      ? 1000 - userPoints
+      : 500 - userPoints;
   const progress =
     currentTier === "Gold"
       ? ((userPoints - 1000) / 1000) * 100
       : currentTier === "Silver"
-        ? ((userPoints - 500) / 500) * 100
-        : (userPoints / 500) * 100;
-
+      ? ((userPoints - 500) / 500) * 100
+      : (userPoints / 500) * 100;
 
   if (loading) {
     return <div className="p-10 text-center">Loading Rewards...</div>;
@@ -213,7 +238,6 @@ export default function RewardsPage() {
           Travel Points & Rewards
         </h2>
         <p style={{ fontSize: "18px", color: "#6b7280" }}>
-
           Earn points, unlock tiers, and enjoy exclusive benefits
         </p>
       </div>
@@ -276,7 +300,6 @@ export default function RewardsPage() {
               borderRadius: "20px",
             }}
           >
-
             <Award size={40} strokeWidth={2} />
           </div>
         </div>
@@ -314,7 +337,6 @@ export default function RewardsPage() {
           {pointsToNextTier > 0
             ? `${pointsToNextTier} points to unlock ${nextTier} Tier benefits`
             : `You have reached the highest tier!`}
-
         </p>
       </div>
 
@@ -330,9 +352,7 @@ export default function RewardsPage() {
         {[
           { id: "rewards", label: " Rewards", icon: Gift },
           { id: "leaderboard", label: " Leaderboard", icon: Trophy },
-          { id: "badges", label: " Badges", icon: Medal },
         ].map((tab) => (
-
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -349,7 +369,6 @@ export default function RewardsPage() {
               display: "flex",
               alignItems: "center",
               gap: "8px",
-
             }}
           >
             <tab.icon size={18} />
@@ -397,14 +416,15 @@ export default function RewardsPage() {
                     backgroundColor: reward.redeemed
                       ? "#f3f4f6"
                       : reward.unlocked
-                        ? "#f0fdf4"
-                        : "#f9fafb",
-                    border: `1px solid ${reward.redeemed
-                      ? "#e5e7eb"
-                      : reward.unlocked
+                      ? "#f0fdf4"
+                      : "#f9fafb",
+                    border: `1px solid ${
+                      reward.redeemed
+                        ? "#e5e7eb"
+                        : reward.unlocked
                         ? "#bbf7d0"
                         : "#f3f4f6"
-                      }`,
+                    }`,
                     position: "relative",
                   }}
                 >
@@ -423,8 +443,8 @@ export default function RewardsPage() {
                         color: reward.redeemed
                           ? "#6b7280"
                           : reward.unlocked
-                            ? "#047857"
-                            : "#9ca3af",
+                          ? "#047857"
+                          : "#9ca3af",
                         textDecoration: reward.redeemed
                           ? "line-through"
                           : "none",
@@ -446,15 +466,18 @@ export default function RewardsPage() {
                       >
                         Redeemed
                       </span>
-
                     ) : reward.unlocked ? (
                       <button
                         onClick={() => handleRedeem(reward.id)}
                         style={{
-
-                          backgroundColor: '#059669', color: 'white', border: 'none',
-                          padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer'
-
+                          backgroundColor: "#059669",
+                          color: "white",
+                          border: "none",
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          cursor: "pointer",
                         }}
                       >
                         Redeem
@@ -472,7 +495,6 @@ export default function RewardsPage() {
                   >
                     {reward.points} points{" "}
                     {reward.unlocked ? "• Unlocked" : "• Locked"}
-
                   </p>
                 </div>
               ))}
@@ -532,10 +554,10 @@ export default function RewardsPage() {
                           u.rank === 1
                             ? "#fbbf24"
                             : u.rank === 2
-                              ? "#94a3b8"
-                              : u.rank === 3
-                                ? "#b45309"
-                                : "#f3f4f6",
+                            ? "#94a3b8"
+                            : u.rank === 3
+                            ? "#b45309"
+                            : "#f3f4f6",
                         color: u.rank <= 3 ? "white" : "#6b7280",
                         display: "flex",
                         alignItems: "center",
@@ -604,18 +626,9 @@ export default function RewardsPage() {
                   </div>
                 ))
               )}
-
             </div>
           </div>
         )}
-
-        {/* BADGES TAB (Static) */}
-        {activeTab === "badges" && (
-          <div style={{ gridColumn: "1 / -1", padding: "20px" }}>
-            <p className="text-gray-500">Badges are coming soon!</p>
-          </div>
-        )}
-
       </div>
 
       <style>{`

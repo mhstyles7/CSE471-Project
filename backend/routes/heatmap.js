@@ -12,6 +12,7 @@ const getStartDate = (period) => {
 };
 
 router.get('/', async (req, res) => {
+
     try {
         const { period = 'month', type = 'all' } = req.query;
         const db = getDb();
@@ -29,21 +30,31 @@ router.get('/', async (req, res) => {
                 startDate: { $gte: startDate.toISOString() }
             }).toArray();
 
+
+
             trips.forEach(trip => {
+
+
                 // Trips schema typically has 'destinationName', or 'from'/'to' if detailed.
                 // Score Destination
                 if (trip.destinationName) {
-                    const slug = trip.destinationName.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                    // Normalize: lowercase, remove spaces and apostrophes (to match destinations collection)
+                    const slug = trip.destinationName.toLowerCase().replace(/ /g, '').replace(/'/g, '');
+
                     heatScores[slug] = (heatScores[slug] || 0) + 5; // 1 trip = 5 points
                 } else if (trip.to) {
+
                     heatScores[trip.to] = (heatScores[trip.to] || 0) + 5;
                 }
 
                 // Score Origin (Starting Point) - Re-enabled as per user request
                 if (trip.from) {
+
                     heatScores[trip.from] = (heatScores[trip.from] || 0) + 5;
                 }
             });
+
+
         }
 
         // 2. Aggregating POSTS
@@ -52,8 +63,12 @@ router.get('/', async (req, res) => {
                 createdAt: { $gte: startDate.toISOString() }
             }).toArray();
 
+
+
             // Fetch destinations for text-mining content
             const allDestinations = await db.collection('destinations').find().toArray();
+
+
             // Sort by name length desc to match "Cox's Bazar" before "Cox"
             const sortedDestNames = allDestinations
                 .map(d => ({ name: d.name.toLowerCase(), slug: d.slug || d.name.toLowerCase().replace(/ /g, '-').replace(/'/g, '') }))
@@ -62,12 +77,16 @@ router.get('/', async (req, res) => {
             posts.forEach(post => {
                 let slug = null;
 
+
                 // 1. Try explicit destination field first
                 // User requirement: "For the destination that is not null, use those"
                 if (post.destination) {
-                    slug = post.destination.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                    // Normalize: lowercase, remove spaces and apostrophes (to match destinations collection)
+                    slug = post.destination.toLowerCase().replace(/ /g, '').replace(/'/g, '');
+
                 } else if (post.location) {
-                    slug = post.location.toLowerCase().replace(/ /g, '-').replace(/'/g, '');
+                    slug = post.location.toLowerCase().replace(/ /g, '').replace(/'/g, '');
+
                 }
 
                 // 2. If no explicit location, scan CONTENT for mentions/hashtags
@@ -80,15 +99,21 @@ router.get('/', async (req, res) => {
                         // We use regex to ensure word boundary for short names, but loose check for others.
                         if (contentLower.includes(dest.name)) {
                             slug = dest.slug;
+
                             break; // Stop at first strong match (longest due to sort)
                         }
                     }
                 }
 
                 if (slug) {
+
                     heatScores[slug] = (heatScores[slug] || 0) + 3; // 1 post = 3 points
+                } else {
+
                 }
             });
+
+
         }
 
 
@@ -106,27 +131,9 @@ router.get('/', async (req, res) => {
             normalizedHeatmap[slug] = maxScore > 0 ? Math.round((heatScores[slug] / maxScore) * 100) : 0;
         });
 
-        // Generate Insights
-        // Simple logic: Find top 3 districts
-        const sortedDistricts = Object.entries(heatScores)
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 3);
-
-        const insights = sortedDistricts.map(([slug, score], index) => {
-            return {
-                district: slug,
-                rank: index + 1,
-                trend: 'rising', // Mock trend logic
-                message: index === 0
-                    ? `Highest activity zone with score ${score}.`
-                    : `High traffic detected.`
-            };
-        });
-
         res.json({
             heatmap: normalizedHeatmap,
             rawScores: heatScores,
-            insights: insights,
             period: period
         });
 

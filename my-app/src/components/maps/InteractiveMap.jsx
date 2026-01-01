@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -20,17 +20,19 @@ import {
   Smile,
   CloudSun,
   Newspaper,
-  Navigation,
   Globe,
   Sparkles,
   Scale,
   X,
-  Check,
+  ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import {
   getAIInsights,
-  getAIRecommendations,
   getCoordinates,
+  getCachedInsight,
+  getAllCachedInsights,
+  getAIRecommendations,
 } from "../../services/travelAIService";
 import { API_URL } from "../../config";
 
@@ -96,21 +98,9 @@ function MapController({ center, zoom, bounds }) {
   return null;
 }
 
-function AIInsight({ district }) {
-  const [insight, setInsight] = useState(null);
-
-  useEffect(() => {
-    let active = true;
-    if (district) {
-      setInsight(null); // Reset
-      getAIInsights(district).then((data) => {
-        if (active) setInsight(data);
-      });
-    }
-    return () => {
-      active = false;
-    };
-  }, [district]);
+// AIInsight component - Now receives aiData as prop (no internal fetch)
+function AIInsight({ district, aiData }) {
+  const insight = aiData;
 
   if (!insight) {
     return (
@@ -124,7 +114,7 @@ function AIInsight({ district }) {
         }}
       >
         <div style={{ fontSize: "12px", color: "#64748b" }}>
-          Generating AI Travel Assessment...
+          No AI data available.
         </div>
       </div>
     );
@@ -208,38 +198,48 @@ function AIInsight({ district }) {
   );
 }
 
-function DistrictPanel({ district, onClose, onAddToCompare }) {
+function DistrictPanel({ district, onClose, onAddToCompare, onInsightUpdate }) {
   const [aiData, setAiData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false, no auto-fetch
+  const [aiRequested, setAiRequested] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+  // On-demand AI fetch - only when user clicks button
+  const fetchAIInsights = async (forceRefresh = false) => {
     setLoading(true);
-    console.log("[DistrictPanel] Fetching AI insights for", district.name);
+    setAiRequested(true);
 
-    getAIInsights(district)
-      .then((data) => {
-        if (mounted) {
-          console.log("[DistrictPanel] Received data:", data);
-          setAiData(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.warn("[DistrictPanel] AI fetch failed:", err);
-        if (mounted) setLoading(false);
-      });
+    try {
+      const data = await getAIInsights(district, forceRefresh);
 
-    return () => {
-      mounted = false;
-    };
+      setAiData(data);
+      if (onInsightUpdate) onInsightUpdate(district.name, data);
+    } catch (err) {
+      console.warn("[DistrictPanel] AI fetch failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset or Load Cache when district changes
+  useEffect(() => {
+    setAiData(null);
+    setAiRequested(false);
+
+    // Check if we have cached data for this district
+    const cached = getCachedInsight(district.name);
+    if (cached) {
+      setAiData(cached);
+      setAiRequested(true); // Show it immediately if cached
+      if (onInsightUpdate) onInsightUpdate(district.name, cached);
+    }
   }, [district]);
 
-  // Fail-safe data merging
+  // Fail-safe data merging - using destination table field names
   const safeData = {
-    riskLevel: aiData?.riskLevel || district.risk || "Unknown",
-    ecoScore: aiData?.ecoScore || district.eco || "N/A",
-    comfortLevel: aiData?.comfortLevel || district.comfort || "N/A",
+    riskLevel: aiData?.riskLevel || district.risk_level || "Low",
+    ecoScore: aiData?.ecoScore || district.eco_score || "N/A",
+    comfortLevel: aiData?.comfortLevel || district.comfort_score || "N/A",
+    description: district.description || "",
     weather: {
       temp: aiData?.weather?.temp || district.weather?.temp || "--",
       condition:
@@ -269,16 +269,18 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
       exit={{ x: 400, opacity: 0 }}
       style={{
         position: "absolute",
-        top: 0,
-        right: 0,
-        width: "400px",
-        height: "100%",
-        backgroundColor: "white",
-        boxShadow: "-4px 0 15px rgba(0,0,0,0.1)",
-        zIndex: 50,
+        top: "128px",
+        right: "35px",
+        bottom: "45px",
+        width: "350px",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        backdropFilter: "blur(12px)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        zIndex: 1000,
         padding: "24px",
         overflowY: "auto",
-        borderLeft: "1px solid #e2e8f0",
+        borderRadius: "16px",
+        border: "1px solid rgba(255, 255, 255, 0.5)",
       }}
     >
       <button
@@ -320,6 +322,19 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
             {district.coordinates.lng.toFixed(4)}
           </span>
         </div>
+        {/* Description from destination table */}
+        {district.description && (
+          <p
+            style={{
+              color: "#475569",
+              fontSize: "14px",
+              marginTop: "12px",
+              lineHeight: "1.5",
+            }}
+          >
+            {district.description}
+          </p>
+        )}
       </div>
 
       <div style={{ marginBottom: "24px" }}>
@@ -353,8 +368,76 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
         </button>
       </div>
 
-      <div className="mb-6" style={{ marginBottom: "24px" }}>
-        <AIInsight district={district} />
+      {/* AI Analysis Section - On-demand */}
+      <div style={{ marginBottom: "24px" }}>
+        {!aiRequested ? (
+          <button
+            onClick={() => fetchAIInsights(false)}
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "12px",
+              backgroundColor: "#8b5cf6",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              fontSize: "14px",
+              fontWeight: "600",
+              cursor: "pointer",
+              boxShadow: "0 4px 6px -1px rgba(139, 92, 246, 0.3)",
+            }}
+          >
+            <Sparkles size={16} />
+            Get AI Analysis
+          </button>
+        ) : loading ? (
+          <div
+            style={{
+              padding: "16px",
+              textAlign: "center",
+              backgroundColor: "#f8fafc",
+              borderRadius: "10px",
+            }}
+          >
+            <span style={{ color: "#64748b" }}>🔄 AI Analyzing...</span>
+          </div>
+        ) : (
+          <div>
+            <AIInsight district={district} aiData={aiData} />
+            <div style={{ textAlign: "right", marginTop: "4px" }}>
+              <button
+                onClick={() => fetchAIInsights(true)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#6d28d9",
+                  fontSize: "12px", // Increased font size
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginLeft: "auto",
+                  padding: "6px 10px", // Increased padding
+                  borderRadius: "6px",
+                  backgroundColor: "rgba(139, 92, 246, 0.1)", // Light background for visibility
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "rgba(139, 92, 246, 0.2)")
+                }
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = "rgba(139, 92, 246, 0.1)")
+                }
+              >
+                <RefreshCw size={14} /> Regenerate Analysis
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 4.4 Risk/Eco/Comfort Analysis */}
@@ -548,7 +631,11 @@ function DistrictPanel({ district, onClose, onAddToCompare }) {
                   lineHeight: "1.4",
                 }}
               >
-                {item}
+                {typeof item === "object"
+                  ? item.situationUpdate ||
+                    item.description ||
+                    JSON.stringify(item)
+                  : item}
               </li>
             ))
           ) : (
@@ -788,37 +875,10 @@ function ComparisonModal({ items, onClose, onRemove }) {
   );
 }
 
-// 4.8 Recommendation Panel
-function RecommendationPanel({ districts, onSelect, onClose }) {
-  const [recs, setRecs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getAIRecommendations(districts).then((names) => {
-      const matched = [];
-      // Basic filtering if we want to ensure we have data objects
-      names.forEach((name) => {
-        const found = Object.values(districts).find(
-          (d) => d.name.toLowerCase() === name.toLowerCase()
-        );
-        if (found) matched.push(found);
-      });
-      // If AI hallucinates unavailable districts, fallback to logic
-      if (matched.length === 0) {
-        const fallback = Object.values(districts)
-          .filter(
-            (d) =>
-              (d.risk === "Low" || d.risk === "Medium") &&
-              (d.comfort === "High" || d.comfort === "Medium")
-          )
-          .slice(0, 3);
-        setRecs(fallback);
-      } else {
-        setRecs(matched);
-      }
-      setLoading(false);
-    });
-  }, [districts]);
+// 4.8 Recommendation Panel - Displays AI-suggested destinations
+function RecommendationPanel({ recommendations, loading, onSelect, onClose }) {
+  // Pure display component now
+  const recs = recommendations;
 
   return (
     <div
@@ -927,7 +987,13 @@ function RecommendationPanel({ districts, onSelect, onClose }) {
   );
 }
 
-function Timeline({ trips, onSelectTrip, selectedTripId, districts }) {
+function Timeline({
+  trips,
+  onSelectTrip,
+  selectedTripId,
+  districts,
+  aiInsightsMap,
+}) {
   return (
     <div
       className="timeline-container"
@@ -1050,51 +1116,94 @@ function Timeline({ trips, onSelectTrip, selectedTripId, districts }) {
                     style={{
                       fontWeight: "700",
                       color: "#0f172a",
-                      fontSize: "15px",
+                      fontSize: "14px",
                       marginBottom: "12px",
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
+                      gap: "6px",
+                      flexWrap: "wrap", // Ensure long names wrap
                     }}
                   >
-                    {fromName}{" "}
-                    <Navigation size={14} className="text-blue-500" /> {toName}
+                    {fromName} <ArrowRight size={14} color="#3b82f6" /> {toName}
                   </div>
                   {/* 4.4 Trip Analysis */}
                   <div
                     className="trip-stats"
                     style={{ display: "flex", gap: "8px" }}
                   >
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        padding: "4px 8px",
-                        borderRadius: "6px",
-                        backgroundColor: trip.risk > 5 ? "#fef2f2" : "#f0fdf4",
-                        color: trip.risk > 5 ? "#991b1b" : "#166534",
-                        fontWeight: "600",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      <Shield size={10} /> Risk: {trip.risk}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        padding: "4px 8px",
-                        borderRadius: "6px",
-                        backgroundColor: "#fff7ed",
-                        color: "#9a3412",
-                        fontWeight: "600",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      <Smile size={10} /> Comfort: {trip.comfort}
-                    </span>
+                    {(() => {
+                      const dist = districts[trip.to];
+                      const aiData = dist ? aiInsightsMap[dist.name] : null;
+
+                      // Resolve Values (AI > DB > Default)
+                      let riskVal = aiData?.riskLevel || trip.risk || "Low";
+                      let comfortVal =
+                        aiData?.comfortLevel || trip.comfort || "Medium";
+
+                      // Helper for Color Logic
+                      const isHighRisk =
+                        riskVal === "High" ||
+                        (typeof riskVal === "number" && riskVal > 5);
+                      const isMedRisk = riskVal === "Medium";
+                      const riskBg = isHighRisk
+                        ? "#fef2f2"
+                        : isMedRisk
+                        ? "#fff7ed"
+                        : "#f0fdf4";
+                      const riskTx = isHighRisk
+                        ? "#991b1b"
+                        : isMedRisk
+                        ? "#c2410c"
+                        : "#166534";
+
+                      const isHighComfort = comfortVal === "High";
+                      const isMedComfort = comfortVal === "Medium";
+                      const comfortBg = isHighComfort
+                        ? "#f0fdf4"
+                        : isMedComfort
+                        ? "#fff7ed"
+                        : "#fef2f2";
+                      const comfortTx = isHighComfort
+                        ? "#166534"
+                        : isMedComfort
+                        ? "#9a3412"
+                        : "#991b1b";
+
+                      return (
+                        <>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              backgroundColor: riskBg,
+                              color: riskTx,
+                              fontWeight: "600",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                            }}
+                          >
+                            <Shield size={10} /> Risk: {riskVal}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              backgroundColor: comfortBg,
+                              color: comfortTx,
+                              fontWeight: "600",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                            }}
+                          >
+                            <Smile size={10} /> Comfort: {comfortVal}
+                          </span>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               );
@@ -1120,16 +1229,26 @@ export default function InteractiveMap() {
 
   // 4.8 Recommendation State
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [recLoading, setRecLoading] = useState(false);
 
   // Dynamic Data States
   const [districts, setDistricts] = useState({});
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Global AI Insights Cache for Timeline
+  const [aiInsightsMap, setAiInsightsMap] = useState({});
+
+  useEffect(() => {
+    // Load initial cache for timeline
+    const cached = getAllCachedInsights();
+    setAiInsightsMap(cached);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("[Map] Fetching initial data...");
         setLoading(true);
         // 1. Fetch Destinations (Districts)
         const distRes = await fetch(`${API_URL}/api/destinations`);
@@ -1143,7 +1262,6 @@ export default function InteractiveMap() {
         // 3. Fetch Routes (Trips)
         const routeRes = await fetch(`${API_URL}/api/routes`);
         const routeData = await routeRes.json();
-        console.log(`[Map] Found ${routeData.length} trips.`);
 
         // 3a. Check for Missing Coordinates & Fetch Dynamically
         const missingSlugs = new Set();
@@ -1153,7 +1271,6 @@ export default function InteractiveMap() {
         });
 
         if (missingSlugs.size > 0) {
-          console.log("[Map] Missing coordinates for:", [...missingSlugs]);
           // Import helper dynamically or assume it's imported at top.
           // Better to iterate and fetch.
           // Note: getCoordinates uses "Place Name" prompt. Slug might be "sajek-valley".
@@ -1179,10 +1296,6 @@ export default function InteractiveMap() {
                     eco: "Good",
                     comfort: "Medium",
                   };
-                  console.log(
-                    `[Map] Dynamically fetched coords for ${name}:`,
-                    coords
-                  );
                 }
               } catch (e) {
                 console.warn(`[Map] Failed to fetch coords for ${slug}`, e);
@@ -1208,24 +1321,11 @@ export default function InteractiveMap() {
           return { ...trip, path: fallbackPath };
         });
 
-        console.log(
-          "[Map] Setting initial trips (straight lines)",
-          initialTrips
-        );
         setTrips(initialTrips);
         setLoading(false); // <--- UNBLOCK UI HERE
 
         // 3b. Background "Slow" Update - OSRM Paths (Sequential to avoid 429 Rate Limit)
         const backgroundUpdate = async () => {
-          console.log(
-            "[Map] Starting background OSRM path updates (Sequential)..."
-          );
-
-          // We'll update state incrementally or in chunks if needed,
-          // but for now, let's just mutate a local copy and update state periodically or at the end.
-          // To see progress live, we can update state per successful fetch, but that causes re-renders.
-          // Better: Fetch all sequentially, then update? Or batches.
-
           // Let's do strict sequential for stability
           const newTrips = [...initialTrips];
 
@@ -1268,7 +1368,6 @@ export default function InteractiveMap() {
               }
             }
           }
-          console.log("[Map] All background updates finished.");
         };
 
         backgroundUpdate();
@@ -1294,9 +1393,6 @@ export default function InteractiveMap() {
       currentTripState.path &&
       currentTripState.path.length > 2
     ) {
-      console.log(
-        `[Map] Trip ${selectedTrip.id} already has detailed path. No fetch needed.`
-      );
       return; // Already has detailed path
     }
 
@@ -1306,11 +1402,8 @@ export default function InteractiveMap() {
       const toDist = districts[selectedTrip.to];
       if (!fromDist || !toDist) return;
 
-      console.log(
-        `[Map] Priority fetching for selected trip: ${selectedTrip.id}`
-      );
       setIsOptimizing(true);
-      console.log("[Map] isOptimizing set to TRUE");
+
       const startTime = Date.now();
 
       try {
@@ -1345,14 +1438,12 @@ export default function InteractiveMap() {
         }
       } catch (err) {
         if (err.name === "AbortError") {
-          console.log("[Map] Priority fetch aborted.");
         } else {
           console.error("[Map] Priority fetch failed", err);
         }
       } finally {
         if (!controller.signal.aborted) {
           setIsOptimizing(false);
-          console.log("[Map] isOptimizing set to FALSE");
         }
       }
     };
@@ -1360,7 +1451,6 @@ export default function InteractiveMap() {
     loadSelectedPath();
 
     return () => {
-      console.log("[Map] Cleaning up selected trip effect");
       controller.abort();
       setIsOptimizing(false);
     };
@@ -1376,7 +1466,6 @@ export default function InteractiveMap() {
   };
 
   const handleTripSelect = (trip) => {
-    console.log("Selected trip:", trip);
     setSelectedTrip(trip);
     setSelectedDistrict(null);
 
@@ -1388,7 +1477,7 @@ export default function InteractiveMap() {
       const to = [toDist.coordinates.lat, toDist.coordinates.lng];
       const centerLat = (from[0] + to[0]) / 2;
       const centerLng = (from[1] + to[1]) / 2;
-      console.log("Centering map to bounds:", from, to);
+
       // setMapCenter is less relevant if we use bounds, but keeping it for reference
       setMapCenter([centerLat, centerLng]);
       setMapBounds([from, to]);
@@ -1412,6 +1501,59 @@ export default function InteractiveMap() {
       setCompareList([...compareList, district]);
     }
     setShowComparison(true);
+  };
+
+  const handleToggleRecommendations = async () => {
+    if (!showRecommendations) {
+      setShowRecommendations(true);
+      // Only fetch if we haven't already (Cache per session)
+      if (aiRecommendations.length === 0) {
+        setRecLoading(true);
+        try {
+          // 1. Get List of Districts from AI
+          const aiRecNames = await getAIRecommendations(districts);
+
+          // 2. Map Names back to Objects
+          const districtValues = Object.values(districts);
+          const matchedRecs = [];
+
+          aiRecNames.forEach((name) => {
+            const match = districtValues.find(
+              (d) =>
+                d.name.toLowerCase().includes(name.toLowerCase()) ||
+                name.toLowerCase().includes(d.name.toLowerCase())
+            );
+            if (match) matchedRecs.push(match);
+          });
+
+          // 3. Fallback / Fill if AI returns fewer than 3
+          if (matchedRecs.length < 3) {
+            const sorted = districtValues
+              .filter((d) => !matchedRecs.includes(d))
+              .sort((a, b) => b.eco_score - a.eco_score);
+            matchedRecs.push(...sorted.slice(0, 3 - matchedRecs.length));
+          }
+
+          setAiRecommendations(matchedRecs.slice(0, 3));
+        } catch (err) {
+          console.warn("[Map] AI Rec Error:", err);
+          // Fallback: Local Score
+          const districtList = Object.values(districts).filter(
+            (d) => d.coordinates
+          );
+          const scored = districtList.map((d) => {
+            const eco = parseInt(d.eco_score) || 50;
+            const comfort = parseInt(d.comfort_score) || 50;
+            return { ...d, score: eco + comfort };
+          });
+          scored.sort((a, b) => b.score - a.score);
+          setAiRecommendations(scored.slice(0, 3));
+        }
+        setRecLoading(false);
+      }
+    } else {
+      setShowRecommendations(false);
+    }
   };
 
   const removeFromCompare = (id) => {
@@ -1457,7 +1599,7 @@ export default function InteractiveMap() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "calc(100vh - 130px)", // Fit within viewport below navbar
         fontFamily: "sans-serif",
         backgroundColor: "#f8fafc",
       }}
@@ -1550,7 +1692,7 @@ export default function InteractiveMap() {
             </div>
           )}
           <button
-            onClick={() => setShowRecommendations(!showRecommendations)}
+            onClick={handleToggleRecommendations}
             style={{
               padding: "10px 16px",
               borderRadius: "10px",
@@ -1609,6 +1751,7 @@ export default function InteractiveMap() {
             onSelectTrip={handleTripSelect}
             selectedTripId={selectedTrip?.id}
             districts={districts}
+            aiInsightsMap={aiInsightsMap}
           />
         </div>
 
@@ -1643,59 +1786,16 @@ export default function InteractiveMap() {
                 }}
               >
                 <Popup className="custom-popup">
-                  <div style={{ textAlign: "center" }}>
-                    <h3
-                      style={{
-                        margin: "0 0 4px 0",
-                        color: isTripPoint ? "#0f172a" : "#059669",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                      }}
-                    >
+                  <div style={{ textAlign: "center", padding: "4px" }}>
+                    <strong style={{ fontSize: "14px" }}>
                       {dist.name ||
                         dist.slug
                           .split("-")
                           .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
                           .join(" ")}
-                    </h3>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        color: isTripPoint ? "#3b82f6" : "#10b981",
-                        marginBottom: "6px",
-                        fontWeight: "600",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {isTripPoint ? "Journey Point" : "Discovery Location"}
-                    </div>
-                    {/* Minified details */}
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "6px",
-                        justifyContent: "center",
-                        fontSize: "10px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          padding: "2px 6px",
-                          backgroundColor: "#f1f5f9",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        Risk: {dist.risk || "Low"}
-                      </span>
-                      <span
-                        style={{
-                          padding: "2px 6px",
-                          backgroundColor: "#f0fdf4",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        Eco: {dist.eco || "Good"}
-                      </span>
+                    </strong>
+                    <div style={{ fontSize: "11px", color: "#64748b" }}>
+                      Click for details
                     </div>
                   </div>
                 </Popup>
@@ -1819,6 +1919,9 @@ export default function InteractiveMap() {
             district={selectedDistrict}
             onClose={() => setSelectedDistrict(null)}
             onAddToCompare={handleAddToCompare}
+            onInsightUpdate={(name, data) =>
+              setAiInsightsMap((prev) => ({ ...prev, [name]: data }))
+            }
           />
         )}
       </AnimatePresence>
@@ -1836,7 +1939,8 @@ export default function InteractiveMap() {
       <AnimatePresence>
         {showRecommendations && (
           <RecommendationPanel
-            districts={districts}
+            recommendations={aiRecommendations}
+            loading={recLoading}
             onSelect={(slug) => {
               handleDistrictClick(slug);
               setShowRecommendations(false);
