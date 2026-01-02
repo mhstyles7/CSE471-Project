@@ -4,7 +4,7 @@
 // ============================================
 
 // 🔑 GET YOUR FREE API KEY: https://makersuite.google.com/app/apikey
-const GEMINI_API_KEY = 'AIzaSyA1t1OPURDdJIEPmhllF2c4d_iFrOuiRUg';
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY2;
 
 // Platform pages for navigation guidance (2.3)
 export const PLATFORM_PAGES = {
