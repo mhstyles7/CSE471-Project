@@ -98,7 +98,7 @@ function MapController({ center, zoom, bounds }) {
   return null;
 }
 
-// AIInsight component - Now receives aiData as prop (no internal fetch)
+// AIInsight component - Now receives aiData as prop
 function AIInsight({ district, aiData }) {
   const insight = aiData;
 
@@ -876,7 +876,13 @@ function ComparisonModal({ items, onClose, onRemove }) {
 }
 
 // 4.8 Recommendation Panel - Displays AI-suggested destinations
-function RecommendationPanel({ recommendations, loading, onSelect, onClose }) {
+function RecommendationPanel({
+  recommendations,
+  loading,
+  onSelect,
+  onClose,
+  onRefresh,
+}) {
   // Pure display component now
   const recs = recommendations;
 
@@ -884,8 +890,8 @@ function RecommendationPanel({ recommendations, loading, onSelect, onClose }) {
     <div
       style={{
         position: "absolute",
-        top: "80px",
-        right: "20px",
+        top: "63px",
+        right: "414px",
         width: "300px",
         backgroundColor: "white",
         borderRadius: "12px",
@@ -915,12 +921,30 @@ function RecommendationPanel({ recommendations, loading, onSelect, onClose }) {
         >
           <Sparkles size={18} /> Top Picks For You
         </h3>
-        <button
-          onClick={onClose}
-          style={{ border: "none", background: "none", cursor: "pointer" }}
-        >
-          <X size={16} color="#64748b" />
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {!loading && (
+            <button
+              onClick={onRefresh}
+              style={{
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                color: "#64748b",
+              }}
+              title="Refresh Recommendations"
+            >
+              <RefreshCw size={14} />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            style={{ border: "none", background: "none", cursor: "pointer" }}
+          >
+            <X size={16} color="#64748b" />
+          </button>
+        </div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -1215,6 +1239,9 @@ function Timeline({
   );
 }
 
+// Persistent Storage Keys
+const REC_CACHE_KEY = "ai_recommendations_cache";
+
 export default function InteractiveMap() {
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [selectedTrip, setSelectedTrip] = useState(null);
@@ -1241,9 +1268,19 @@ export default function InteractiveMap() {
   const [aiInsightsMap, setAiInsightsMap] = useState({});
 
   useEffect(() => {
-    // Load initial cache for timeline
-    const cached = getAllCachedInsights();
-    setAiInsightsMap(cached);
+    // 1. Load initial cache for timeline
+    const cachedInsights = getAllCachedInsights();
+    setAiInsightsMap(cachedInsights);
+
+    // 2. Load cached AI Recommendations
+    try {
+      const storedRecs = localStorage.getItem(REC_CACHE_KEY);
+      if (storedRecs) {
+        setAiRecommendations(JSON.parse(storedRecs));
+      }
+    } catch (e) {
+      console.warn("Failed to load cached recommendations");
+    }
   }, []);
 
   useEffect(() => {
@@ -1503,15 +1540,18 @@ export default function InteractiveMap() {
     setShowComparison(true);
   };
 
-  const handleToggleRecommendations = async () => {
-    if (!showRecommendations) {
+  const handleToggleRecommendations = async (force = false) => {
+    if (!showRecommendations || force) {
       setShowRecommendations(true);
-      // Only fetch if we haven't already (Cache per session)
-      if (aiRecommendations.length === 0) {
+      // Only fetch if we haven't already OR if forced
+      if (aiRecommendations.length === 0 || force) {
         setRecLoading(true);
         try {
-          // 1. Get List of Districts from AI
-          const aiRecNames = await getAIRecommendations(districts);
+          // 1. Get List of Districts from AI - Passing live insights (weather/safety)
+          const aiRecNames = await getAIRecommendations(
+            districts,
+            aiInsightsMap
+          );
 
           // 2. Map Names back to Objects
           const districtValues = Object.values(districts);
@@ -1523,7 +1563,18 @@ export default function InteractiveMap() {
                 d.name.toLowerCase().includes(name.toLowerCase()) ||
                 name.toLowerCase().includes(d.name.toLowerCase())
             );
-            if (match) matchedRecs.push(match);
+            if (match) {
+              // Merge live weather/safety for UI display
+              const insight = aiInsightsMap[match.name];
+              const enriched = {
+                ...match,
+                risk_level: insight?.riskLevel || match.risk_level,
+                eco_score: insight?.ecoScore || match.eco_score,
+                comfort_score: insight?.comfortLevel || match.comfort_score,
+                weather: insight?.weather || match.weather,
+              };
+              matchedRecs.push(enriched);
+            }
           });
 
           // 3. Fallback / Fill if AI returns fewer than 3
@@ -1534,7 +1585,15 @@ export default function InteractiveMap() {
             matchedRecs.push(...sorted.slice(0, 3 - matchedRecs.length));
           }
 
-          setAiRecommendations(matchedRecs.slice(0, 3));
+          const finalRecs = matchedRecs.slice(0, 3);
+          setAiRecommendations(finalRecs);
+
+          // Save to persistent cache
+          try {
+            localStorage.setItem(REC_CACHE_KEY, JSON.stringify(finalRecs));
+          } catch (e) {
+            console.warn("Failed to cache recommendations");
+          }
         } catch (err) {
           console.warn("[Map] AI Rec Error:", err);
           // Fallback: Local Score
@@ -1546,8 +1605,13 @@ export default function InteractiveMap() {
             const comfort = parseInt(d.comfort_score) || 50;
             return { ...d, score: eco + comfort };
           });
-          scored.sort((a, b) => b.score - a.score);
-          setAiRecommendations(scored.slice(0, 3));
+          const finalFallback = scored.slice(0, 3);
+          setAiRecommendations(finalFallback);
+          try {
+            localStorage.setItem(REC_CACHE_KEY, JSON.stringify(finalFallback));
+          } catch (e) {
+            console.warn("Failed to cache fallback recommendations");
+          }
         }
         setRecLoading(false);
       }
@@ -1692,7 +1756,7 @@ export default function InteractiveMap() {
             </div>
           )}
           <button
-            onClick={handleToggleRecommendations}
+            onClick={() => handleToggleRecommendations(false)}
             style={{
               padding: "10px 16px",
               borderRadius: "10px",
@@ -1941,11 +2005,9 @@ export default function InteractiveMap() {
           <RecommendationPanel
             recommendations={aiRecommendations}
             loading={recLoading}
-            onSelect={(slug) => {
-              handleDistrictClick(slug);
-              setShowRecommendations(false);
-            }}
             onClose={() => setShowRecommendations(false)}
+            onSelect={handleDistrictClick}
+            onRefresh={() => handleToggleRecommendations(true)}
           />
         )}
       </AnimatePresence>

@@ -5,13 +5,75 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const GEMINI_API_KEY = 'AIzaSyA0XUQG0gzhju4JeFGys4evTD0j66gXb24';
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 
 // Initialize the API Client
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-// Use Gemini 2.5 Flash (Standard)
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+// ============================================
+// MODEL ROTATION CONFIG
+// ============================================
+
+const MODEL_SEQUENCE = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite"
+];
+
+let currentModelIndex = 0;
+
+// Get active model instance
+const getActiveModel = (localIndex) => {
+    return genAI.getGenerativeModel({
+        model: MODEL_SEQUENCE[localIndex]
+    });
+};
+
+// Rotate model on 429
+const rotateModel = () => {
+    currentModelIndex = (currentModelIndex + 1) % MODEL_SEQUENCE.length;
+    console.warn(
+        `[AI] Switching model → ${MODEL_SEQUENCE[currentModelIndex]}`
+    );
+};
+
+
+const generateWithFallback = async (requestFn) => {
+    const totalModels = MODEL_SEQUENCE.length;
+
+    // Local copy of the index (isolated per request)
+    let localIndex = currentModelIndex;
+    let attempts = 0;
+
+    while (attempts < totalModels) {
+        const model = getActiveModel(localIndex);
+
+        try {
+            const result = await requestFn(model);
+
+            // Promote successful model globally
+            currentModelIndex = localIndex;
+
+            return result;
+        } catch (error) {
+            const isQuota =
+                error?.status === 429 ||
+                error?.message?.includes("429") ||
+                error?.message?.toLowerCase().includes("quota");
+
+            if (!isQuota) {
+                throw error; // real error → stop
+            }
+
+            // Rotate locally only
+            localIndex = (localIndex + 1) % totalModels;
+            attempts++;
+        }
+    }
+
+    throw new Error("All Gemini models exhausted due to quota limits");
+};
+
+
 
 // Client-side cache to prevent quota drain
 const insightCache = new Map();
@@ -97,20 +159,22 @@ export const getAIInsights = async (district, forceRefresh = false) => {
     - news: Array of 2 short "situation updates" or specific local alerts.
     - landmarks: Array of 3 objects { "name": "Name" } of top places to visit there.
 
-    RETURN ONLY JSON. No markdown formatting.`;
+    RETURN ONLY JSON. No markdown formatting.
+    If you cannot comply exactly, return:
+    { "error": "DATA_UNAVAILABLE" }
+    `;
 
     try {
 
 
         // 2. Updated Call: Use 'googleSearch' instead of 'googleSearchRetrieval'
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            tools: [
-                {
-                    googleSearch: {},
-                },
-            ],
-        });
+        const result = await generateWithFallback((model) =>
+            model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                tools: [{ googleSearch: {} }],
+            })
+        );
+
 
         const response = await result.response;
         const text = response.text();
@@ -129,6 +193,7 @@ export const getAIInsights = async (district, forceRefresh = false) => {
         } else {
             throw new Error("Failed to parse JSON");
         }
+        data._modelUsed = MODEL_SEQUENCE[currentModelIndex];
 
         insightCache.set(district.name, data);
         setStoredCache(district.name, data);
@@ -159,14 +224,20 @@ export const getTrendAnalysis = async (ignoredDistricts = [], forceRefresh = fal
     [
       { "district": "Place Name", "message": "Reason..." },
       ...
-    ]`;
+    ]
+    If you cannot comply exactly, return:
+    { "error": "DATA_UNAVAILABLE" }
+    `;
 
     try {
 
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            tools: [{ googleSearch: {} }],
-        });
+        const result = await generateWithFallback((model) =>
+            model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                tools: [{ googleSearch: {} }],
+            })
+        );
+
 
         const response = await result.response;
         const text = response.text();
@@ -184,6 +255,7 @@ export const getTrendAnalysis = async (ignoredDistricts = [], forceRefresh = fal
                 { district: "Sylhet", message: "Popular for tea gardens and swamps." }
             ];
         }
+        data._modelUsed = MODEL_SEQUENCE[currentModelIndex];
 
         // Cache the result
         insightCache.set(cacheKey, data);
@@ -198,15 +270,40 @@ export const getTrendAnalysis = async (ignoredDistricts = [], forceRefresh = fal
     }
 };
 
-export const getAIRecommendations = async (districts) => {
+export const getAIRecommendations = async (districts, aiInsights = {}) => {
     if (!districts) return [];
-    const districtList = Object.values(districts).map(d => d.name).join(', ');
-    const prompt = `From this list: ${districtList}. 
-  Recommend 3 best districts for a balanced trip. 
-  Return ONLY a JSON array of their names, e.g., ["Dhaka", "Sylhet"].`;
+
+    // Build a context-rich list of districts
+    const districtContext = Object.values(districts).map(d => {
+        const insight = aiInsights[d.name];
+        let info = `${d.name}`;
+        if (insight) {
+            const weather = insight.weather ? `${insight.weather.temp}, ${insight.weather.condition}` : "Unknown weather";
+            const risk = insight.riskLevel || "Unknown risk";
+            info += ` (Weather: ${weather}, Safety: ${risk} Risk)`;
+        }
+        return info;
+    }).join('\n- ');
+
+    const prompt = `
+    Based on the following districts and their CURRENT known conditions (weather and safety):
+    
+    Districts:
+    - ${districtContext}
+
+    Recommend 3 best districts for a balanced trip. 
+    STRATEGY: Prioritize districts with "Low Risk" and favorable weather (e.g., Sunny/Clear is better than Rainy/Stormy).
+    
+    Return ONLY a JSON array of their names, e.g., ["Dhaka", "Sylhet"].
+    If you cannot comply exactly, return:
+    { "error": "DATA_UNAVAILABLE" }
+    `;
 
     try {
-        const result = await model.generateContent(prompt);
+        const result = await generateWithFallback((model) =>
+            model.generateContent(prompt));
+
+
         const response = await result.response;
         const text = response.text();
         const jsonMatch = text.match(/\[.*\]/s);
@@ -231,9 +328,13 @@ export const getCoordinates = async (placeName) => {
     if (lowerName.includes('sylhet')) return { lat: 24.8949, lng: 91.8687 };
     if (lowerName.includes('chittagong') || lowerName.includes('chatta')) return { lat: 22.3569, lng: 91.7832 };
 
-    const prompt = `What are the latitude and longitude of "${placeName}, Bangladesh"? Return ONLY a JSON object: { "lat": 23.8103, "lng": 90.4125 }.`;
+    const prompt = `What are the latitude and longitude of "${placeName}, Bangladesh"? Return ONLY a JSON object: { "lat": 23.8103, "lng": 90.4125 }.
+    If you cannot comply exactly, return:
+    { "error": "DATA_UNAVAILABLE" }
+    `;
     try {
-        const result = await model.generateContent(prompt);
+        const result = await generateWithFallback((model) =>
+            model.generateContent(prompt));
         const response = await result.response;
         const text = response.text();
         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -257,10 +358,13 @@ export const getRouteRecommendation = async (origin, destination, estimates) => 
         "recommendedMode": "Bus" (or "Train", "Flight", etc. matching the input names),
         "reason": "Short 1-sentence explanation why."
     }
+    If you cannot comply exactly, return:
+    { "error": "DATA_UNAVAILABLE" }
     `;
 
     try {
-        const result = await model.generateContent(prompt);
+        const result = await generateWithFallback((model) =>
+            model.generateContent(prompt));
         const response = await result.response;
         const text = response.text();
         const jsonMatch = text.match(/\{[\s\S]*\}/);
