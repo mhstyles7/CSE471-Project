@@ -1,10 +1,70 @@
 // ============================================
 // REAL AI CHATBOT - Google Gemini API
 // Enhanced for all requirements (2.1 - 2.5)
+// Uses Official Google Generative AI SDK
 // ============================================
 
-// 🔑 GET YOUR FREE API KEY: https://makersuite.google.com/app/apikey
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY2;
+
+// Initialize the API Client
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+// ============================================
+// MODEL ROTATION CONFIG
+// ============================================
+
+const MODEL_SEQUENCE = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite"
+];
+
+let currentModelIndex = 0;
+
+// Get active model instance
+const getModelByIndex = (index) => {
+  return genAI.getGenerativeModel({
+    model: MODEL_SEQUENCE[index]
+  });
+};
+
+// Generate with fallback for quota handling
+const generateWithFallback = async (requestFn) => {
+  const totalModels = MODEL_SEQUENCE.length;
+
+  // Local copy of the index (isolated per request)
+  let localIndex = currentModelIndex;
+  let attempts = 0;
+
+  while (attempts < totalModels) {
+    const model = getModelByIndex(localIndex);
+
+    try {
+      const result = await requestFn(model);
+
+      // Promote successful model globally
+      currentModelIndex = localIndex;
+
+      return result;
+    } catch (error) {
+      const isQuota =
+        error?.status === 429 ||
+        error?.message?.includes("429") ||
+        error?.message?.toLowerCase().includes("quota");
+
+      if (!isQuota) {
+        throw error; // real error → stop
+      }
+
+      // Rotate locally only
+      localIndex = (localIndex + 1) % totalModels;
+      attempts++;
+    }
+  }
+
+  throw new Error("All Gemini models exhausted due to quota limits");
+};
 
 // Platform pages for navigation guidance (2.3)
 export const PLATFORM_PAGES = {
@@ -173,30 +233,21 @@ Remember to:
 3. Keep context from the conversation history
 4. Be engaging and ask follow-up questions`;
 
-    // Call Gemini API (2.4 - Real-time)
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: fullPrompt }] }],
-          generationConfig: {
-            temperature: 0.8,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          },
-        }),
-      }
+    // Call Gemini API using SDK with fallback (2.4 - Real-time)
+    const result = await generateWithFallback((model) =>
+      model.generateContent({
+        contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        },
+      })
     );
 
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const aiMessage = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const response = await result.response;
+    const aiMessage = response.text();
 
     if (!aiMessage) {
       throw new Error('No response from Gemini');
