@@ -241,7 +241,7 @@ Remember to:
           temperature: 0.8,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048,
         },
       })
     );
