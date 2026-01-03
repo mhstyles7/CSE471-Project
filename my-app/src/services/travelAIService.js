@@ -22,18 +22,10 @@ const MODEL_SEQUENCE = [
 let currentModelIndex = 0;
 
 // Get active model instance
-const getActiveModel = (localIndex) => {
+const getModelByIndex = (index) => {
     return genAI.getGenerativeModel({
-        model: MODEL_SEQUENCE[localIndex]
+        model: MODEL_SEQUENCE[index]
     });
-};
-
-// Rotate model on 429
-const rotateModel = () => {
-    currentModelIndex = (currentModelIndex + 1) % MODEL_SEQUENCE.length;
-    console.warn(
-        `[AI] Switching model → ${MODEL_SEQUENCE[currentModelIndex]}`
-    );
 };
 
 
@@ -45,7 +37,7 @@ const generateWithFallback = async (requestFn) => {
     let attempts = 0;
 
     while (attempts < totalModels) {
-        const model = getActiveModel(localIndex);
+        const model = getModelByIndex(localIndex);
 
         try {
             const result = await requestFn(model);
@@ -72,6 +64,7 @@ const generateWithFallback = async (requestFn) => {
 
     throw new Error("All Gemini models exhausted due to quota limits");
 };
+
 
 
 
