@@ -15,6 +15,7 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 // ============================================
 
 const MODEL_SEQUENCE = [
+    "gemini-3-flash",
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite"
 ];

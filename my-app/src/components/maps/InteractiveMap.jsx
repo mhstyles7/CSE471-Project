@@ -701,7 +701,7 @@ function DistrictPanel({ district, onClose, onAddToCompare, onInsightUpdate }) {
 }
 
 // 4.7 Comparison Modal
-function ComparisonModal({ items, onClose, onRemove }) {
+function ComparisonModal({ items, onClose, onRemove, aiInsightsMap }) {
   if (items.length === 0) return null;
 
   return (
@@ -755,105 +755,118 @@ function ComparisonModal({ items, onClose, onRemove }) {
           gap: "16px",
         }}
       >
-        {items.map((district) => (
-          <div
-            key={district._id}
-            style={{
-              border: "1px solid #f1f5f9",
-              borderRadius: "12px",
-              padding: "16px",
-              backgroundColor: "#f8fafc",
-            }}
-          >
+        {items.map((district) => {
+          const aiData = aiInsightsMap[district.name];
+          const displayRisk = aiData?.riskLevel || district.risk || "Low";
+          const displayComfort =
+            aiData?.comfortLevel || district.comfort || "Medium";
+          const displayEco = aiData?.ecoScore || district.eco_score || "Good";
+          const displayTemp = aiData?.weather?.temp || "Unknown";
+
+          return (
             <div
+              key={district._id}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "12px",
+                border: "1px solid #f1f5f9",
+                borderRadius: "12px",
+                padding: "16px",
+                backgroundColor: "#f8fafc",
               }}
             >
-              <h4
-                style={{
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                  color: "#0f172a",
-                }}
-              >
-                {district.name}
-              </h4>
-              <button
-                onClick={() => onRemove(district._id)}
-                style={{
-                  border: "none",
-                  background: "none",
-                  cursor: "pointer",
-                  color: "#ef4444",
-                }}
-              >
-                <X size={14} />
-              </button>
-            </div>
-
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  fontSize: "13px",
+                  alignItems: "flex-start",
+                  marginBottom: "12px",
                 }}
               >
-                <span style={{ color: "#64748b" }}>Risk:</span>
-                <span
+                <h4
                   style={{
-                    fontWeight: "600",
-                    color: district.risk === "Low" ? "#166534" : "#991b1b",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    color: "#0f172a",
                   }}
                 >
-                  {district.risk}
-                </span>
+                  {district.name}
+                </h4>
+                <button
+                  onClick={() => onRemove(district._id)}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    color: "#ef4444",
+                  }}
+                >
+                  <X size={14} />
+                </button>
               </div>
+
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "13px",
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
               >
-                <span style={{ color: "#64748b" }}>Comfort:</span>
-                <span style={{ fontWeight: "600", color: "#d97706" }}>
-                  {district.comfort}
-                </span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "13px",
-                }}
-              >
-                <span style={{ color: "#64748b" }}>Eco:</span>
-                <span style={{ fontWeight: "600", color: "#059669" }}>
-                  {district.eco}
-                </span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "13px",
-                }}
-              >
-                <span style={{ color: "#64748b" }}>Temp:</span>
-                <span style={{ fontWeight: "600", color: "#0ea5e9" }}>
-                  {district.weather?.temp}
-                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "#64748b" }}>Risk:</span>
+                  <span
+                    style={{
+                      fontWeight: "600",
+                      color:
+                        displayRisk === "Low" ||
+                        (typeof displayRisk === "number" && displayRisk < 4)
+                          ? "#166534"
+                          : "#991b1b",
+                    }}
+                  >
+                    {displayRisk}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "#64748b" }}>Comfort:</span>
+                  <span style={{ fontWeight: "600", color: "#d97706" }}>
+                    {displayComfort}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "#64748b" }}>Eco:</span>
+                  <span style={{ fontWeight: "600", color: "#059669" }}>
+                    {displayEco}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "#64748b" }}>Temp:</span>
+                  <span style={{ fontWeight: "600", color: "#0ea5e9" }}>
+                    {displayTemp}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {items.length < 2 && (
           <div
             style={{
@@ -1994,7 +2007,11 @@ export default function InteractiveMap() {
         {showComparison && (
           <ComparisonModal
             items={compareList}
-            onClose={() => setShowComparison(false)}
+            aiInsightsMap={aiInsightsMap}
+            onClose={() => {
+              setShowComparison(false);
+              setCompareList([]);
+            }}
             onRemove={removeFromCompare}
           />
         )}

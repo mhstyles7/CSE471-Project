@@ -9,10 +9,16 @@ import {
   ArrowRight,
   Activity,
   BarChart2,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import RouteMap from "./RouteMap";
 import { searchLocation, getRouteEstimates } from "../../services/mapService";
 import { getRouteRecommendation } from "../../services/travelAIService";
+
+// Cache key for route AI recommendations
+const getRouteCacheKey = (src, dest) =>
+  `route_ai_${src?.label}_${dest?.label}`.replace(/\s+/g, "_");
 
 export default function RoutePlanner() {
   const [startQuery, setStartQuery] = useState("");
@@ -69,26 +75,80 @@ export default function RoutePlanner() {
   };
 
   const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [aiRequested, setAiRequested] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const fetchEstimates = async () => {
     if (!source || !destination) return;
     setLoading(true);
     setError(null);
-    setAiRecommendation(null); // Reset prev AI
+    setAiRecommendation(null);
+    setAiRequested(false);
     try {
       const data = await getRouteEstimates(source, destination);
       setEstimates(data);
 
-      // Async fetch AI recommendation (doesn't block initial render)
-      getRouteRecommendation(source, destination, data.estimates).then(
-        (aiRes) => {
-          if (aiRes) setAiRecommendation(aiRes);
+      // Check for cached AI recommendation
+      const cacheKey = getRouteCacheKey(source, destination);
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          setAiRecommendation(JSON.parse(cached));
+          setAiRequested(true);
         }
-      );
+      } catch (e) {
+        console.warn("Failed to load cached route AI");
+      }
     } catch (err) {
       setError("Failed to fetch route estimates. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Manual AI Recommendation fetch
+  const fetchAIRecommendation = async (force = false) => {
+    if (!source || !destination || !estimates) return;
+
+    const cacheKey = getRouteCacheKey(source, destination);
+
+    // Check cache if not forcing
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          setAiRecommendation(JSON.parse(cached));
+          setAiRequested(true);
+          return;
+        }
+      } catch (e) {
+        // Fall through to fetch
+      }
+    }
+
+    setAiLoading(true);
+    try {
+      const aiRes = await getRouteRecommendation(
+        source,
+        destination,
+        estimates.estimates
+      );
+      if (aiRes) {
+        setAiRecommendation(aiRes);
+        setAiRequested(true);
+        // Cache result
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(aiRes));
+        } catch (e) {
+          console.warn("Failed to cache route AI");
+        }
+      }
+    } catch (err) {
+      console.warn("AI Recommendation failed, using fallback");
+      // Fallback: Use backend's isRecommended
+      setAiRequested(true); // Mark as requested to show fallback
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -388,216 +448,259 @@ export default function RoutePlanner() {
               </h2>
               <div
                 style={{
-                  fontSize: "12px",
-                  color: "#64748b",
                   display: "flex",
                   alignItems: "center",
-                  gap: "4px",
+                  gap: "12px",
                 }}
               >
                 <div
                   style={{
-                    width: "8px",
-                    height: "8px",
-                    background: "#22c55e",
-                    borderRadius: "50%",
-                    boxShadow: "0 0 0 2px #dcfce7",
+                    fontSize: "12px",
+                    color: "#64748b",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
                   }}
-                ></div>
-                Live Updates Active
+                >
+                  <div
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      background: "#22c55e",
+                      borderRadius: "50%",
+                      boxShadow: "0 0 0 2px #dcfce7",
+                    }}
+                  ></div>
+                  Live Updates
+                </div>
+                <button
+                  onClick={() => fetchAIRecommendation(aiRequested)}
+                  disabled={aiLoading}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: aiLoading ? "#e2e8f0" : "#8b5cf6",
+                    color: "white",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: aiLoading ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {aiLoading ? (
+                    "Analyzing..."
+                  ) : aiRequested ? (
+                    <>
+                      <RefreshCw size={12} /> Refresh AI Pick
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={12} /> Get AI Pick
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
             <div
               style={{ display: "flex", flexDirection: "column", gap: "16px" }}
             >
-              {estimates.estimates.map((est) => (
-                <div
-                  key={est.mode}
-                  style={{
-                    background: "white",
-                    borderRadius: "16px",
-                    padding: "20px",
-                    border: est.isRecommended
-                      ? "2px solid #059669"
-                      : "1px solid #e2e8f0",
-                    position: "relative",
-                    boxShadow: est.isRecommended
-                      ? "0 10px 15px -3px rgba(5, 150, 105, 0.1)"
-                      : "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-                  }}
-                >
-                  {/* Determine Recommendation: Prioritize AI, else Backend */}
-                  {(aiRecommendation &&
-                    est.mode ===
-                      aiRecommendation.recommendedMode.toLowerCase()) ||
-                  (!aiRecommendation && est.isRecommended) ? (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "-12px",
-                        left: "20px",
-                        background: "#059669",
-                        color: "white",
-                        padding: "4px 12px",
-                        borderRadius: "20px",
-                        fontSize: "12px",
-                        fontWeight: "700",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        zIndex: 10,
-                      }}
-                    >
-                      <Trophy size={12} />
-                      AI Recommended
-                    </div>
-                  ) : null}
+              {estimates.estimates.map((est) => {
+                // Determine if this mode is the recommended one
+                const isAiPick =
+                  aiRecommendation &&
+                  est.mode === aiRecommendation.recommendedMode.toLowerCase();
+                const isFallbackPick = !aiRecommendation && est.isRecommended;
+                const isHighlighted = isAiPick || isFallbackPick;
 
-                  {/* Show AI Reason if THIS is the recommended one */}
-                  {aiRecommendation &&
-                    est.mode ===
-                      aiRecommendation.recommendedMode.toLowerCase() && (
+                return (
+                  <div
+                    key={est.mode}
+                    style={{
+                      background: "white",
+                      borderRadius: "16px",
+                      padding: "20px",
+                      border: isHighlighted
+                        ? "2px solid #059669"
+                        : "1px solid #e2e8f0",
+                      position: "relative",
+                      boxShadow: isHighlighted
+                        ? "0 10px 15px -3px rgba(5, 150, 105, 0.1)"
+                        : "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+                    }}
+                  >
+                    {/* Recommendation Badge */}
+                    {isHighlighted && (
                       <div
                         style={{
-                          marginBottom: "12px",
-                          fontSize: "13px",
-                          color: "#15803d",
-                          backgroundColor: "#dcfce7",
-                          padding: "8px 12px",
-                          borderRadius: "8px",
+                          position: "absolute",
+                          top: "-12px",
+                          left: "20px",
+                          background: "#059669",
+                          color: "white",
+                          padding: "4px 12px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "700",
                           display: "flex",
-                          alignItems: "start",
-                          gap: "6px",
+                          alignItems: "center",
+                          gap: "4px",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          zIndex: 10,
                         }}
                       >
-                        <span style={{ flexShrink: 0 }}>✨</span>
-                        <span>{aiRecommendation.reason}</span>
+                        <Trophy size={12} />
+                        {isAiPick ? "AI Recommended" : "Best Value"}
                       </div>
                     )}
 
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: "16px",
-                    }}
-                  >
+                    {/* Show AI Reason if THIS is the recommended one */}
+                    {aiRecommendation &&
+                      est.mode ===
+                        aiRecommendation.recommendedMode.toLowerCase() && (
+                        <div
+                          style={{
+                            marginBottom: "12px",
+                            fontSize: "13px",
+                            color: "#15803d",
+                            backgroundColor: "#dcfce7",
+                            padding: "8px 12px",
+                            borderRadius: "8px",
+                            display: "flex",
+                            alignItems: "start",
+                            gap: "6px",
+                          }}
+                        >
+                          <span style={{ flexShrink: 0 }}>✨</span>
+                          <span>{aiRecommendation.reason}</span>
+                        </div>
+                      )}
+
                     <div
                       style={{
                         display: "flex",
-                        alignItems: "center",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "48px",
+                            height: "48px",
+                            background: "#f0fdf4",
+                            borderRadius: "12px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "24px",
+                          }}
+                        >
+                          {est.mode === "bus" && "🚌"}
+                          {est.mode === "train" && "🚆"}
+                          {est.mode === "car" && "🚗"}
+                          {est.mode === "flight" && "✈️"}
+                          {est.mode === "cng" && "🛺"}
+                        </div>
+                        <div>
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontSize: "18px",
+                              fontWeight: "700",
+                              color: "#0f172a",
+                            }}
+                          >
+                            {est.name}
+                          </h3>
+                          <span style={{ fontSize: "13px", color: "#64748b" }}>
+                            Comfort: {est.comfortRating}/10
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div
+                          style={{
+                            fontSize: "24px",
+                            fontWeight: "800",
+                            color: "#059669",
+                          }}
+                        >
+                          {est.currency ? est.currency : "$"}
+                          {est.cost}
+                        </div>
+                        <div style={{ fontSize: "13px", color: "#94a3b8" }}>
+                          approx.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
                         gap: "12px",
                       }}
                     >
                       <div
                         style={{
-                          width: "48px",
-                          height: "48px",
-                          background: "#f0fdf4",
-                          borderRadius: "12px",
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "24px",
+                          gap: "8px",
+                          background: "#f8fafc",
+                          padding: "10px",
+                          borderRadius: "10px",
                         }}
                       >
-                        {est.mode === "bus" && "🚌"}
-                        {est.mode === "train" && "🚆"}
-                        {est.mode === "car" && "🚗"}
-                        {est.mode === "flight" && "✈️"}
-                        {est.mode === "cng" && "🛺"}
-                      </div>
-                      <div>
-                        <h3
+                        <Clock size={16} color="#3b82f6" />
+                        <span
                           style={{
-                            margin: 0,
-                            fontSize: "18px",
-                            fontWeight: "700",
-                            color: "#0f172a",
+                            fontSize: "14px",
+                            fontWeight: "600",
+                            color: "#334155",
                           }}
                         >
-                          {est.name}
-                        </h3>
-                        <span style={{ fontSize: "13px", color: "#64748b" }}>
-                          Comfort: {est.comfortRating}/10
+                          {est.duration.toFixed(1)} hrs
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          background: "#f8fafc",
+                          padding: "10px",
+                          borderRadius: "10px",
+                        }}
+                      >
+                        <Leaf
+                          size={16}
+                          color={est.emissions > 50 ? "#eab308" : "#22c55e"}
+                        />
+                        <span
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "600",
+                            color: "#334155",
+                          }}
+                        >
+                          {est.emissions} kg CO₂
                         </span>
                       </div>
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div
-                        style={{
-                          fontSize: "24px",
-                          fontWeight: "800",
-                          color: "#059669",
-                        }}
-                      >
-                        {est.currency ? est.currency : "$"}
-                        {est.cost}
-                      </div>
-                      <div style={{ fontSize: "13px", color: "#94a3b8" }}>
-                        approx.
-                      </div>
-                    </div>
                   </div>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "12px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        background: "#f8fafc",
-                        padding: "10px",
-                        borderRadius: "10px",
-                      }}
-                    >
-                      <Clock size={16} color="#3b82f6" />
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          color: "#334155",
-                        }}
-                      >
-                        {est.duration.toFixed(1)} hrs
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        background: "#f8fafc",
-                        padding: "10px",
-                        borderRadius: "10px",
-                      }}
-                    >
-                      <Leaf
-                        size={16}
-                        color={est.emissions > 50 ? "#eab308" : "#22c55e"}
-                      />
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          color: "#334155",
-                        }}
-                      >
-                        {est.emissions} kg CO₂
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
