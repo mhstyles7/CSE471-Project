@@ -167,12 +167,12 @@ export default function DestinationsPage() {
 
       {/* Quantity Selection Modal */}
       {isBookingModalOpen && selectedPackage && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
           alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'
         }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '24px', maxWidth: '450px', width: '100%', padding: '32px' }}>
+          <div className="modal-content" style={{ backgroundColor: 'white', borderRadius: '24px', maxWidth: '450px', width: '100%', padding: '32px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', color: '#1f2937' }}>Book Package</h2>
             <p style={{ color: '#6b7280', marginBottom: '24px' }}>{selectedPackage.title}</p>
 
@@ -228,7 +228,7 @@ export default function DestinationsPage() {
       />
 
       <div style={{ marginBottom: '60px' }}>
-        <h2 style={{ fontSize: '42px', fontWeight: '800', color: '#1f2937', marginBottom: '12px', fontFamily: 'Poppins, sans-serif' }}>
+        <h2 className="section-heading" style={{ fontSize: '42px', fontWeight: '800', color: '#1f2937', marginBottom: '12px', fontFamily: 'Poppins, sans-serif' }}>
           Popular Destinations
         </h2>
         <p style={{ fontSize: '18px', color: '#6b7280' }}>
@@ -236,7 +236,7 @@ export default function DestinationsPage() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '28px', marginBottom: '80px' }}>
+      <div className="destinations-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '28px', marginBottom: '80px' }}>
         {destinations.map((dest, index) => (
           <div
             key={dest.name}
@@ -266,12 +266,12 @@ export default function DestinationsPage() {
       {/* Available Packages Section */}
       <div style={{ padding: '60px 0', borderTop: '1px solid #e5e7eb' }}>
         <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>Available Travel Packages</h2>
+          <h2 className="section-heading" style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>Available Travel Packages</h2>
           <p style={{ fontSize: '16px', color: '#6b7280' }}>Curated experiences from our trusted agencies</p>
         </div>
 
         {loading ? <p style={{ textAlign: 'center' }}>Loading packages...</p> : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '32px' }}>
+          <div className="packages-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '32px' }}>
             {packages.length === 0 ? <p style={{ textAlign: 'center', gridColumn: '1/-1' }}>No packages available at the moment.</p> : packages.map(pkg => (
               <div key={pkg._id} style={{ backgroundColor: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', border: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ marginBottom: '20px' }}>
@@ -344,12 +344,12 @@ export default function DestinationsPage() {
 
       {/* Custom Booking Modal (Premium Only) */}
       {isCustomModalOpen && customBookingPkg && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
           alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'
         }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '24px', maxWidth: '550px', width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
+          <div className="modal-content" style={{ backgroundColor: 'white', borderRadius: '24px', maxWidth: '550px', width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
             <div style={{ padding: '28px', borderBottom: '1px solid #e5e7eb' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>

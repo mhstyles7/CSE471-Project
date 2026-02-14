@@ -420,7 +420,7 @@ export default function GroupEventsPage() {
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
@@ -429,7 +429,7 @@ export default function GroupEventsPage() {
           justifyContent: 'center',
           zIndex: 1002
         }}>
-          <div style={{
+          <div className="modal-content" style={{
             backgroundColor: 'white',
             borderRadius: '20px',
             padding: '28px',
@@ -512,7 +512,7 @@ export default function GroupEventsPage() {
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <h2 style={{
+              <h2 className="section-heading" style={{
                 fontSize: '42px',
                 fontWeight: '800',
                 color: '#1f2937',
@@ -567,7 +567,7 @@ export default function GroupEventsPage() {
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', borderBottom: '2px solid #f3f4f6' }}>
+          <div className="events-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '28px', borderBottom: '2px solid #f3f4f6' }}>
             {[
               { id: 'all', label: 'All Events' },
               { id: 'invitations', label: 'Invitations', count: invitations.length },
@@ -722,7 +722,7 @@ export default function GroupEventsPage() {
                 Create New Group Event
               </h3>
               <div style={{ display: 'grid', gap: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                   <input
                     type="text"
                     placeholder="e.g., Weekend Getaway to Sajek"

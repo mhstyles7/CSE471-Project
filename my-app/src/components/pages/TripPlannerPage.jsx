@@ -95,7 +95,7 @@ export default function TripPlannerPage() {
     return (
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
+                <h1 className="section-heading" style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
                     Pre-Planned Trip Suggestions
                 </h1>
                 <p style={{ fontSize: '18px', color: '#6b7280', maxWidth: '600px', margin: '0 auto' }}>
@@ -104,7 +104,7 @@ export default function TripPlannerPage() {
             </div>
 
             {/* Search & Filter */}
-            <form onSubmit={handleSearch} style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '40px', flexWrap: 'wrap' }}>
+            <form onSubmit={handleSearch} className="search-form" style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '40px', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', width: '300px' }}>
                     <MapPin size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
                     <input
@@ -140,7 +140,7 @@ export default function TripPlannerPage() {
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>Loading trip plans...</div>
             ) : plans.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '32px' }}>
+                <div className="trips-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '32px' }}>
                     {plans.map(plan => (
                         <div key={plan._id} style={{ backgroundColor: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb', transition: 'transform 0.2s' }}>
                             <div style={{ position: 'relative', height: '200px' }}>

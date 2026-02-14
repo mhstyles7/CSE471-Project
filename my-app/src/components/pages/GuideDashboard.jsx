@@ -154,7 +154,7 @@ export default function GuideDashboard() {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '32px', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}>
+                <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '32px', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}>
 
                     <div style={{ textAlign: 'center' }}>
                         <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669' }}>{guideCount}</h3>
@@ -172,7 +172,7 @@ export default function GuideDashboard() {
             </div>
 
             {/* Post Update Section */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
+            <div className="guide-content-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
                 <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>Post Daily Update</h2>
                     <form onSubmit={handlePost}>

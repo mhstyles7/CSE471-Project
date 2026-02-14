@@ -137,6 +137,7 @@ export default function MyTripsPage() {
     <div>
       <div style={{ marginBottom: "32px" }}>
         <h2
+          className="section-heading"
           style={{
             fontSize: "42px",
             fontWeight: "800",
@@ -216,6 +217,7 @@ export default function MyTripsPage() {
           </div>
           <form onSubmit={handleAddTrip}>
             <div
+              className="form-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",

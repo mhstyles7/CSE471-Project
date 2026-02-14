@@ -160,21 +160,21 @@ export default function DestinationDetailsPage({ id }) {
     return (
         <div style={{ paddingBottom: '80px' }}>
             {/* Hero Section */}
-            <div style={{ position: 'relative', height: '400px', marginBottom: '40px' }}>
+            <div className="details-hero" style={{ position: 'relative', height: '400px', marginBottom: '40px' }}>
                 <img src={destination.image} alt={destination.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}></div>
                 <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '1200px', padding: '0 24px', color: 'white' }}>
                     <button onClick={() => navigate('destinations')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', border: 'none', padding: '8px 16px', borderRadius: '8px', color: 'white', cursor: 'pointer', marginBottom: '20px', backdropFilter: 'blur(4px)' }}>
                         <ArrowLeft size={16} /> Back
                     </button>
-                    <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '8px' }}>{destination.name}</h1>
+                    <h1 className="hero-heading" style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '8px' }}>{destination.name}</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', opacity: 0.9 }}>
                         <MapPin size={20} /> {destination.location}
                     </div>
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '40px' }}>
+            <div className="details-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '40px' }}>
                 {/* Main Content */}
                 <div>
                     <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', marginBottom: '32px' }}>

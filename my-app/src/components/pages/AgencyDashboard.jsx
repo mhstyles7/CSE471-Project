@@ -133,7 +133,7 @@ export default function AgencyDashboard() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#1f2937', fontFamily: 'Poppins, sans-serif' }}>Agency Dashboard</h1>
+                    <h1 className="section-heading" style={{ fontSize: '32px', fontWeight: '800', color: '#1f2937', fontFamily: 'Poppins, sans-serif' }}>Agency Dashboard</h1>
                     <p style={{ color: '#6b7280' }}>Manage your travel packages, bookings, and events</p>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: 'white', padding: '8px 16px', borderRadius: '16px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
@@ -148,7 +148,7 @@ export default function AgencyDashboard() {
             </div>
 
             {/* Navigation Tabs */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '4px' }}>
+            <div className="agency-tabs" style={{ display: 'flex', gap: '12px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '4px' }}>
                 {[
                     { id: 'overview', label: 'Overview', icon: TrendingUp },
                     { id: 'packages', label: 'My Packages', icon: Package },
@@ -187,7 +187,7 @@ export default function AgencyDashboard() {
                 {/* OVERVIEW TAB */}
                 {activeTab === 'overview' && (
                     <div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+                        <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '32px' }}>
                             {stats.map((stat, index) => (
                                 <div key={index} style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '20px' }}>
                                     <div style={{ padding: '16px', borderRadius: '50%', backgroundColor: stat.bg, color: stat.color }}>
@@ -201,7 +201,7 @@ export default function AgencyDashboard() {
                             ))}
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+                        <div className="overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
                             <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                                 <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Recent Orders</h3>
                                 {orders.slice(0, 3).map(order => (
@@ -356,7 +356,7 @@ export default function AgencyDashboard() {
                                 <label style={{ fontWeight: '600', color: '#374151' }}>Package Title</label>
                                 <input type="text" placeholder="e.g. 3-Day Sundarbans Adventure" value={newPackage.title} onChange={e => setNewPackage({ ...newPackage, title: e.target.value })} style={inputStyle} required />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'grid', gap: '8px' }}>
                                     <label style={{ fontWeight: '600', color: '#374151' }}>Price ($)</label>
                                     <input type="number" placeholder="0.00" value={newPackage.price} onChange={e => setNewPackage({ ...newPackage, price: e.target.value })} style={inputStyle} required />
@@ -391,7 +391,7 @@ export default function AgencyDashboard() {
                                 <label style={{ fontWeight: '600', color: '#374151' }}>Event Title</label>
                                 <input type="text" placeholder="e.g. Annual Travel Meetup 2024" value={newEvent.title} onChange={e => setNewEvent({ ...newEvent, title: e.target.value })} style={inputStyle} required />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'grid', gap: '8px' }}>
                                     <label style={{ fontWeight: '600', color: '#374151' }}>Date</label>
                                     <input type="date" value={newEvent.date} onChange={e => setNewEvent({ ...newEvent, date: e.target.value })} style={inputStyle} required />

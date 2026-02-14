@@ -130,7 +130,7 @@ export default function DashboardPage() {
         <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
             {/* Header */}
             <div style={{ marginBottom: '32px' }}>
-                <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+                <h1 className="page-heading" style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
                     Welcome back, {user?.name?.split(' ')[0] || 'Traveler'}! 👋
                 </h1>
                 <p style={{ color: '#6b7280', fontSize: '16px' }}>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                 <StatCard icon={<Plane size={24} />} label="Total Trips" value={stats?.totalTrips || 0} color="#059669" bg="#ecfdf5" />
                 <StatCard icon={<Globe size={24} />} label="Destinations" value={stats?.destinationsVisited || 0} color="#0d9488" bg="#f0fdfa" />
                 <StatCard icon={<Bookmark size={24} />} label="Saved Places" value={stats?.totalSavedPlaces || 0} color="#8b5cf6" bg="#f5f3ff" />
@@ -147,7 +147,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '2px solid #e5e7eb', paddingBottom: '12px' }}>
+            <div className="dashboard-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '2px solid #e5e7eb', paddingBottom: '12px' }}>
                 {['overview', 'travel-history', 'saved-places', 'activities'].map(tab => (
                     <button
                         key={tab}
@@ -170,7 +170,7 @@ export default function DashboardPage() {
 
             {/* Tab Content */}
             {activeTab === 'overview' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+                <div className="dashboard-overview-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
                     {/* Recent Trips */}
                     <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
                     {showAddTrip && (
                         <form onSubmit={addTrip} style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                                 <input type="text" placeholder="Destination" value={newTrip.destination} onChange={e => setNewTrip({ ...newTrip, destination: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <select value={newTrip.category} onChange={e => setNewTrip({ ...newTrip, category: e.target.value })} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }}>
                                     <option value="leisure">🏖️ Leisure</option>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
 
                     {showAddPlace && (
                         <form onSubmit={addPlace} style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                                 <input type="text" placeholder="Place Name" value={newPlace.name} onChange={e => setNewPlace({ ...newPlace, name: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <input type="text" placeholder="Location" value={newPlace.location} onChange={e => setNewPlace({ ...newPlace, location: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <select value={newPlace.category} onChange={e => setNewPlace({ ...newPlace, category: e.target.value })} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }}>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                         </form>
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    <div className="friends-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                         {savedPlaces?.length > 0 ? (
                             savedPlaces.map(place => (
                                 <div key={place._id} style={{ padding: '16px', borderRadius: '12px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}>

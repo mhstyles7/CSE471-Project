@@ -172,7 +172,7 @@ export default function LocalGuidePage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
 
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937' }}>Local Guides & Updates</h1>
+                    <h1 className="section-heading" style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937' }}>Local Guides & Updates</h1>
                     <p style={{ color: '#6b7280' }}>Connect with locals and see what's happening around you.</p>
                 </div>
                 {/* Become Guide Button - for travelers who aren't guides */}
@@ -378,13 +378,13 @@ export default function LocalGuidePage() {
 
             {/* Become Guide Request Modal */}
             {showGuideRequest && (
-                <div style={{
+                <div className="modal-overlay" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                     backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     zIndex: 9999, padding: '20px'
                 }}>
-                    <div style={{
+                    <div className="modal-content" style={{
                         backgroundColor: 'white', borderRadius: '24px',
                         maxWidth: '500px', width: '100%', padding: '32px'
                     }}>

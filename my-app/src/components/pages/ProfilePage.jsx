@@ -109,7 +109,7 @@ export default function ProfilePage() {
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
-        <h2 style={{
+        <h2 className="section-heading" style={{
           fontSize: '42px',
           fontWeight: '800',
           color: '#1f2937',
@@ -185,7 +185,7 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div style={{ padding: '0 40px 40px', position: 'relative' }}>
+        <div className="profile-card-body" style={{ padding: '0 40px 40px', position: 'relative' }}>
           {/* Avatar */}
           <div style={{
             width: '140px',
@@ -379,12 +379,12 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+      <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
 
         {/* Left Column: Stats & Badges */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           {/* Stats Grid */}
-          <div style={{
+          <div className="stats-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: '20px'

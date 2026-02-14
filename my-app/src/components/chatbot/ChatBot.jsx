@@ -104,7 +104,7 @@ export default function ChatBot() {
   };
 
   return (
-    <div style={{
+    <div className="chatbot-wrapper" style={{
       position: 'fixed',
       bottom: '30px',
       right: '30px',
@@ -114,6 +114,7 @@ export default function ChatBot() {
       {/* Chat Button */}
       {!isOpen && (
         <button
+          className="chatbot-button"
           onClick={() => setIsOpen(true)}
           style={{
             width: '64px',
@@ -158,7 +159,7 @@ export default function ChatBot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div style={{
+        <div className="chatbot-window" style={{
           width: '400px',
           height: '650px',
           backgroundColor: 'white',

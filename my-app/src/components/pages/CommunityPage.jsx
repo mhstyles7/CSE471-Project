@@ -432,12 +432,12 @@ export default function CommunityPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '32px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+      <div className="community-layout" style={{ display: 'flex', gap: '32px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         {/* Main Feed */}
         <div style={{ flex: 2 }}>
 
           <div style={{ marginBottom: '32px' }}>
-            <h2 style={{
+            <h2 className="section-heading" style={{
               fontSize: '42px',
               fontWeight: '800',
               color: '#1f2937',
@@ -452,7 +452,7 @@ export default function CommunityPage() {
           </div>
 
           {/* Tabs (3.3) */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+          <div className="community-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
             {[
               { id: 'feed', label: '📰 Feed' },
               { id: 'trending', label: '🔥 Trending' },

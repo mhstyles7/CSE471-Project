@@ -123,7 +123,7 @@ function AppContent() {
 
   return (
     <NavigationProvider navigate={navigate} currentPage={currentPage} pageParams={pageParams}>
-      <div style={{
+      <div className="app-wrapper" style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 25%, #f0fdfa 50%, #e0f2fe 75%, #f0fdf4 100%)',
         backgroundSize: '400% 400%',
@@ -155,7 +155,7 @@ function AppContent() {
         </div>
 
         {/* Main Content */}
-        <main style={{
+        <main className="app-main-content" style={{
           maxWidth: '1400px',
           margin: '0 auto',
           padding: '40px 32px',

@@ -215,7 +215,7 @@ export default function CulturePage() {
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                <h1 style={{ fontSize: '42px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>Cultural & Culinary Explorer</h1>
+                <h1 className="section-heading" style={{ fontSize: '42px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>Cultural & Culinary Explorer</h1>
                 <p style={{ fontSize: '18px', color: '#6b7280', maxWidth: '600px', margin: '0 auto' }}>
 
                     Immerse yourself in the authentic flavors and traditions of Bangladesh.
@@ -288,7 +288,7 @@ export default function CulturePage() {
                     <Utensils size={32} color="#ea580c" />
                     <h2 style={{ fontSize: '28px', fontWeight: 'bold' }}>Local Delicacies</h2>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '32px' }}>
+                <div className="dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '32px' }}>
                     {(showDirectory ? [] : localDishes.slice(0, INITIAL_DISHES_LIMIT)).map((dish, i) => (
 
                         <div key={i} style={{ borderRadius: '16px', overflow: 'hidden', backgroundColor: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
@@ -426,7 +426,7 @@ export default function CulturePage() {
                             <p style={{ color: '#6b7280', fontSize: '16px' }}>No dishes found for this region. Try a different filter.</p>
                         </div>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
+                        <div className="dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
                             {localDishes.map((dish, i) => (
                                 <div key={i} style={{ borderRadius: '16px', overflow: 'hidden', backgroundColor: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
                                     <img src={dish.image} alt={dish.name} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
@@ -448,7 +448,7 @@ export default function CulturePage() {
 
             {/* Recipe Modal */}
             {selectedDish && (
-                <div style={{
+                <div className="modal-overlay" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                     backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'

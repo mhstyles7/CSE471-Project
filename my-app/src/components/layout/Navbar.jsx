@@ -21,6 +21,8 @@ import {
   UserPlus,
   TrendingUp,
   Crown,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function Navbar({
@@ -31,6 +33,7 @@ export default function Navbar({
   onLogout,
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Primary navigation items (filtered for agency users)
   const allPrimaryNavItems = [
@@ -82,9 +85,13 @@ export default function Navbar({
   // Combine items based on auth state
   const secondaryNavItems = isAuthenticated ? privateNavItems : publicNavItems;
 
+  // All nav items for mobile menu
+  const allMobileNavItems = [...primaryNavItems, ...secondaryNavItems];
+
   const handleNavClick = (id) => {
     setCurrentPage(id);
     setShowMoreMenu(false);
+    setShowMobileMenu(false);
   };
 
   const isSecondaryActive = secondaryNavItems.some(
@@ -104,6 +111,7 @@ export default function Navbar({
       }}
     >
       <div
+        className="navbar-container"
         style={{
           maxWidth: "1400px",
           margin: "0 auto",
@@ -116,6 +124,7 @@ export default function Navbar({
       >
         {/* Logo */}
         <div
+          className="navbar-logo"
           style={{
             display: "flex",
             alignItems: "center",
@@ -124,6 +133,7 @@ export default function Navbar({
           }}
         >
           <div
+            className="navbar-logo-icon"
             style={{
               width: "40px",
               height: "40px",
@@ -165,8 +175,9 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Primary Navigation Links */}
+        {/* Primary Navigation Links - hidden on mobile via CSS */}
         <div
+          className="navbar-links"
           style={{
             display: "flex",
             gap: "8px",
@@ -333,8 +344,18 @@ export default function Navbar({
           )}
         </div>
 
+        {/* Hamburger Menu Button - visible only on mobile via CSS */}
+        <button
+          className="navbar-hamburger"
+          onClick={() => setShowMobileMenu(true)}
+          aria-label="Open menu"
+        >
+          <Menu size={24} color="#374151" />
+        </button>
+
         {/* Right Section - Profile & Logout */}
         <div
+          className="navbar-right"
           style={{
             display: "flex",
             gap: "12px",
@@ -347,6 +368,7 @@ export default function Navbar({
             <>
               {/* Profile Button */}
               <button
+                className="nav-profile-btn"
                 onClick={() => handleNavClick("profile")}
                 style={{
                   padding: "10px 18px",
@@ -376,6 +398,7 @@ export default function Navbar({
 
               {/* Logout Button */}
               <button
+                className="nav-logout-btn"
                 onClick={onLogout}
                 style={{
                   display: "flex",
@@ -398,6 +421,7 @@ export default function Navbar({
             </>
           ) : (
             <button
+              className="nav-signin-btn"
               onClick={() => handleNavClick("login")}
               style={{
                 padding: "10px 24px",
@@ -418,7 +442,133 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* Add keyframe animation for dropdown */}
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div
+          className="mobile-menu-overlay"
+          onClick={() => setShowMobileMenu(false)}
+          style={{
+            display: 'block',
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 998,
+          }}
+        />
+      )}
+
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div
+          className="mobile-menu"
+          style={{
+            display: 'flex',
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            width: '280px',
+            maxWidth: '80vw',
+            height: '100vh',
+            backgroundColor: 'white',
+            zIndex: 999,
+            flexDirection: 'column',
+            padding: '20px 0',
+            boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
+            animation: 'slideInRight 0.3s ease-out',
+            overflowY: 'auto',
+          }}
+        >
+          <div className="mobile-menu-header" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 20px 16px',
+            borderBottom: '1px solid #e5e7eb',
+            marginBottom: '8px',
+          }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#059669' }}>
+              Menu
+            </h3>
+            <button
+              className="mobile-menu-close"
+              onClick={() => setShowMobileMenu(false)}
+              style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                border: 'none', backgroundColor: '#f3f4f6', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <X size={18} color="#374151" />
+            </button>
+          </div>
+
+          {allMobileNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPage === item.id;
+            return (
+              <button
+                key={item.id}
+                className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => handleNavClick(item.id)}
+                style={{
+                  width: '100%',
+                  padding: '14px 24px',
+                  border: 'none',
+                  background: isActive ? '#ecfdf5' : 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  fontSize: '15px',
+                  fontWeight: isActive ? '600' : '500',
+                  color: isActive ? '#059669' : '#374151',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  borderRight: isActive ? '3px solid #059669' : 'none',
+                }}
+              >
+                <Icon size={20} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+
+          {/* Profile & Logout in mobile menu */}
+          {isAuthenticated && (
+            <>
+              <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '8px 20px' }} />
+              <button
+                className={`mobile-nav-item ${currentPage === 'profile' ? 'active' : ''}`}
+                onClick={() => handleNavClick('profile')}
+                style={{
+                  width: '100%', padding: '14px 24px', border: 'none',
+                  background: currentPage === 'profile' ? '#ecfdf5' : 'transparent',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px',
+                  fontSize: '15px', fontWeight: '500', color: '#374151', textAlign: 'left',
+                }}
+              >
+                <User size={20} />
+                <span>Profile</span>
+              </button>
+              <button
+                className="mobile-nav-item"
+                onClick={() => { onLogout(); setShowMobileMenu(false); }}
+                style={{
+                  width: '100%', padding: '14px 24px', border: 'none',
+                  background: 'transparent', cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', gap: '14px', fontSize: '15px',
+                  fontWeight: '500', color: '#dc2626', textAlign: 'left',
+                }}
+              >
+                <LogOut size={20} />
+                <span>Logout</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Add keyframe animations */}
       <style>{`
         @keyframes slideDown {
           from {
@@ -429,6 +579,10 @@ export default function Navbar({
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
         }
       `}</style>
     </nav>

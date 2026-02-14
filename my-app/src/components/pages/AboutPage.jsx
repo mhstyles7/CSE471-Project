@@ -36,7 +36,7 @@ export default function AboutPage() {
   return (
     <div>
       <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-        <h2 style={{
+        <h2 className="section-heading" style={{
           fontSize: '48px',
           fontWeight: '800',
           color: '#1f2937',
@@ -116,7 +116,7 @@ export default function AboutPage() {
       </div>
 
       {/* Features Grid */}
-      <div style={{
+      <div className="feature-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '28px',

@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       {/* Hero Section */}
-      <div style={{
+      <div className="hero-section" style={{
         position: 'relative',
         backgroundImage: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(13, 148, 136, 0.85) 100%), url(https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80)',
         backgroundSize: 'cover',
@@ -37,7 +37,7 @@ export default function HomePage() {
         }} />
 
         {/* Content */}
-        <div style={{
+        <div className="hero-content" style={{
           position: 'relative',
           zIndex: 10,
           textAlign: 'center',
@@ -45,7 +45,7 @@ export default function HomePage() {
           maxWidth: '900px'
         }}>
           {/* Badge */}
-          <div style={{
+          <div className="hero-badge" style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
@@ -60,7 +60,7 @@ export default function HomePage() {
             <span style={{ fontSize: '14px', fontWeight: '600' }}>Welcome to PothChola</span>
           </div>
 
-          <h1 style={{
+          <h1 className="hero-heading" style={{
             fontSize: '56px',
             fontWeight: '800',
             marginBottom: '20px',
@@ -71,7 +71,7 @@ export default function HomePage() {
             Discover Your Favorite Place with Us
           </h1>
 
-          <p style={{
+          <p className="hero-subtitle" style={{
             fontSize: '22px',
             color: '#d1fae5',
             marginBottom: '32px',
@@ -81,7 +81,7 @@ export default function HomePage() {
             Travel to any corner of Bangladesh, without going around in circles
           </p>
 
-          <button style={{
+          <button className="hero-cta" style={{
             backgroundColor: 'white',
             color: '#059669',
             padding: '16px 40px',
@@ -132,7 +132,7 @@ export default function HomePage() {
       </div>
 
       {/* Feature Cards */}
-      <div style={{
+      <div className="feature-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: '28px'

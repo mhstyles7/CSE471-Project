@@ -54,11 +54,11 @@ export default function PremiumPage() {
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937' }}>Upgrade Your Experience</h1>
+                <h1 className="section-heading" style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937' }}>Upgrade Your Experience</h1>
                 <p style={{ color: '#6b7280', marginTop: '10px' }}>Unlock exclusive benefits and verified guides.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '40px' }}>
+            <div className="premium-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '40px' }}>
                 {/* Premium Membership Card */}
                 <div style={{
                     border: '2px solid',

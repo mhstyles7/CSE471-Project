@@ -174,20 +174,20 @@ export default function RewardsPage() {
     currentTier === "Gold"
       ? "Platinum"
       : currentTier === "Silver"
-      ? "Gold"
-      : "Silver";
+        ? "Gold"
+        : "Silver";
   const pointsToNextTier =
     currentTier === "Gold"
       ? 2000 - userPoints
       : currentTier === "Silver"
-      ? 1000 - userPoints
-      : 500 - userPoints;
+        ? 1000 - userPoints
+        : 500 - userPoints;
   const progress =
     currentTier === "Gold"
       ? ((userPoints - 1000) / 1000) * 100
       : currentTier === "Silver"
-      ? ((userPoints - 500) / 500) * 100
-      : (userPoints / 500) * 100;
+        ? ((userPoints - 500) / 500) * 100
+        : (userPoints / 500) * 100;
 
   if (loading) {
     return <div className="p-10 text-center">Loading Rewards...</div>;
@@ -227,6 +227,7 @@ export default function RewardsPage() {
 
       <div style={{ marginBottom: "32px" }}>
         <h2
+          className="section-heading"
           style={{
             fontSize: "42px",
             fontWeight: "800",
@@ -342,6 +343,7 @@ export default function RewardsPage() {
 
       {/* Navigation Tabs */}
       <div
+        className="rewards-tabs"
         style={{
           display: "flex",
           gap: "8px",
@@ -378,6 +380,7 @@ export default function RewardsPage() {
       </div>
 
       <div
+        className="rewards-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
@@ -416,15 +419,14 @@ export default function RewardsPage() {
                     backgroundColor: reward.redeemed
                       ? "#f3f4f6"
                       : reward.unlocked
-                      ? "#f0fdf4"
-                      : "#f9fafb",
-                    border: `1px solid ${
-                      reward.redeemed
+                        ? "#f0fdf4"
+                        : "#f9fafb",
+                    border: `1px solid ${reward.redeemed
                         ? "#e5e7eb"
                         : reward.unlocked
-                        ? "#bbf7d0"
-                        : "#f3f4f6"
-                    }`,
+                          ? "#bbf7d0"
+                          : "#f3f4f6"
+                      }`,
                     position: "relative",
                   }}
                 >
@@ -443,8 +445,8 @@ export default function RewardsPage() {
                         color: reward.redeemed
                           ? "#6b7280"
                           : reward.unlocked
-                          ? "#047857"
-                          : "#9ca3af",
+                            ? "#047857"
+                            : "#9ca3af",
                         textDecoration: reward.redeemed
                           ? "line-through"
                           : "none",
@@ -554,10 +556,10 @@ export default function RewardsPage() {
                           u.rank === 1
                             ? "#fbbf24"
                             : u.rank === 2
-                            ? "#94a3b8"
-                            : u.rank === 3
-                            ? "#b45309"
-                            : "#f3f4f6",
+                              ? "#94a3b8"
+                              : u.rank === 3
+                                ? "#b45309"
+                                : "#f3f4f6",
                         color: u.rank <= 3 ? "white" : "#6b7280",
                         display: "flex",
                         alignItems: "center",

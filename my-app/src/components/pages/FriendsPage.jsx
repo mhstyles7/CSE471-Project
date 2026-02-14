@@ -470,7 +470,7 @@ export default function FriendsPage() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h2 style={{
+          <h2 className="section-heading" style={{
             fontSize: '42px',
             fontWeight: '800',
             color: '#1f2937',
@@ -504,7 +504,7 @@ export default function FriendsPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', borderBottom: '2px solid #f3f4f6', overflowX: 'auto' }}>
+      <div className="friends-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '28px', borderBottom: '2px solid #f3f4f6', overflowX: 'auto' }}>
         {[
           { id: 'all', label: 'All Friends', count: friends.length },
           { id: 'activity', label: 'Activity Feed', icon: Activity },
@@ -739,7 +739,7 @@ export default function FriendsPage() {
 
       {/* All Friends Tab (2.2) */}
       {activeTab === 'all' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+        <div className="friends-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
           {friends.map((friend, index) => (
             <div key={friend.id} style={{
               backgroundColor: 'white',
@@ -905,7 +905,7 @@ export default function FriendsPage() {
 
       {/* Suggestions Tab (2.1) */}
       {activeTab === 'suggestions' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+        <div className="friends-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
           {suggestions.map((person, index) => (
             <div key={person.id} style={{
               backgroundColor: 'white',
@@ -1046,11 +1046,11 @@ export default function FriendsPage() {
 
       {/* 1. Profile Modal */}
       {activeModal === 'profile' && selectedFriend && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
           display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000
         }} onClick={handleCloseModal}>
-          <div style={{
+          <div className="modal-content" style={{
             backgroundColor: 'white', width: '90%', maxWidth: '500px', borderRadius: '20px', padding: '30px',
             position: 'relative', animation: 'scaleIn 0.3s ease-out'
           }} onClick={e => e.stopPropagation()}>
@@ -1084,11 +1084,11 @@ export default function FriendsPage() {
 
       {/* 2. Message Modal (Chat Interface) */}
       {activeModal === 'message' && selectedFriend && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
           display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000
         }} onClick={handleCloseModal}>
-          <div style={{
+          <div className="modal-content" style={{
             backgroundColor: 'white', width: '90%', maxWidth: '500px', height: '600px', borderRadius: '20px',
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             animation: 'slideUp 0.3s ease-out'
