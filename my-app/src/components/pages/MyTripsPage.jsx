@@ -1,85 +1,137 @@
-import React, { useState } from "react";
-import { Calendar, MapPin, Clock, TrendingUp, PlusCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Calendar, MapPin, Clock, TrendingUp, PlusCircle, Trash2, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { API_URL } from "../../config";
 
 export default function MyTripsPage() {
   const { user } = useAuth();
-  const [trips, setTrips] = useState([
-    {
-      id: 1,
-      destination: "Cox's Bazar Beach Trip",
-      date: "November 2024",
-      duration: "3 days",
-      status: "completed",
-    },
-    {
-      id: 2,
-      destination: "Sylhet Tea Garden Tour",
-      date: "October 2024",
-      duration: "2 days",
-      status: "completed",
-    },
-    {
-      id: 3,
-      destination: "Sundarbans Mangrove Forest",
-      date: "December 2024",
-      duration: "4 days",
-      status: "upcoming",
-    },
-  ]);
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTrip, setNewTrip] = useState({
+    destination: "",
+    startDate: "",
+    endDate: "",
+    notes: "",
+    category: "leisure",
+  });
 
-  const handleAddTrip = async () => {
+  // Fetch real travel history from database
+  useEffect(() => {
+    if (user?._id) {
+      fetchTrips();
+    }
+  }, [user]);
+
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_URL}/api/dashboard/${user._id}/travel-history`
+      );
+      const data = await response.json();
+      setTrips(data);
+    } catch (error) {
+      console.error("Error fetching trips:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add a new trip to the database
+  const handleAddTrip = async (e) => {
+    e.preventDefault();
     if (!user) {
-      alert("Please login to earn points!");
+      alert("Please login to add trips!");
       return;
     }
 
-    // 1. Simulate New Trip Data
-    const newTrip = {
-      id: trips.length + 1,
-      destination: "Chittagong Hill Tracts Adventure",
-      date: "January 2025",
-      duration: "5 days",
-      status: "upcoming",
-    };
-
-    // 2. Call Backend to Award Points
     try {
       const response = await fetch(
-        `${API_URL}/api/rewards/add-points`,
+        `${API_URL}/api/dashboard/${user._id}/travel-history`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: user._id, // Assuming user object has _id
-            points: 150,
-            reason: `Trip booked: ${newTrip.destination}`,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newTrip),
         }
       );
 
-      const data = await response.json();
-
       if (response.ok) {
-        setTrips([...trips, newTrip]);
-
-        if (data.tierUpgraded) {
-          alert(
-            `🎉 AMAZING! You've reached the ${data.newTier} Tier! \n\nTrip Added! You earned 150 Travel Points!`
-          );
-        } else {
-          alert("Trip Added! You earned 150 Travel Points! ✈️");
-        }
+        setNewTrip({
+          destination: "",
+          startDate: "",
+          endDate: "",
+          notes: "",
+          category: "leisure",
+        });
+        setShowAddForm(false);
+        fetchTrips(); // Refresh the list from DB
+        alert("Trip added successfully! You earned 50 Travel Points! ✈️");
       } else {
-        console.error("Failed to add points");
+        console.error("Failed to add trip");
       }
     } catch (error) {
       console.error("Error adding trip:", error);
     }
   };
+
+  // Delete a trip from the database
+  const handleDeleteTrip = async (tripId) => {
+    try {
+      await fetch(
+        `${API_URL}/api/dashboard/${user._id}/travel-history/${tripId}`,
+        { method: "DELETE" }
+      );
+      fetchTrips(); // Refresh the list from DB
+    } catch (error) {
+      console.error("Error deleting trip:", error);
+    }
+  };
+
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+  const getCategoryIcon = (category) => {
+    const icons = {
+      leisure: "🏖️",
+      business: "💼",
+      adventure: "🏔️",
+      cultural: "🏛️",
+      family: "👨‍👩‍👧‍👦",
+    };
+    return icons[category] || "✈️";
+  };
+
+  const getStatusFromDates = (startDate, endDate) => {
+    const now = new Date();
+    const end = new Date(endDate);
+    const start = new Date(startDate);
+    if (now > end) return "completed";
+    if (now >= start && now <= end) return "ongoing";
+    return "upcoming";
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "400px",
+        }}
+      >
+        <div style={{ textAlign: "center", color: "#6b7280" }}>
+          <div style={{ fontSize: "24px", marginBottom: "8px" }}>✈️</div>
+          Loading your trips...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -99,7 +151,7 @@ export default function MyTripsPage() {
           Track your journeys and relive your adventures
         </p>
         <button
-          onClick={handleAddTrip}
+          onClick={() => setShowAddForm(!showAddForm)}
           style={{
             marginTop: "16px",
             display: "flex",
@@ -116,10 +168,184 @@ export default function MyTripsPage() {
           }}
         >
           <PlusCircle size={18} />
-          Simulate New Trip (+150 Pts)
+          Add New Trip
         </button>
       </div>
 
+      {/* Add Trip Form */}
+      {showAddForm && (
+        <div
+          style={{
+            backgroundColor: "white",
+            borderRadius: "20px",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
+            padding: "32px",
+            marginBottom: "28px",
+            border: "2px solid #bbf7d0",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "20px",
+                fontWeight: "700",
+                color: "#1f2937",
+                fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              Log a New Trip
+            </h3>
+            <button
+              onClick={() => setShowAddForm(false)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#6b7280",
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <form onSubmit={handleAddTrip}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "16px",
+                marginBottom: "16px",
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Destination (e.g., Cox's Bazar)"
+                value={newTrip.destination}
+                onChange={(e) =>
+                  setNewTrip({ ...newTrip, destination: e.target.value })
+                }
+                required
+                style={{
+                  padding: "14px",
+                  borderRadius: "12px",
+                  border: "2px solid #e5e7eb",
+                  fontSize: "15px",
+                  outline: "none",
+                  transition: "border-color 0.2s",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#059669")}
+                onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+              />
+              <select
+                value={newTrip.category}
+                onChange={(e) =>
+                  setNewTrip({ ...newTrip, category: e.target.value })
+                }
+                style={{
+                  padding: "14px",
+                  borderRadius: "12px",
+                  border: "2px solid #e5e7eb",
+                  fontSize: "15px",
+                  backgroundColor: "white",
+                }}
+              >
+                <option value="leisure">🏖️ Leisure</option>
+                <option value="business">💼 Business</option>
+                <option value="adventure">🏔️ Adventure</option>
+                <option value="cultural">🏛️ Cultural</option>
+                <option value="family">👨‍👩‍👧‍👦 Family</option>
+              </select>
+              <input
+                type="date"
+                value={newTrip.startDate}
+                onChange={(e) =>
+                  setNewTrip({ ...newTrip, startDate: e.target.value })
+                }
+                required
+                style={{
+                  padding: "14px",
+                  borderRadius: "12px",
+                  border: "2px solid #e5e7eb",
+                  fontSize: "15px",
+                }}
+              />
+              <input
+                type="date"
+                value={newTrip.endDate}
+                onChange={(e) =>
+                  setNewTrip({ ...newTrip, endDate: e.target.value })
+                }
+                required
+                style={{
+                  padding: "14px",
+                  borderRadius: "12px",
+                  border: "2px solid #e5e7eb",
+                  fontSize: "15px",
+                }}
+              />
+            </div>
+            <textarea
+              placeholder="Notes (optional)"
+              value={newTrip.notes}
+              onChange={(e) =>
+                setNewTrip({ ...newTrip, notes: e.target.value })
+              }
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: "12px",
+                border: "2px solid #e5e7eb",
+                fontSize: "15px",
+                resize: "vertical",
+                minHeight: "60px",
+                marginBottom: "16px",
+                boxSizing: "border-box",
+              }}
+            />
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                type="submit"
+                style={{
+                  padding: "12px 28px",
+                  backgroundColor: "#059669",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                  fontSize: "15px",
+                }}
+              >
+                Save Trip
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                style={{
+                  padding: "12px 28px",
+                  backgroundColor: "#e5e7eb",
+                  color: "#374151",
+                  border: "none",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "15px",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Trip List */}
       <div
         style={{
           backgroundColor: "white",
@@ -139,188 +365,229 @@ export default function MyTripsPage() {
           }}
         >
           {/* Timeline Line */}
-          <div
-            style={{
-              position: "absolute",
-              left: "26px",
-              top: "40px",
-              bottom: "40px",
-              width: "3px",
-              background: "linear-gradient(to bottom, #059669, #0d9488)",
-              borderRadius: "2px",
-            }}
-          />
-
-
-          {trips.map((trip, index) => (
+          {trips.length > 0 && (
             <div
-              key={trip.id}
               style={{
-                position: "relative",
-                paddingLeft: "68px",
-                paddingTop: "12px",
-                paddingBottom: "12px",
-                animation: `slideUp 0.5s ease-out ${index * 0.15}s both`,
+                position: "absolute",
+                left: "26px",
+                top: "40px",
+                bottom: "40px",
+                width: "3px",
+                background: "linear-gradient(to bottom, #059669, #0d9488)",
+                borderRadius: "2px",
               }}
-            >
-              {/* Timeline Dot */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: "14px",
-                  top: "20px",
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background:
-                    trip.status === "upcoming"
-                      ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
-                      : "linear-gradient(135deg, #059669, #0d9488)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow:
-                    trip.status === "upcoming"
-                      ? "0 4px 12px rgba(59, 130, 246, 0.4)"
-                      : "0 4px 12px rgba(5, 150, 105, 0.4)",
-                  border: "4px solid white",
-                  zIndex: 1,
-                }}
-              >
-                {trip.status === "upcoming" ? (
+            />
+          )}
 
-                  <TrendingUp size={14} color="white" strokeWidth={3} />
-                ) : (
-                  <Calendar size={14} color="white" strokeWidth={3} />
-                )}
-              </div>
-
-              <div
-                style={{
-                  backgroundColor:
-                    trip.status === "upcoming" ? "#f0f9ff" : "#f0fdf4",
-                  borderRadius: "16px",
-                  padding: "20px 24px",
-                  border: `2px solid ${trip.status === "upcoming" ? "#bfdbfe" : "#bbf7d0"
-                    }`,
-                  transition: "all 0.3s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(8px)";
-                  e.currentTarget.style.boxShadow =
-                    trip.status === "upcoming"
-                      ? "0 8px 16px rgba(59, 130, 246, 0.15)"
-                      : "0 8px 16px rgba(5, 150, 105, 0.15)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
+          {trips.length > 0 ? (
+            trips.map((trip, index) => {
+              const status = getStatusFromDates(trip.startDate, trip.endDate);
+              return (
                 <div
+                  key={trip._id}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
-                    flexWrap: "wrap",
-                    gap: "12px",
+                    position: "relative",
+                    paddingLeft: "68px",
+                    paddingTop: "12px",
+                    paddingBottom: "12px",
+                    animation: `slideUp 0.5s ease-out ${index * 0.15}s both`,
                   }}
                 >
-                  <div style={{ flex: 1 }}>
-                    <h4
+                  {/* Timeline Dot */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "14px",
+                      top: "20px",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      background:
+                        status === "upcoming"
+                          ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
+                          : status === "ongoing"
+                            ? "linear-gradient(135deg, #f59e0b, #ef4444)"
+                            : "linear-gradient(135deg, #059669, #0d9488)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow:
+                        status === "upcoming"
+                          ? "0 4px 12px rgba(59, 130, 246, 0.4)"
+                          : "0 4px 12px rgba(5, 150, 105, 0.4)",
+                      border: "4px solid white",
+                      zIndex: 1,
+                    }}
+                  >
+                    {status === "upcoming" ? (
+                      <TrendingUp size={14} color="white" strokeWidth={3} />
+                    ) : (
+                      <Calendar size={14} color="white" strokeWidth={3} />
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      backgroundColor:
+                        status === "upcoming" ? "#f0f9ff" : "#f0fdf4",
+                      borderRadius: "16px",
+                      padding: "20px 24px",
+                      border: `2px solid ${status === "upcoming" ? "#bfdbfe" : "#bbf7d0"
+                        }`,
+                      transition: "all 0.3s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateX(8px)";
+                      e.currentTarget.style.boxShadow =
+                        status === "upcoming"
+                          ? "0 8px 16px rgba(59, 130, 246, 0.15)"
+                          : "0 8px 16px rgba(5, 150, 105, 0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateX(0)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <div
                       style={{
-                        fontWeight: "700",
-                        color: "#1f2937",
-                        marginBottom: "12px",
-                        fontSize: "20px",
-                        fontFamily: "Poppins, sans-serif",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "start",
+                        flexWrap: "wrap",
+                        gap: "12px",
                       }}
                     >
-                      {trip.destination}
-                    </h4>
-                    <div
-                      style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          fontSize: "14px",
-                          color: "#6b7280",
-                        }}
-                      >
-                        <div
+                      <div style={{ flex: 1 }}>
+                        <h4
                           style={{
-                            padding: "6px",
-                            borderRadius: "8px",
-                            backgroundColor: "white",
+                            fontWeight: "700",
+                            color: "#1f2937",
+                            marginBottom: "12px",
+                            fontSize: "20px",
+                            fontFamily: "Poppins, sans-serif",
                             display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
                           }}
                         >
-                          <Calendar
-                            size={16}
-                            color={
-                              trip.status === "upcoming" ? "#3b82f6" : "#059669"
-                            }
-                          />
+                          <span>{getCategoryIcon(trip.category)}</span>
+                          {trip.destination}
+                        </h4>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "20px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              fontSize: "14px",
+                              color: "#6b7280",
+                            }}
+                          >
+                            <div
+                              style={{
+                                padding: "6px",
+                                borderRadius: "8px",
+                                backgroundColor: "white",
+                                display: "flex",
+                              }}
+                            >
+                              <Calendar
+                                size={16}
+                                color={
+                                  status === "upcoming"
+                                    ? "#3b82f6"
+                                    : "#059669"
+                                }
+                              />
+                            </div>
+                            {formatDate(trip.startDate)} -{" "}
+                            {formatDate(trip.endDate)}
+                          </div>
                         </div>
-                        {trip.date}
+                        {trip.notes && (
+                          <p
+                            style={{
+                              fontSize: "13px",
+                              color: "#9ca3af",
+                              marginTop: "8px",
+                            }}
+                          >
+                            {trip.notes}
+                          </p>
+                        )}
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          fontSize: "14px",
-                          color: "#6b7280",
-                        }}
-                      >
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                         <div
                           style={{
-                            padding: "6px",
-                            borderRadius: "8px",
-                            backgroundColor: "white",
-                            display: "flex",
+                            padding: "6px 16px",
+                            borderRadius: "20px",
+                            fontSize: "13px",
+                            fontWeight: "700",
+                            backgroundColor:
+                              status === "upcoming"
+                                ? "#3b82f6"
+                                : status === "ongoing"
+                                  ? "#f59e0b"
+                                  : "#059669",
+                            color: "white",
+                            boxShadow:
+                              status === "upcoming"
+                                ? "0 4px 12px rgba(59, 130, 246, 0.3)"
+                                : "0 4px 12px rgba(5, 150, 105, 0.3)",
                           }}
                         >
-                          <Clock
-                            size={16}
-                            color={
-                              trip.status === "upcoming" ? "#3b82f6" : "#059669"
-                            }
-                          />
-
+                          {status === "upcoming"
+                            ? "Upcoming"
+                            : status === "ongoing"
+                              ? "Ongoing"
+                              : "Completed"}
                         </div>
-                        {trip.duration}
+                        <button
+                          onClick={() => handleDeleteTrip(trip._id)}
+                          style={{
+                            padding: "8px",
+                            backgroundColor: "#fee2e2",
+                            color: "#dc2626",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <div
-                    style={{
-                      padding: "6px 16px",
-                      borderRadius: "20px",
-                      fontSize: "13px",
-                      fontWeight: "700",
-                      backgroundColor:
-                        trip.status === "upcoming" ? "#3b82f6" : "#059669",
-                      color: "white",
-                      boxShadow:
-                        trip.status === "upcoming"
-                          ? "0 4px 12px rgba(59, 130, 246, 0.3)"
-                          : "0 4px 12px rgba(5, 150, 105, 0.3)",
-                    }}
-                  >
-                    {trip.status === "upcoming" ? "Upcoming" : "Completed"}
-
-                  </div>
                 </div>
-              </div>
+              );
+            })
+          ) : (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "40px",
+                color: "#9ca3af",
+              }}
+            >
+              <MapPin
+                size={48}
+                style={{ marginBottom: "12px", opacity: 0.5 }}
+              />
+              <p>No trips logged yet. Add your first trip above!</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
+      {/* Stats */}
       <div
         style={{
           background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)",
@@ -358,12 +625,9 @@ export default function MyTripsPage() {
           Total Trips: {trips.length}
         </h3>
         <p style={{ color: "#6b7280", fontSize: "15px", lineHeight: "1.6" }}>
-
           Keep exploring and add more destinations to your travel history!
         </p>
       </div>
     </div>
   );
-
 }
-
