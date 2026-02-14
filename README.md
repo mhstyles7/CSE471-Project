@@ -1,8 +1,5 @@
 # 🚀 PothChola - Your Ultimate Travel Companion
 
-![PothChola Banner](https://images.unsplash.com/photo-1599407335272-b7a48dbe559d?auto=format&fit=crop&w=1200&h=400&q=80) 
-*(Example banner image - verify link or replace with project screenshot)*
-
 **PothChola** is a comprehensive travel assistant application designed to revolutionize the tourism experience in Bangladesh. It connects travelers with destinations, local guides, and a vibrant community of explorers. From AI-powered recommendations to seamless booking and social sharing, PothChola makes every journey unforgettable.
 
 ## ✨ Key Features
@@ -117,7 +114,9 @@ The project features a sophisticated AI chatbot located in `my-app/src/component
 *   **Fallback Logic**: Robust error handling with pre-defined responses if the API is unavailable.
 
 ## 🤝 Contributors
-*   **[Your Name]** - Lead Developer
-
+*   **[Md. Meheraj Hossain]** - Lead Developer 
+*   **[Nijaf Md. Ahanaf Rivan]** 
+*   **[Alimool Razi]** 
+*   **[Zarin Tasnim Raisa]** 
 ---
 *Built for CSE471 Project Demonstration*
