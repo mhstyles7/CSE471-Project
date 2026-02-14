@@ -117,7 +117,7 @@ The project features a sophisticated AI chatbot located in `my-app/src/component
 *   **Fallback Logic**: Robust error handling with pre-defined responses if the API is unavailable.
 
 ## 🤝 Contributors
-*   **[Your Name]** - Lead Developer
+*   **[Md. Meheraj Hossain]** - Lead Developer
 
 ---
 *Built for CSE471 Project Demonstration*
