@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { UserPlus, Users, Check, X, MessageCircle, MapPin, Calendar, Heart, Send, Bell, Clock, Activity } from 'lucide-react';
+import { UserPlus, Users, Check, X, MessageCircle, MapPin, Calendar, Heart, Send, Bell, Clock, Activity, ShieldCheck, Hand, Star } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
@@ -374,7 +374,7 @@ export default function FriendsPage() {
       });
 
       if (res.ok) {
-        // showNotification(`Message sent to ${selectedFriend.name}! 📨`); // Optional: don't show toast for every chat msg
+        // showNotification(`Message sent to ${selectedFriend.name}!`); // Optional: don't show toast for every chat msg
         setMessageText(''); // Clear input
         fetchConversation(); // Refresh chat immediately
       } else {
@@ -402,7 +402,7 @@ export default function FriendsPage() {
       });
 
       if (res.ok) {
-        showNotification(`Invitation sent to ${selectedFriend.name}! ✈️`);
+        showNotification(`Invitation sent to ${selectedFriend.name}!`);
         handleCloseModal();
       } else {
         const d = await res.json();
@@ -475,10 +475,17 @@ export default function FriendsPage() {
             fontWeight: '800',
             color: '#1f2937',
             marginBottom: '8px',
-            fontFamily: 'Poppins, sans-serif'
+            fontFamily: 'Poppins, sans-serif',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
           }}>
             Your Travel Network
+            <ShieldCheck size={32} color="#059669" title="Secure Connection" />
           </h2>
+          <p style={{ fontSize: '16px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <ShieldCheck size={16} color="#059669" /> End-to-end encrypted & private
+          </p>
           <p style={{ fontSize: '16px', color: '#6b7280' }}>
             Connect with fellow travelers and see what they're up to
           </p>
@@ -603,7 +610,7 @@ export default function FriendsPage() {
                 {activity.rating && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>
                     {[...Array(activity.rating)].map((_, i) => (
-                      <span key={i} style={{ color: '#fbbf24' }}>★</span>
+                      <Star key={i} size={14} fill="#fbbf24" color="#fbbf24" />
                     ))}
                   </div>
                 )}
@@ -1117,7 +1124,7 @@ export default function FriendsPage() {
               {conversation.length === 0 ? (
                 <div style={{ textAlign: 'center', marginTop: '40px', color: '#9ca3af' }}>
                   <MessageCircle size={48} style={{ opacity: 0.5, marginBottom: '10px' }} />
-                  <p>No messages yet. Say hello! 👋</p>
+                  <p>No messages yet. Say hello! <Hand size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '4px' }} /></p>
                 </div>
               ) : (
                 conversation.map((msg, idx) => {
