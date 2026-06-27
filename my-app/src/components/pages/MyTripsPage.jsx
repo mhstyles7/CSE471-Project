@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, MapPin, Clock, TrendingUp, PlusCircle, Trash2, X } from "lucide-react";
+import { Calendar, MapPin, Clock, TrendingUp, PlusCircle, Trash2, X, Umbrella, Plane, Briefcase, Mountain, Landmark, User } from 'lucide-react';
 import { useAuth } from "../../context/AuthContext";
 import { API_URL } from "../../config";
 
@@ -66,7 +66,7 @@ export default function MyTripsPage() {
         });
         setShowAddForm(false);
         fetchTrips(); // Refresh the list from DB
-        alert("Trip added successfully! You earned 50 Travel Points! ✈️");
+        alert("Trip added successfully! You earned 50 Travel Points! ️");
       } else {
         console.error("Failed to add trip");
       }
@@ -97,13 +97,13 @@ export default function MyTripsPage() {
 
   const getCategoryIcon = (category) => {
     const icons = {
-      leisure: "🏖️",
-      business: "💼",
-      adventure: "🏔️",
-      cultural: "🏛️",
-      family: "👨‍👩‍👧‍👦",
+      leisure: <><Umbrella size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>,
+      business: <><Briefcase size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>,
+      adventure: <><Mountain size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>,
+      cultural: <><Landmark size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>,
+      family: <><User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>,
     };
-    return icons[category] || "✈️";
+    return icons[category] || <><Plane size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>;
   };
 
   const getStatusFromDates = (startDate, endDate) => {
@@ -126,7 +126,7 @@ export default function MyTripsPage() {
         }}
       >
         <div style={{ textAlign: "center", color: "#6b7280" }}>
-          <div style={{ fontSize: "24px", marginBottom: "8px" }}>✈️</div>
+          <div style={{ fontSize: "24px", marginBottom: "8px" }}><Plane size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</div>
           Loading your trips...
         </div>
       </div>
@@ -257,11 +257,11 @@ export default function MyTripsPage() {
                   backgroundColor: "white",
                 }}
               >
-                <option value="leisure">🏖️ Leisure</option>
-                <option value="business">💼 Business</option>
-                <option value="adventure">🏔️ Adventure</option>
-                <option value="cultural">🏛️ Cultural</option>
-                <option value="family">👨‍👩‍👧‍👦 Family</option>
+                <option value="leisure"><Umbrella size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Leisure</option>
+                <option value="business"><Briefcase size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Business</option>
+                <option value="adventure"><Mountain size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Adventure</option>
+                <option value="cultural"><Landmark size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Cultural</option>
+                <option value="family"><User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />‍<User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />‍<User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />‍<User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Family</option>
               </select>
               <input
                 type="date"

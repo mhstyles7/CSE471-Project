@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../config';
-import {
-    MapPin, Calendar, Award, Users, Bookmark, Clock,
-    TrendingUp, Globe, Star, Plus, Trash2, ChevronRight,
-    Plane, Camera, Heart
-} from 'lucide-react';
+import { MapPin, Calendar, Award, Users, Bookmark, Clock, TrendingUp, Globe, Star, Plus, Trash2, ChevronRight, Plane, Camera, Heart, Hand, Umbrella, Briefcase, Mountain, Landmark, User, Utensils, Hotel, TreePine, ShoppingBag } from 'lucide-react';
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -98,7 +94,7 @@ export default function DashboardPage() {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
                 <div style={{ textAlign: 'center', color: '#6b7280' }}>
-                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>✈️</div>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}><Plane size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</div>
                     Loading your dashboard...
                 </div>
             </div>
@@ -111,9 +107,9 @@ export default function DashboardPage() {
 
     const getCategoryIcon = (category) => {
         const icons = {
-            leisure: '🏖️', business: '💼', adventure: '🏔️', cultural: '🏛️', family: '👨‍👩‍👧‍👦'
+            leisure: <><Umbrella size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>, business: <><Briefcase size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>, adventure: <><Mountain size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>, cultural: <><Landmark size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>, family: <><User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>
         };
-        return icons[category] || '✈️';
+        return icons[category] || <><Plane size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>;
     };
 
     const getActivityIcon = (type) => {
@@ -131,7 +127,7 @@ export default function DashboardPage() {
             {/* Header */}
             <div style={{ marginBottom: '32px' }}>
                 <h1 className="page-heading" style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
-                    Welcome back, {user?.name?.split(' ')[0] || 'Traveler'}! 👋
+                    Welcome back, {user?.name?.split(' ')[0] || 'Traveler'}! <Hand size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />
                 </h1>
                 <p style={{ color: '#6b7280', fontSize: '16px' }}>
                     Here's an overview of your travel journey
@@ -239,11 +235,11 @@ export default function DashboardPage() {
                             <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                                 <input type="text" placeholder="Destination" value={newTrip.destination} onChange={e => setNewTrip({ ...newTrip, destination: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <select value={newTrip.category} onChange={e => setNewTrip({ ...newTrip, category: e.target.value })} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }}>
-                                    <option value="leisure">🏖️ Leisure</option>
-                                    <option value="business">💼 Business</option>
-                                    <option value="adventure">🏔️ Adventure</option>
-                                    <option value="cultural">🏛️ Cultural</option>
-                                    <option value="family">👨‍👩‍👧‍👦 Family</option>
+                                    <option value="leisure"><Umbrella size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Leisure</option>
+                                    <option value="business"><Briefcase size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Business</option>
+                                    <option value="adventure"><Mountain size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Adventure</option>
+                                    <option value="cultural"><Landmark size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Cultural</option>
+                                    <option value="family"><User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />‍<User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />‍<User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />‍<User size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Family</option>
                                 </select>
                                 <input type="date" placeholder="Start Date" value={newTrip.startDate} onChange={e => setNewTrip({ ...newTrip, startDate: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <input type="date" placeholder="End Date" value={newTrip.endDate} onChange={e => setNewTrip({ ...newTrip, endDate: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
@@ -299,11 +295,11 @@ export default function DashboardPage() {
                                 <input type="text" placeholder="Place Name" value={newPlace.name} onChange={e => setNewPlace({ ...newPlace, name: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <input type="text" placeholder="Location" value={newPlace.location} onChange={e => setNewPlace({ ...newPlace, location: e.target.value })} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                                 <select value={newPlace.category} onChange={e => setNewPlace({ ...newPlace, category: e.target.value })} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }}>
-                                    <option value="attraction">🏛️ Attraction</option>
-                                    <option value="restaurant">🍽️ Restaurant</option>
-                                    <option value="hotel">🏨 Hotel</option>
-                                    <option value="nature">🌲 Nature</option>
-                                    <option value="shopping">🛍️ Shopping</option>
+                                    <option value="attraction"><Landmark size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Attraction</option>
+                                    <option value="restaurant"><Utensils size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Restaurant</option>
+                                    <option value="hotel"><Hotel size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Hotel</option>
+                                    <option value="nature"><TreePine size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Nature</option>
+                                    <option value="shopping"><ShoppingBag size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Shopping</option>
                                 </select>
                                 <input type="text" placeholder="Notes (optional)" value={newPlace.notes} onChange={e => setNewPlace({ ...newPlace, notes: e.target.value })} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px' }} />
                             </div>

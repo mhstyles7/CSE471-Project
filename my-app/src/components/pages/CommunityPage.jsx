@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send, Lock, MapPin, Star, Image, Smile, Bell, Bookmark, MoreHorizontal, ThumbsUp, Laugh, Award, Camera, TrendingUp, Users, Reply, ChevronDown, ChevronUp, X, Sparkles, Trophy, MessageSquare, Upload, FileText, Megaphone, Newspaper, Flame, HelpCircle, BookOpen } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
@@ -28,11 +28,11 @@ export default function CommunityPage() {
 
   // Reaction types (3.2)
   const reactionTypes = [
-    { type: 'like', emoji: '👍', label: 'Like' },
-    { type: 'love', emoji: '❤️', label: 'Love' },
-    { type: 'wow', emoji: '😮', label: 'Wow' },
-    { type: 'haha', emoji: '😂', label: 'Haha' },
-    { type: 'inspire', emoji: '✨', label: 'Inspiring' }
+    { type: 'like', emoji: <><ThumbsUp size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>, label: 'Like' },
+    { type: 'love', emoji: <><Heart size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>, label: 'Love' },
+    { type: 'wow', emoji: <><Smile size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>, label: 'Wow' },
+    { type: 'haha', emoji: <><Smile size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>, label: 'Haha' },
+    { type: 'inspire', emoji: <><Sparkles size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>, label: 'Inspiring' }
   ];
 
   // Posts state with full functionality (3.1 - 3.4)
@@ -190,10 +190,10 @@ export default function CommunityPage() {
       setSelectedPhotos([]);
       showNotificationMsg(
         postType === 'recommendation'
-          ? `Your recommendation for ${selectedDestination} has been shared! 🌟`
+          ? `Your recommendation for ${selectedDestination} has been shared! <Star size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />`
           : postType === 'question'
-            ? 'Your question has been posted! The community will help you out. 💬'
-            : 'Your story has been shared! 📤'
+            ? 'Your question has been posted! The community will help you out. <MessageSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />'
+            : 'Your story has been shared! <Upload size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />'
       );
     } catch (err) {
       showNotificationMsg('Failed to post. Please try again.', 'error');
@@ -220,7 +220,7 @@ export default function CommunityPage() {
 
       if (res.ok) {
         setSelectedPhotos(prev => [...prev, data.url]);
-        showNotificationMsg('Photo uploaded! 📷', 'success');
+        showNotificationMsg('Photo uploaded! ', 'success');
       } else {
         showNotificationMsg('Upload failed: ' + data.message, 'error');
       }
@@ -282,7 +282,7 @@ export default function CommunityPage() {
       return post;
     }));
     const post = posts.find(p => p.id === postId);
-    showNotificationMsg(post?.isSaved ? 'Removed from saved' : 'Saved to your collection! 📑', 'info');
+    showNotificationMsg(post?.isSaved ? 'Removed from saved' : 'Saved to your collection! <FileText size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />', 'info');
   };
 
   // Share post
@@ -293,7 +293,7 @@ export default function CommunityPage() {
       }
       return post;
     }));
-    showNotificationMsg('Post shared! Your friends will see this. 📢');
+    showNotificationMsg('Post shared! Your friends will see this. ');
   };
 
   // Add comment (3.2)
@@ -321,7 +321,7 @@ export default function CommunityPage() {
       });
 
       if (res.ok) {
-        showNotificationMsg('Comment added! 💬');
+        showNotificationMsg('Comment added! ');
         fetchPosts(); // Reload to see new comment
       }
     } catch (err) {
@@ -384,7 +384,7 @@ export default function CommunityPage() {
       });
 
       if (res.ok) {
-        showNotificationMsg('Reply added! 💬');
+        showNotificationMsg('Reply added! ');
         fetchPosts();
       }
     } catch (err) {
@@ -454,9 +454,9 @@ export default function CommunityPage() {
           {/* Tabs (3.3) */}
           <div className="community-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
             {[
-              { id: 'feed', label: '📰 Feed' },
-              { id: 'trending', label: '🔥 Trending' },
-              { id: 'questions', label: '❓ Questions' }
+              { id: 'feed', label: <><Newspaper size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Feed</> },
+              { id: 'trending', label: <><Flame size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Trending</> },
+              { id: 'questions', label: <><HelpCircle size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Questions</> }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -525,9 +525,9 @@ export default function CommunityPage() {
               {/* Post Type Selector */}
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                 {[
-                  { id: 'story', label: '📖 Story' },
+                  { id: 'story', label: <><BookOpen size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Story</> },
                   { id: 'recommendation', label: '⭐ Recommend' },
-                  { id: 'question', label: '❓ Question' }
+                  { id: 'question', label: <><HelpCircle size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Question</> }
                 ].map(type => (
                   <button
                     key={type.id}
@@ -796,7 +796,7 @@ export default function CommunityPage() {
                               fontSize: '11px',
                               fontWeight: '600'
                             }}>
-                              🏆 {post.authorBadge}
+                              <Trophy size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> {post.authorBadge}
                             </span>
                           )}
                         </div>
@@ -845,7 +845,7 @@ export default function CommunityPage() {
                       display: 'inline-block',
                       marginBottom: '12px'
                     }}>
-                      ❓ Question for the community
+                      <HelpCircle size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Question for the community
                     </div>
                   )}
 
@@ -1080,7 +1080,7 @@ export default function CommunityPage() {
                                     fontWeight: '600'
                                   }}
                                 >
-                                  {comment.isLiked ? '❤️' : '👍'} {comment.likes > 0 && comment.likes}
+                                  {comment.isLiked ? <><Heart size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</> : <><ThumbsUp size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>} {comment.likes > 0 && comment.likes}
                                 </button>
                                 <button
                                   onClick={() => setReplyingTo(prev => ({ ...prev, [`${post.id}-${comment.id}`]: !prev[`${post.id}-${comment.id}`] }))}

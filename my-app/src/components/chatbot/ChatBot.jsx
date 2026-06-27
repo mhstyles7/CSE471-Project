@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, Bot, Navigation, MapPin } from 'lucide-react';
+import { X, Send, Sparkles, Bot, Navigation, MapPin, Hand, RefreshCw, Umbrella, Mountain, Compass, Trophy } from 'lucide-react';
 import { getAIResponse, detectNavigationIntent, PLATFORM_PAGES } from '../../services/chatbotService';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useCurrentPage } from '../../context/NavigationContext';
@@ -27,8 +27,8 @@ export default function ChatBot() {
   // Initial personalized greeting (2.1, 2.5)
   useEffect(() => {
     const greeting = isAuthenticated && user?.name
-      ? `Hi ${user.name.split(' ')[0]}! 👋 I'm your PothChola AI assistant. Based on your travel history, I can give you personalized recommendations! What would you like to explore today - new destinations, platform features, or tips for your next trip?`
-      : "Hi there! 👋 I'm your PothChola AI travel assistant. I can help you discover amazing destinations in Bangladesh, navigate the platform, or answer any questions. What would you like to explore today? 🇧🇩";
+      ? `Hi ${user.name.split(' ')[0]}! <Hand size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> I'm your PothChola AI assistant. Based on your travel history, I can give you personalized recommendations! What would you like to explore today - new destinations, platform features, or tips for your next trip?`
+      : "Hi there! <Hand size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> I'm your PothChola AI travel assistant. I can help you discover amazing destinations in Bangladesh, navigate the platform, or answer any questions. What would you like to explore today? 🇧🇩";
 
     setMessages([{ text: greeting, isUser: false }]);
   }, [isAuthenticated, user]);
@@ -46,7 +46,7 @@ export default function ChatBot() {
     navigate(page);
     setSuggestedNavigation(null);
     setMessages(prev => [...prev, {
-      text: `Taking you to ${PLATFORM_PAGES[page]?.name || page}... ✨`,
+      text: `Taking you to ${PLATFORM_PAGES[page]?.name || page}... `,
       isUser: false,
       isSystem: true
     }]);
@@ -82,7 +82,7 @@ export default function ChatBot() {
     } catch (error) {
       console.error("Error getting AI response:", error);
       setMessages(prev => [...prev, {
-        text: "I'm having trouble connecting right now. Please try again in a moment! 🔄",
+        text: "I'm having trouble connecting right now. Please try again in a moment! ",
         isUser: false,
         isError: true
       }]);
@@ -93,10 +93,10 @@ export default function ChatBot() {
 
   // Quick action buttons for common queries (2.5 - engagement)
   const quickActions = [
-    { label: "🏖️ Beach destinations", query: "Suggest beach destinations" },
-    { label: "⛰️ Hill stations", query: "Tell me about hill stations" },
-    { label: "🧭 How to navigate", query: "How do I navigate this website?" },
-    { label: "🏆 Rewards info", query: "Tell me about rewards" }
+    { label: <><Umbrella size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Beach destinations</>, query: "Suggest beach destinations" },
+    { label: <><Mountain size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Hill stations</>, query: "Tell me about hill stations" },
+    { label: <><Compass size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> How to navigate</>, query: "How do I navigate this website?" },
+    { label: <><Trophy size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Rewards info</>, query: "Tell me about rewards" }
   ];
 
   const handleQuickAction = (query) => {

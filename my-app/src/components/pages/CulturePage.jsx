@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
-import { ChefHat, Utensils, Calendar, ArrowRight, Lock, X, MapPin, Filter } from 'lucide-react';
+import { ChefHat, Utensils, Calendar, ArrowRight, Lock, X, MapPin, Filter, PartyPopper } from 'lucide-react';
 import { API_URL } from '../../config';
 
 // Bangla Date Converter - Accurate Calculation
@@ -269,7 +269,7 @@ export default function CulturePage() {
                                             borderRadius: '10px',
                                             display: 'inline-block'
                                         }}>
-                                            {evt.daysRemaining === 0 ? '🎉 Today!' :
+                                            {evt.daysRemaining === 0 ? <><PartyPopper size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Today!</> :
                                                 evt.daysRemaining === 1 ? '⏰ Tomorrow!' :
                                                     `${evt.daysRemaining} days left`}
                                         </p>

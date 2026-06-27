@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../config';
-import {
-    MapPin, Calendar, Clock, DollarSign, Heart,
-    ChevronDown, ChevronUp, Search, Filter
-} from 'lucide-react';
+import { MapPin, Calendar, Clock, DollarSign, Heart, ChevronDown, ChevronUp, Search, Filter, Umbrella, Mountain, Landmark, Coins } from 'lucide-react';
 
 export default function TripPlannerPage() {
     const { user } = useAuth();
@@ -124,10 +121,10 @@ export default function TripPlannerPage() {
                         style={{ width: '100%', padding: '12px 12px 12px 44px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '16px', appearance: 'none', backgroundColor: 'white' }}
                     >
                         <option value="">All Styles</option>
-                        <option value="cultural">🏛️ Cultural</option>
-                        <option value="adventure">🏔️ Adventure</option>
-                        <option value="leisure">🏖️ Leisure</option>
-                        <option value="budget">💰 Budget</option>
+                        <option value="cultural"><Landmark size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Cultural</option>
+                        <option value="adventure"><Mountain size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Adventure</option>
+                        <option value="leisure"><Umbrella size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️ Leisure</option>
+                        <option value="budget"><Coins size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Budget</option>
                     </select>
                 </div>
 

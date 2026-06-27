@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, Clock, MessageSquare, ListTodo, BarChart2, Trash2, Edit2, ChevronLeft, Star } from 'lucide-react';
+import { Calendar, Users, MapPin, Plus, UserPlus, ArrowRight, Check, X, Share2, Bell, Send, Clock, MessageSquare, ListTodo, BarChart2, Trash2, Edit2, ChevronLeft, Star, Upload, PartyPopper, CheckCircle2, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from '../../context/NavigationContext';
 import { API_URL } from '../../config';
@@ -104,7 +104,7 @@ export default function GroupEventsPage() {
       });
 
       if (res.ok) {
-        showNotificationMsg(`You've joined the event! 🎉`);
+        showNotificationMsg(`You've joined the event! `);
         fetchData();
       } else {
         const data = await res.json();
@@ -186,7 +186,7 @@ export default function GroupEventsPage() {
         });
 
         if (res.ok) {
-          showNotificationMsg(`Invitation sent to ${friend.name} for "${event.name}"! 📤`);
+          showNotificationMsg(`Invitation sent to ${friend.name} for "${event.name}"! `);
           setShowInviteModal(null);
           fetchData(); // refresh invited lists
         } else {
@@ -234,7 +234,7 @@ export default function GroupEventsPage() {
           setEventLocation('');
           setEventDescription('');
           setMaxParticipants('');
-          showNotificationMsg('Event created successfully! 🎊 Invite your friends to join.');
+          showNotificationMsg('Event created successfully!  Invite your friends to join.');
         }
       } catch (err) {
         console.error(err);
@@ -254,7 +254,7 @@ export default function GroupEventsPage() {
       });
       if (res.ok) {
         setNewItineraryItem({ day: 1, time: '', activity: '', location: '' });
-        showNotificationMsg('Itinerary updated! 📅');
+        showNotificationMsg('Itinerary updated! ');
         fetchData();
       }
     } catch (err) {
@@ -295,7 +295,7 @@ export default function GroupEventsPage() {
       });
       if (res.ok) {
         setNewTask('');
-        showNotificationMsg('Task added! ✅');
+        showNotificationMsg('Task added! <CheckCircle2 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />');
         fetchData();
       }
     } catch (err) {
@@ -342,7 +342,7 @@ export default function GroupEventsPage() {
       });
       if (res.ok) {
         setNewPoll({ question: '', option1: '', option2: '' });
-        showNotificationMsg('Poll created! 📊');
+        showNotificationMsg('Poll created! <BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />');
         fetchData();
       }
     } catch (err) {
@@ -892,7 +892,7 @@ export default function GroupEventsPage() {
                             backgroundColor: '#dbeafe',
                             color: '#1d4ed8'
                           }}>
-                            ✓ Joined
+                            <Check size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Joined
                           </div>
                         )}
                       </div>
@@ -1108,10 +1108,10 @@ export default function GroupEventsPage() {
             {/* Detail Tabs */}
             <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid #f3f4f6', marginBottom: '24px' }}>
               {[
-                { id: 'itinerary', label: '📅 Itinerary', icon: Calendar },
-                { id: 'discussion', label: '💬 Discussion', icon: MessageSquare },
-                { id: 'tasks', label: '✅ Tasks', icon: ListTodo },
-                { id: 'polls', label: '📊 Polls', icon: BarChart2 }
+                { id: 'itinerary', label: <><Calendar size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Itinerary</>, icon: Calendar },
+                { id: 'discussion', label: <><MessageSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Discussion</>, icon: MessageSquare },
+                { id: 'tasks', label: '<CheckCircle2 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Tasks', icon: ListTodo },
+                { id: 'polls', label: '<BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Polls', icon: BarChart2 }
               ].map(tab => (
                 <button
                   key={tab.id}

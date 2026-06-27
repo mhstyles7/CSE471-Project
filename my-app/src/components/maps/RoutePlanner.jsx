@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Search,
-  MapPin,
-  Clock,
-  DollarSign,
-  Leaf,
-  Trophy,
-  ArrowRight,
-  Activity,
-  BarChart2,
-  Sparkles,
-  RefreshCw,
-} from "lucide-react";
+import { Search, MapPin, Clock, DollarSign, Leaf, Trophy, ArrowRight, Activity, BarChart2, Sparkles, RefreshCw, , X, Bus, Train, Car, Plane, Navigation } from 'lucide-react';
 import RouteMap from "./RouteMap";
 import { searchLocation, getRouteEstimates } from "../../services/mapService";
 import { getRouteRecommendation } from "../../services/travelAIService";
@@ -266,7 +254,7 @@ export default function RoutePlanner() {
                     color: "#94a3b8",
                   }}
                 >
-                  ✕
+                  <X size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />
                 </button>
               )}
             </div>
@@ -346,7 +334,7 @@ export default function RoutePlanner() {
                     color: "#94a3b8",
                   }}
                 >
-                  ✕
+                  <X size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />
                 </button>
               )}
             </div>
@@ -574,7 +562,7 @@ export default function RoutePlanner() {
                             gap: "6px",
                           }}
                         >
-                          <span style={{ flexShrink: 0 }}>✨</span>
+                          <span style={{ flexShrink: 0 }}><Sparkles size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></span>
                           <span>{aiRecommendation.reason}</span>
                         </div>
                       )}
@@ -606,11 +594,11 @@ export default function RoutePlanner() {
                             fontSize: "24px",
                           }}
                         >
-                          {est.mode === "bus" && "🚌"}
-                          {est.mode === "train" && "🚆"}
-                          {est.mode === "car" && "🚗"}
-                          {est.mode === "flight" && "✈️"}
-                          {est.mode === "cng" && "🛺"}
+                          {est.mode === "bus" && <><Bus size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>}
+                          {est.mode === "train" && <><Train size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>}
+                          {est.mode === "car" && <><Car size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>}
+                          {est.mode === "flight" && <><Plane size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />️</>}
+                          {est.mode === "cng" && <><Navigation size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /></>}
                         </div>
                         <div>
                           <h3

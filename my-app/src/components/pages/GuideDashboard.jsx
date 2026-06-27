@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Send, Star, MapPin, Users, Award } from 'lucide-react';
+import { Send, Star, MapPin, Users, Award, CookingPot, Backpack } from 'lucide-react';
 
 import { API_URL } from '../../config';
 
@@ -237,7 +237,7 @@ export default function GuideDashboard() {
                                         </span>
                                     </div>
                                     <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
-                                        {booking.type === 'cook_with_local' ? '🍳 Cook with Local' : '🎒 Guide Booking'} • ৳{booking.amount}
+                                        {booking.type === 'cook_with_local' ? <><CookingPot size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Cook with Local</> : <><Backpack size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Guide Booking</>} • ৳{booking.amount}
                                     </p>
                                     <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0' }}>
                                         {new Date(booking.createdAt).toLocaleDateString()}

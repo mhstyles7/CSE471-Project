@@ -11,22 +11,7 @@ import "leaflet/dist/leaflet.css";
 import "./Heatmap.css";
 import L from "leaflet";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Map as MapIcon,
-  MapPin,
-  Calendar,
-  Shield,
-  Leaf,
-  Smile,
-  CloudSun,
-  Newspaper,
-  Globe,
-  Sparkles,
-  Scale,
-  X,
-  ArrowRight,
-  RefreshCw,
-} from "lucide-react";
+import { Map as MapIcon, MapPin, Calendar, Shield, Leaf, Smile, CloudSun, Newspaper, Globe, Sparkles, Scale, X, ArrowRight, RefreshCw,  } from 'lucide-react';
 import {
   getAIInsights,
   getCoordinates,
@@ -403,7 +388,7 @@ function DistrictPanel({ district, onClose, onAddToCompare, onInsightUpdate }) {
               borderRadius: "10px",
             }}
           >
-            <span style={{ color: "#64748b" }}>🔄 AI Analyzing...</span>
+            <span style={{ color: "#64748b" }}><RefreshCw size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> AI Analyzing...</span>
           </div>
         ) : (
           <div>

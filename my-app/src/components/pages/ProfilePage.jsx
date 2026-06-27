@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../config';
-import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save, TrendingUp, Star, Upload } from 'lucide-react';
+import { MapPin, Calendar, Award, Users, Edit, Camera, X, Save, TrendingUp, Star, Upload, Globe, Mountain } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
@@ -96,11 +96,11 @@ export default function ProfilePage() {
 
   // Badges from MongoDB (dynamic)
   const badges = profileStats.badges.length > 0 ? profileStats.badges : [
-    { id: 1, name: 'Explorer', icon: '🌍', unlocked: false, description: 'Complete 3 or more trips' },
-    { id: 2, name: 'Photographer', icon: '📸', unlocked: false, description: 'Earn 200+ travel points' },
-    { id: 3, name: 'Social Butterfly', icon: '🦋', unlocked: false, description: 'Make 5 or more friends' },
-    { id: 4, name: 'Reviewer', icon: '✍️', unlocked: false, description: 'Write 5 or more reviews' },
-    { id: 5, name: 'Mountaineer', icon: '🏔️', unlocked: false, description: 'Complete 5 or more trips' }
+    { id: 1, name: 'Explorer', icon: <Globe size={28} color="#059669" />, unlocked: false, description: 'Complete 3 or more trips' },
+    { id: 2, name: 'Photographer', icon: <Camera size={28} color="#059669" />, unlocked: false, description: 'Earn 200+ travel points' },
+    { id: 3, name: 'Social Butterfly', icon: <Users size={28} color="#059669" />, unlocked: false, description: 'Make 5 or more friends' },
+    { id: 4, name: 'Reviewer', icon: <Edit size={28} color="#059669" />, unlocked: false, description: 'Write 5 or more reviews' },
+    { id: 5, name: 'Mountaineer', icon: <Mountain size={28} color="#059669" />, unlocked: false, description: 'Complete 5 or more trips' }
   ];
 
   // Recent Activity from MongoDB (dynamic)

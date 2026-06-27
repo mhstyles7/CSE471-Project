@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Award,
-  Gift,
-  Star,
-  TrendingUp,
-  Sparkles,
-  Crown,
-  Trophy,
-  Medal,
-  Lock,
-  CheckCircle,
-} from "lucide-react";
+import { Award, Gift, Star, TrendingUp, Sparkles, Crown, Trophy, Medal, Lock, CheckCircle, , PartyPopper } from 'lucide-react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "../../context/NavigationContext";
 import { API_URL } from "../../config";
@@ -156,7 +145,7 @@ export default function RewardsPage() {
             prev.map((r) => (r.id === rewardId ? { ...r, redeemed: true } : r))
           );
           setUserData((prev) => ({ ...prev, points: data.remainingPoints }));
-          showNotificationMsg(`Successfully redeemed: ${reward.name}! 🎉`);
+          showNotificationMsg(`Successfully redeemed: ${reward.name}! `);
         } else {
           showNotificationMsg(data.message || "Redemption failed", "error");
         }
