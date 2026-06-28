@@ -295,7 +295,7 @@ export default function GroupEventsPage() {
       });
       if (res.ok) {
         setNewTask('');
-        showNotificationMsg('Task added! <CheckCircle2 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />');
+        showNotificationMsg('Task added!');
         fetchData();
       }
     } catch (err) {
@@ -342,7 +342,7 @@ export default function GroupEventsPage() {
       });
       if (res.ok) {
         setNewPoll({ question: '', option1: '', option2: '' });
-        showNotificationMsg('Poll created! <BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />');
+        showNotificationMsg('Poll created!');
         fetchData();
       }
     } catch (err) {
@@ -1110,8 +1110,8 @@ export default function GroupEventsPage() {
               {[
                 { id: 'itinerary', label: <><Calendar size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Itinerary</>, icon: Calendar },
                 { id: 'discussion', label: <><MessageSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Discussion</>, icon: MessageSquare },
-                { id: 'tasks', label: '<CheckCircle2 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Tasks', icon: ListTodo },
-                { id: 'polls', label: '<BarChart3 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Polls', icon: BarChart2 }
+                { id: 'tasks', label: <><ListTodo size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Tasks</>, icon: ListTodo },
+                { id: 'polls', label: <><BarChart2 size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} /> Polls</>, icon: BarChart2 }
               ].map(tab => (
                 <button
                   key={tab.id}

@@ -190,10 +190,10 @@ export default function CommunityPage() {
       setSelectedPhotos([]);
       showNotificationMsg(
         postType === 'recommendation'
-          ? `Your recommendation for ${selectedDestination} has been shared! <Star size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />`
+          ? `Your recommendation for ${selectedDestination} has been shared!`
           : postType === 'question'
-            ? 'Your question has been posted! The community will help you out. <MessageSquare size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />'
-            : 'Your story has been shared! <Upload size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />'
+            ? 'Your question has been posted! The community will help you out.'
+            : 'Your story has been shared!'
       );
     } catch (err) {
       showNotificationMsg('Failed to post. Please try again.', 'error');
@@ -282,7 +282,7 @@ export default function CommunityPage() {
       return post;
     }));
     const post = posts.find(p => p.id === postId);
-    showNotificationMsg(post?.isSaved ? 'Removed from saved' : 'Saved to your collection! <FileText size={18} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />', 'info');
+    showNotificationMsg(post?.isSaved ? 'Removed from saved' : 'Saved to your collection!', 'info');
   };
 
   // Share post

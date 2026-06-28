@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Award, Gift, Star, TrendingUp, Sparkles, Crown, Trophy, Medal, Lock, CheckCircle, , PartyPopper } from 'lucide-react';
+import { Award, Gift, Star, TrendingUp, Sparkles, Crown, Trophy, Medal, Lock, CheckCircle, PartyPopper } from 'lucide-react';
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "../../context/NavigationContext";
 import { API_URL } from "../../config";

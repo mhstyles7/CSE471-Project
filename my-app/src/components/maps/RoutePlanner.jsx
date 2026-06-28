@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, MapPin, Clock, DollarSign, Leaf, Trophy, ArrowRight, Activity, BarChart2, Sparkles, RefreshCw, , X, Bus, Train, Car, Plane, Navigation } from 'lucide-react';
+import { Search, MapPin, Clock, DollarSign, Leaf, Trophy, ArrowRight, Activity, BarChart2, Sparkles, RefreshCw, X, Bus, Train, Car, Plane, Navigation } from 'lucide-react';
 import RouteMap from "./RouteMap";
 import { searchLocation, getRouteEstimates } from "../../services/mapService";
 import { getRouteRecommendation } from "../../services/travelAIService";
