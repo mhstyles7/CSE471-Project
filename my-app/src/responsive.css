@@ -1,63 +1,57 @@
 /* ============================================
-   PothChola Responsive Design
+   PothChola – Full Responsive Design System
    Breakpoints:
-   - <= 1024px : Tablet landscape / small desktop
-   - <= 768px  : Tablet portrait
-   - <= 480px  : Mobile
+   - 1280px  : Large desktop
+   - 1024px  : Small desktop / tablet landscape
+   - 768px   : Tablet portrait
+   - 480px   : Large phone
+   - 360px   : Small phone
    ============================================ */
 
-/* Add viewport meta tag support */
-@viewport {
-  width: device-width;
+/* ─── Global Resets ─── */
+html, body { overflow-x: hidden; }
+img { max-width: 100%; height: auto; }
+* { box-sizing: border-box; }
+
+.app-wrapper { overflow-x: hidden; }
+
+/* ─── Prevent any element from causing horizontal scroll ─── */
+.app-main-content {
+  width: 100%;
+  min-width: 0;
 }
 
-/* ─── Global ─── */
-
-/* Ensure images don't overflow */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* =============================================
-   TABLET LANDSCAPE / SMALL DESKTOP (≤1024px)
-   ============================================= */
-@media (max-width: 1024px) {
-
-  /* App main content */
+/* ============================================
+   LARGE DESKTOP (≤1280px)
+   ============================================ */
+@media (max-width: 1280px) {
   .app-main-content {
-    padding: 24px 20px !important;
+    padding: 32px 24px !important;
   }
-
-  /* Navbar */
   .navbar-container {
-    padding: 0 16px !important;
+    padding: 0 24px !important;
   }
+  .hero-heading { font-size: 48px !important; }
+}
 
-  .navbar-links button span {
-    display: none;
-  }
+/* ============================================
+   SMALL DESKTOP / TABLET LANDSCAPE (≤1024px)
+   ============================================ */
+@media (max-width: 1024px) {
+  .app-main-content { padding: 24px 20px !important; }
+  .navbar-container { padding: 0 16px !important; }
 
+  /* Hide nav text, keep icons */
+  .navbar-links button span { display: none; }
   .navbar-right .nav-profile-btn span,
-  .navbar-right .nav-logout-btn span {
-    display: none;
-  }
+  .navbar-right .nav-logout-btn span { display: none; }
 
-  /* Hero section */
-  .hero-section {
-    min-height: 350px !important;
-    border-radius: 20px !important;
-  }
+  /* Hero */
+  .hero-section { min-height: 360px !important; border-radius: 20px !important; }
+  .hero-heading { font-size: 40px !important; }
+  .hero-subtitle { font-size: 18px !important; }
 
-  .hero-heading {
-    font-size: 42px !important;
-  }
-
-  .hero-subtitle {
-    font-size: 18px !important;
-  }
-
-  /* Grids - reduce min widths */
+  /* Grids */
   .feature-grid,
   .destinations-grid,
   .packages-grid,
@@ -76,125 +70,60 @@ img {
   .agency-content-grid,
   .heatmap-grid,
   .dishes-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
   }
 
-  /* Two column layouts become single column */
+  /* Two-col → one-col */
   .dashboard-overview-grid,
   .guide-dashboard-grid,
   .destination-detail-grid,
-  .route-planner-grid {
+  .route-planner-grid,
+  .community-layout { /* community has sidebar */
     grid-template-columns: 1fr !important;
+    flex-direction: column !important;
   }
 
-  /* Section headings */
-  .section-heading {
-    font-size: 32px !important;
-  }
+  .community-sidebar { display: none !important; }
 
-  .section-subheading {
-    font-size: 28px !important;
-  }
+  /* Headings */
+  .section-heading { font-size: 32px !important; }
+  .section-subheading { font-size: 26px !important; }
 }
 
-/* =============================================
+/* ============================================
    TABLET PORTRAIT (≤768px)
-   ============================================= */
+   ============================================ */
 @media (max-width: 768px) {
-
-  /* App main content */
-  .app-main-content {
-    padding: 20px 16px !important;
-  }
+  /* ─── App layout ─── */
+  .app-main-content { padding: 16px 14px !important; }
 
   /* ─── Navbar ─── */
   .navbar-container {
     padding: 0 12px !important;
     height: 60px !important;
   }
+  .navbar-logo { min-width: auto !important; }
+  .navbar-logo h1 { font-size: 20px !important; }
+  .navbar-logo > div > span { display: none !important; } /* "TRAVEL SMART" tagline */
 
-  .navbar-logo {
-    min-width: auto !important;
-  }
-
-  .navbar-logo h1 {
-    font-size: 20px !important;
-  }
-
-  .navbar-logo span {
-    display: none;
-  }
-
-  /* Hide desktop nav links, show hamburger */
-  .navbar-links {
-    display: none !important;
-  }
-
-  .navbar-hamburger {
-    display: flex !important;
-  }
-
-  .navbar-right {
-    min-width: auto !important;
-    gap: 8px !important;
-  }
-
-  .navbar-right .nav-profile-btn {
-    padding: 8px !important;
-  }
-
-  .navbar-right .nav-profile-btn span {
-    display: none;
-  }
-
-  .navbar-right .nav-logout-btn {
-    padding: 8px !important;
-  }
-
-  .navbar-right .nav-logout-btn span {
-    display: none;
-  }
-
-  .navbar-right .nav-signin-btn {
-    padding: 8px 16px !important;
-    font-size: 13px !important;
-  }
-
-  /* Mobile menu overlay */
-  .mobile-menu-overlay {
-    display: block !important;
-  }
-
-  .mobile-menu {
-    display: flex !important;
-  }
+  /* Hide desktop nav, show hamburger */
+  .navbar-links { display: none !important; }
+  .navbar-hamburger { display: flex !important; }
+  .navbar-right { min-width: auto !important; gap: 6px !important; }
+  .navbar-right .nav-profile-btn { padding: 8px !important; }
+  .navbar-right .nav-profile-btn span { display: none !important; }
+  .navbar-right .nav-logout-btn { padding: 8px !important; }
+  .navbar-right .nav-logout-btn span { display: none !important; }
+  .navbar-right .nav-signin-btn { padding: 8px 14px !important; font-size: 13px !important; }
 
   /* ─── Hero ─── */
-  .hero-section {
-    min-height: 300px !important;
-    border-radius: 16px !important;
-  }
+  .hero-section { min-height: 280px !important; border-radius: 16px !important; }
+  .hero-content { padding: 28px 18px !important; }
+  .hero-heading { font-size: 30px !important; margin-bottom: 12px !important; }
+  .hero-subtitle { font-size: 15px !important; margin-bottom: 20px !important; }
+  .hero-cta { padding: 12px 28px !important; font-size: 15px !important; }
 
-  .hero-content {
-    padding: 32px 20px !important;
-  }
-
-  .hero-heading {
-    font-size: 32px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .hero-subtitle {
-    font-size: 16px !important;
-    margin-bottom: 24px !important;
-  }
-
-  .hero-cta {
-    padding: 12px 28px !important;
-    font-size: 16px !important;
-  }
-
-  /* ─── Grids ─── */
+  /* ─── Grids → single col ─── */
   .feature-grid,
   .destinations-grid,
   .packages-grid,
@@ -220,223 +149,148 @@ img {
   .dashboard-overview-grid,
   .guide-dashboard-grid,
   .destination-detail-grid,
-  .route-planner-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .route-planner-grid { grid-template-columns: 1fr !important; }
 
-  /* Form grids */
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .form-grid { grid-template-columns: 1fr !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
-  /* Stats grid */
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  /* ─── Community layout ─── */
+  .community-layout {
+    flex-direction: column !important;
+    display: flex !important;
   }
+  .community-sidebar { display: none !important; }
+  .community-main { width: 100% !important; flex: none !important; }
 
-  /* ─── Dashboard tabs ─── */
-  .dashboard-tabs {
+  /* ─── Tabs (scrollable) ─── */
+  .dashboard-tabs,
+  .friends-tabs,
+  .rewards-tabs,
+  .events-tabs,
+  .community-tabs {
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
   }
+  .dashboard-tabs::-webkit-scrollbar,
+  .friends-tabs::-webkit-scrollbar,
+  .rewards-tabs::-webkit-scrollbar,
+  .events-tabs::-webkit-scrollbar,
+  .community-tabs::-webkit-scrollbar { display: none; }
 
-  .dashboard-tabs button {
+  .dashboard-tabs button,
+  .friends-tabs button,
+  .rewards-tabs button,
+  .events-tabs button,
+  .community-tabs button {
     white-space: nowrap;
     font-size: 13px !important;
-    padding: 8px 14px !important;
+    padding: 10px 14px !important;
   }
 
-  /* ─── Section headings ─── */
-  .section-heading {
-    font-size: 28px !important;
-  }
+  /* ─── Headings ─── */
+  .section-heading { font-size: 26px !important; }
+  .section-subheading { font-size: 20px !important; }
+  .page-heading { font-size: 22px !important; }
 
-  .section-subheading {
-    font-size: 22px !important;
-  }
-
-  .page-heading {
-    font-size: 24px !important;
-  }
-
-  /* ─── ChatBot ─── */
+  /* ─── Chatbot ─── */
+  .chatbot-wrapper { bottom: 16px !important; right: 16px !important; }
   .chatbot-window {
-    width: calc(100vw - 32px) !important;
-    height: calc(100vh - 100px) !important;
-    max-width: 400px;
+    width: calc(100vw - 28px) !important;
+    height: calc(100vh - 90px) !important;
+    max-width: 420px;
     border-radius: 20px !important;
   }
+  .chatbot-button { width: 54px !important; height: 54px !important; bottom: 20px !important; right: 20px !important; }
 
-  .chatbot-button {
-    width: 56px !important;
-    height: 56px !important;
-    bottom: 20px !important;
-    right: 20px !important;
-  }
-
-  /* ─── Auth pages ─── */
-  .auth-container {
-    padding: 24px !important;
-    max-width: 100% !important;
-    border-radius: 16px !important;
-  }
-
-  .auth-heading {
-    font-size: 24px !important;
-  }
+  /* ─── Auth ─── */
+  .auth-container { padding: 24px 16px !important; max-width: 100% !important; border-radius: 16px !important; }
+  .auth-heading { font-size: 22px !important; }
 
   /* ─── Modals ─── */
-  .modal-overlay {
-    padding: 16px !important;
-  }
-
+  .modal-overlay { padding: 12px !important; }
   .modal-content {
     max-width: 100% !important;
     border-radius: 20px !important;
-    padding: 24px !important;
-    max-height: 85vh !important;
+    padding: 20px 16px !important;
+    max-height: 88vh !important;
     overflow-y: auto !important;
   }
 
-  /* ─── Events page ─── */
-  .event-detail-layout {
-    flex-direction: column !important;
-  }
+  /* ─── Event detail ─── */
+  .event-detail-layout { flex-direction: column !important; }
+  .event-sidebar { width: 100% !important; max-width: 100% !important; }
+  .event-main { width: 100% !important; }
 
-  .event-sidebar {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .event-main {
-    width: 100% !important;
-  }
-
-  /* ─── Community post layout ─── */
-  .community-post {
-    padding: 16px !important;
-  }
-
-  .community-create-post {
-    padding: 16px !important;
-  }
+  /* ─── Community posts ─── */
+  .community-post { padding: 16px !important; }
+  .community-create-post { padding: 16px !important; }
 
   /* ─── Profile ─── */
-  .profile-header {
-    flex-direction: column !important;
-    text-align: center;
-  }
+  .profile-header { flex-direction: column !important; text-align: center; }
+  .profile-avatar-section { margin: 0 auto !important; }
+  .profile-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
-  .profile-avatar-section {
-    margin: 0 auto !important;
-  }
+  /* ─── Destination detail ─── */
+  .destination-detail-grid { gap: 16px !important; }
 
-  .profile-stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+  /* ─── Maps ─── */
+  .map-container { height: 380px !important; }
 
-  /* ─── Destination Details ─── */
-  .destination-detail-grid {
-    gap: 20px !important;
-    padding: 0 12px !important;
-  }
+  /* ─── Agency / Guide Dashboard ─── */
+  .agency-form-grid,
+  .guide-form-grid { grid-template-columns: 1fr !important; }
 
-  /* Maps */
-  .map-container {
-    height: 400px !important;
-  }
-
-  /* ─── Agency Dashboard ─── */
-  .agency-form-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ─── MyTrips form ─── */
+  /* ─── My Trips / Search forms ─── */
   .mytrips-form-grid,
   .search-form {
     grid-template-columns: 1fr !important;
     flex-direction: column !important;
     align-items: stretch !important;
   }
-}
 
-/* =============================================
-   MOBILE (≤480px)
-   ============================================= */
-@media (max-width: 480px) {
+  /* ─── Rewards grid ─── */
+  .rewards-grid { grid-template-columns: 1fr !important; }
 
-  /* App main content */
-  .app-main-content {
-    padding: 12px 10px !important;
-  }
-
-  /* ─── Navbar ─── */
-  .navbar-container {
-    height: 56px !important;
-    padding: 0 10px !important;
-  }
-
-  .navbar-logo-icon {
-    width: 32px !important;
-    height: 32px !important;
-  }
-
-  .navbar-logo h1 {
-    font-size: 18px !important;
-  }
-
-  /* ─── Hero ─── */
-  .hero-section {
-    min-height: 250px !important;
-    border-radius: 12px !important;
-  }
-
-  .hero-content {
-    padding: 24px 16px !important;
-  }
-
-  .hero-heading {
-    font-size: 26px !important;
-    line-height: 1.2 !important;
-  }
-
-  .hero-subtitle {
-    font-size: 14px !important;
-    line-height: 1.5 !important;
-  }
-
-  .hero-cta {
-    padding: 10px 24px !important;
-    font-size: 14px !important;
-    border-radius: 20px !important;
-  }
-
-  .hero-badge {
-    padding: 6px 14px !important;
-    font-size: 12px !important;
-  }
-
-  /* ─── Stats grid ─── */
-  .stats-grid {
-    grid-template-columns: 1fr !important;
+  /* ─── Dashboard header row ─── */
+  .dashboard-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
     gap: 12px !important;
   }
 
-  /* ─── Section headings ─── */
-  .section-heading {
-    font-size: 24px !important;
+  /* ─── Route planner – stack panels ─── */
+  .route-planner-grid {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
   }
+}
 
-  .section-subheading {
-    font-size: 18px !important;
-  }
+/* ============================================
+   LARGE PHONE (≤480px)
+   ============================================ */
+@media (max-width: 480px) {
+  .app-main-content { padding: 10px 10px !important; }
 
-  .page-heading {
-    font-size: 20px !important;
-  }
+  /* ─── Navbar ─── */
+  .navbar-container { height: 56px !important; padding: 0 10px !important; }
+  .navbar-logo-icon { width: 32px !important; height: 32px !important; }
+  .navbar-logo h1 { font-size: 17px !important; }
 
-  /* ─── Cards ─── */
+  /* ─── Hero ─── */
+  .hero-section { min-height: 240px !important; border-radius: 12px !important; }
+  .hero-content { padding: 22px 14px !important; }
+  .hero-heading { font-size: 24px !important; line-height: 1.2 !important; }
+  .hero-subtitle { font-size: 13px !important; line-height: 1.5 !important; }
+  .hero-cta { padding: 10px 22px !important; font-size: 14px !important; border-radius: 20px !important; }
+  .hero-badge { padding: 6px 12px !important; font-size: 11px !important; }
+
+  /* ─── Stats ─── */
+  .stats-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+
+  /* ─── All grids single col ─── */
   .feature-grid,
   .destinations-grid,
   .packages-grid,
@@ -457,137 +311,123 @@ img {
   .guide-stats-grid,
   .dishes-grid {
     grid-template-columns: 1fr !important;
-    gap: 16px !important;
+    gap: 14px !important;
   }
 
-  /* ─── ChatBot ─── */
-  .chatbot-wrapper {
-    bottom: 16px !important;
-    right: 16px !important;
-  }
+  /* ─── Headings ─── */
+  .section-heading { font-size: 22px !important; }
+  .section-subheading { font-size: 17px !important; }
+  .page-heading { font-size: 18px !important; }
 
+  /* ─── Chatbot ─── */
+  .chatbot-wrapper { bottom: 12px !important; right: 12px !important; }
   .chatbot-window {
-    width: calc(100vw - 24px) !important;
-    height: calc(100vh - 80px) !important;
-    border-radius: 16px !important;
+    width: calc(100vw - 20px) !important;
+    height: calc(100vh - 75px) !important;
+    border-radius: 14px !important;
+    bottom: 10px !important;
+    right: 10px !important;
     position: fixed !important;
-    bottom: 12px !important;
-    right: 12px !important;
   }
+  .chatbot-button { width: 48px !important; height: 48px !important; }
 
-  .chatbot-button {
-    width: 50px !important;
-    height: 50px !important;
-  }
-
-  /* ─── Auth pages ─── */
-  .auth-container {
-    padding: 20px 16px !important;
-    margin: 0 !important;
-    border-radius: 12px !important;
-  }
-
-  .auth-heading {
-    font-size: 22px !important;
-  }
-
-  .auth-input {
-    padding: 10px 12px !important;
-    font-size: 14px !important;
-  }
+  /* ─── Auth ─── */
+  .auth-container { padding: 18px 14px !important; margin: 0 !important; border-radius: 12px !important; }
+  .auth-heading { font-size: 20px !important; }
+  .auth-input { padding: 10px 12px !important; font-size: 14px !important; }
 
   /* ─── Modals ─── */
-  .modal-overlay {
-    padding: 8px !important;
-    align-items: flex-end !important;
-  }
-
+  .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
   .modal-content {
     border-radius: 16px 16px 0 0 !important;
-    padding: 20px 16px !important;
-    max-height: 90vh !important;
+    padding: 18px 14px !important;
+    max-height: 92vh !important;
   }
 
   /* ─── Community ─── */
-  .community-post {
-    padding: 12px !important;
-    border-radius: 12px !important;
-  }
+  .community-post { padding: 12px !important; border-radius: 12px !important; }
+  .community-create-post { padding: 12px !important; border-radius: 12px !important; }
+  .community-photo-grid { grid-template-columns: 1fr !important; }
 
-  .community-create-post {
-    padding: 12px !important;
-    border-radius: 12px !important;
-  }
-
-  .community-photo-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ─── Buttons general ─── */
-  .responsive-btn {
-    font-size: 13px !important;
-    padding: 8px 16px !important;
-  }
-
-  /* ─── Dashboard tabs ─── */
-  .dashboard-tabs {
-    gap: 4px !important;
-  }
-
-  .dashboard-tabs button {
+  /* ─── Tabs (very small) ─── */
+  .dashboard-tabs button,
+  .friends-tabs button,
+  .rewards-tabs button,
+  .events-tabs button,
+  .community-tabs button {
     font-size: 12px !important;
-    padding: 6px 10px !important;
+    padding: 8px 10px !important;
   }
 
-  /* ─── Events ─── */
-  .event-card {
-    padding: 16px !important;
-  }
+  /* ─── Cards ─── */
+  .event-card { padding: 14px !important; }
+  .friend-card { padding: 16px !important; }
 
   /* ─── Profile ─── */
-  .profile-header {
-    padding: 16px !important;
-  }
+  .profile-header { padding: 14px !important; }
+  .profile-badges-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important; }
+  .profile-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
-  .profile-badges-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)) !important;
-  }
-
-  /* ─── Destination Details ─── */
-  .destination-hero {
-    min-height: 250px !important;
-    border-radius: 12px !important;
-  }
+  /* ─── Destination hero ─── */
+  .destination-hero { min-height: 220px !important; border-radius: 12px !important; }
 
   /* ─── Rewards ─── */
-  .rewards-header {
-    padding: 20px !important;
-    border-radius: 16px !important;
+  .rewards-header { padding: 18px !important; border-radius: 14px !important; }
+
+  /* ─── Maps ─── */
+  .map-container { height: 280px !important; }
+
+  /* ─── Buttons ─── */
+  .responsive-btn { font-size: 13px !important; padding: 8px 14px !important; }
+
+  /* ─── Dashboard quick actions ─── */
+  .dashboard-quick-actions {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  /* ─── Tab navigation fix ─── */
-  .friends-tabs {
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-  }
-
-  .friends-tabs button {
-    white-space: nowrap;
-    font-size: 12px !important;
-    padding: 8px 12px !important;
-  }
-
-  /* Map containers */
-  .map-container {
-    height: 300px !important;
-  }
+  /* ─── Route planner ─── */
+  .route-planner-grid { gap: 16px !important; }
 }
 
-/* =============================================
-   HAMBURGER MENU STYLES (always present, shown via JS)
-   ============================================= */
+/* ============================================
+   SMALL PHONE (≤360px)
+   ============================================ */
+@media (max-width: 360px) {
+  .app-main-content { padding: 8px 8px !important; }
+  .navbar-container { padding: 0 8px !important; }
+  .navbar-logo h1 { font-size: 15px !important; }
+  .hero-heading { font-size: 20px !important; }
+  .hero-subtitle { font-size: 12px !important; }
+  .section-heading { font-size: 19px !important; }
+  .hero-cta { padding: 9px 18px !important; font-size: 13px !important; }
 
-/* Hamburger button - hidden by default, shown via media query */
+  /* Tabs even tighter */
+  .dashboard-tabs button,
+  .friends-tabs button,
+  .rewards-tabs button,
+  .events-tabs button,
+  .community-tabs button {
+    font-size: 11px !important;
+    padding: 7px 8px !important;
+  }
+
+  .stats-grid { grid-template-columns: 1fr !important; }
+  .profile-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Chatbot stays in corner, smaller */
+  .chatbot-button { width: 44px !important; height: 44px !important; }
+  .chatbot-window {
+    width: calc(100vw - 16px) !important;
+    height: calc(100vh - 65px) !important;
+  }
+
+  /* Modals full screen on tiny phones */
+  .modal-content { max-height: 95vh !important; padding: 14px 12px !important; }
+}
+
+/* ============================================
+   HAMBURGER MENU
+   ============================================ */
 .navbar-hamburger {
   display: none;
   align-items: center;
@@ -599,67 +439,33 @@ img {
   cursor: pointer;
   border-radius: 8px;
   transition: background-color 0.2s;
+  flex-shrink: 0;
 }
-
-.navbar-hamburger:hover {
-  background-color: #f0fdf4;
-}
-
-.navbar-hamburger span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background-color: #374151;
-  position: relative;
-  transition: all 0.3s;
-}
-
-.navbar-hamburger span::before,
-.navbar-hamburger span::after {
-  content: '';
-  position: absolute;
-  width: 22px;
-  height: 2px;
-  background-color: #374151;
-  left: 0;
-  transition: all 0.3s;
-}
-
-.navbar-hamburger span::before {
-  top: -7px;
-}
-
-.navbar-hamburger span::after {
-  top: 7px;
-}
+.navbar-hamburger:hover { background-color: #f0fdf4; }
 
 /* Mobile menu overlay */
 .mobile-menu-overlay {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 998;
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Mobile menu */
+/* Mobile menu drawer */
 .mobile-menu {
   display: none;
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 0; right: 0;
   width: 280px;
-  max-width: 80vw;
+  max-width: 82vw;
   height: 100vh;
   background-color: white;
   z-index: 999;
   flex-direction: column;
   padding: 20px 0;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
   animation: slideInRight 0.3s ease-out;
   overflow-y: auto;
 }
@@ -672,85 +478,115 @@ img {
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 8px;
 }
-
-.mobile-menu-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #059669;
-}
+.mobile-menu-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #059669; }
 
 .mobile-menu-close {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background-color: #f3f4f6;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #374151;
+  width: 36px; height: 36px;
+  border-radius: 50%; border: none;
+  background-color: #f3f4f6; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #374151;
   transition: background-color 0.2s;
 }
-
-.mobile-menu-close:hover {
-  background-color: #e5e7eb;
-}
+.mobile-menu-close:hover { background-color: #e5e7eb; }
 
 .mobile-menu button.mobile-nav-item {
-  width: 100%;
-  padding: 14px 24px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 15px;
-  font-weight: 500;
-  color: #374151;
-  text-align: left;
-  transition: all 0.2s;
+  width: 100%; padding: 14px 24px; border: none;
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; gap: 14px;
+  font-size: 15px; font-weight: 500; color: #374151;
+  text-align: left; transition: all 0.2s;
 }
-
-.mobile-menu button.mobile-nav-item:hover {
-  background-color: #f0fdf4;
-  color: #059669;
-}
-
+.mobile-menu button.mobile-nav-item:hover { background-color: #f0fdf4; color: #059669; }
 .mobile-menu button.mobile-nav-item.active {
-  background-color: #ecfdf5;
-  color: #059669;
-  font-weight: 600;
-  border-right: 3px solid #059669;
+  background-color: #ecfdf5; color: #059669;
+  font-weight: 600; border-right: 3px solid #059669;
 }
 
-.mobile-menu-divider {
-  height: 1px;
-  background-color: #e5e7eb;
-  margin: 8px 20px;
+.mobile-menu-divider { height: 1px; background-color: #e5e7eb; margin: 8px 20px; }
+
+/* ============================================
+   INLINE STYLE OVERRIDES (fix hardcoded px)
+   ============================================ */
+
+/* Community page flex layout */
+@media (max-width: 1024px) {
+  div[style*="flex: 2"],
+  div[style*="flex:2"] { flex: 1 1 100% !important; min-width: 0 !important; }
+
+  /* Friends grid min-width override */
+  div[style*="minmax(340px"] { grid-template-columns: 1fr !important; }
+
+  /* RoutePlanner grid */
+  div[style*="gridTemplateColumns"][style*="minmax(350px"] {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
 }
 
+@media (max-width: 768px) {
+  /* Force all flex rows to wrap */
+  div[style*="display: flex"][style*="gap"] {
+    flex-wrap: wrap;
+  }
+
+  /* Fix any hardcoded minWidth that clips on mobile */
+  div[style*="minWidth: \"200px\""] { min-width: auto !important; }
+  div[style*="minWidth: 200px"] { min-width: auto !important; }
+
+  /* Dashboard grid */
+  div[style*="gridTemplateColumns: \"repeat(3"] { grid-template-columns: 1fr 1fr !important; }
+  div[style*="gridTemplateColumns: \"repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+
+  /* Community sidebar hidden */
+  div[style*="width: \"300px\""] { display: none !important; }
+
+  /* Route planner right panel (map) */
+  div[style*="height: \"calc(100vh - 100px)\""] {
+    height: 300px !important;
+  }
+
+  /* Destination detail grid inline */
+  div[style*="gridTemplateColumns: \"2fr 1fr\""] { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: \"1fr 2fr\""] { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: \"1fr 1fr\""] { grid-template-columns: 1fr !important; }
+  div[style*="gridTemplateColumns: \"repeat(2"] { grid-template-columns: 1fr !important; }
+
+  /* Large font overrides */
+  h1[style*="fontSize: \"56px\""] { font-size: 28px !important; }
+  h1[style*="fontSize: \"48px\""] { font-size: 26px !important; }
+  h2[style*="fontSize: \"42px\""] { font-size: 24px !important; }
+  h2[style*="fontSize: \"36px\""] { font-size: 22px !important; }
+  h3[style*="fontSize: \"48px\""] { font-size: 28px !important; }
+
+  /* Padding overrides for cards */
+  div[style*="padding: \"40px\""] { padding: 20px !important; }
+  div[style*="padding: \"32px\""] { padding: 18px !important; }
+}
+
+@media (max-width: 480px) {
+  div[style*="gridTemplateColumns: \"repeat(2"] { grid-template-columns: 1fr !important; }
+  div[style*="padding: \"28px\""] { padding: 14px !important; }
+  div[style*="padding: \"24px\""] { padding: 12px !important; }
+
+  h1[style*="fontSize: \"56px\""],
+  h1[style*="fontSize: \"48px\""] { font-size: 22px !important; }
+  h2[style*="fontSize: \"42px\""],
+  h2[style*="fontSize: \"36px\""] { font-size: 20px !important; }
+  h3[style*="fontSize: \"32px\""],
+  h3[style*="fontSize: \"28px\""] { font-size: 18px !important; }
+  h3[style*="fontSize: \"24px\""] { font-size: 16px !important; }
+}
+
+/* ============================================
+   KEYFRAMES
+   ============================================ */
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
-/* =============================================
-   UTILITY: Prevent horizontal overflow
-   ============================================= */
-html,
-body {
-  overflow-x: hidden;
-}
-
-.app-wrapper {
-  overflow-x: hidden;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
