@@ -158,7 +158,7 @@ function AppContent() {
         <main className="app-main-content" style={{
           maxWidth: '1400px',
           margin: '0 auto',
-          padding: '40px 32px',
+          padding: '40px 32px 100px 32px', // added 100px bottom padding for chatbot
           position: 'relative',
           zIndex: 1
         }}>
